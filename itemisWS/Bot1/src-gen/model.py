@@ -429,8 +429,8 @@ class Model:
 		"""Entry action for state 'Move Forward'..
 		"""
 		#Entry action for state 'Move Forward'.
-		self.timer_service.set_timer(self, 0, (1 * 1000), False)
-		self.output.speed = self.user_var.base_speed
+		self.timer_service.set_timer(self, 0, (10 * 1000), False)
+		self.output.speed = 10.0
 		
 	def __exit_action_main_region_move_forward(self):
 		"""Exit action for state 'Move Forward'..

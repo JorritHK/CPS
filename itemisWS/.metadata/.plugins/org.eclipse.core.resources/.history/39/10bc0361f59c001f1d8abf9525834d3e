@@ -8,8 +8,8 @@
       <vertices xsi:type="sgraph:State" xmi:id="_H3fuNhtMEeuKLrIwlRh1BQ" specification="entry/output.&#xA;speed = 0.0&#xA;" name="Stopped" incomingTransitions="_H3fuNRtMEeuKLrIwlRh1BQ _vJVs8JdyEe-0KaRQJoLXlA">
         <outgoingTransitions xmi:id="_jViuwJdyEe-0KaRQJoLXlA" specification="computer.w_press" target="_c_GxIJdyEe-0KaRQJoLXlA"/>
       </vertices>
-      <vertices xsi:type="sgraph:State" xmi:id="_c_GxIJdyEe-0KaRQJoLXlA" specification="entry/ output.speed = 10.0" name="Move Forward" incomingTransitions="_jViuwJdyEe-0KaRQJoLXlA">
-        <outgoingTransitions xmi:id="_vJVs8JdyEe-0KaRQJoLXlA" specification="after 10s&#xA;" target="_H3fuNhtMEeuKLrIwlRh1BQ"/>
+      <vertices xsi:type="sgraph:State" xmi:id="_c_GxIJdyEe-0KaRQJoLXlA" specification="entry/ output.speed = userVar.baseSpeed&#xA;" name="Move Forward" incomingTransitions="_jViuwJdyEe-0KaRQJoLXlA">
+        <outgoingTransitions xmi:id="_vJVs8JdyEe-0KaRQJoLXlA" specification="after 1s&#xA;" target="_H3fuNhtMEeuKLrIwlRh1BQ"/>
       </vertices>
     </regions>
   </sgraph:Statechart>
