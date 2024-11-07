@@ -694,7 +694,7 @@ class Model:
 		#The reactions of state Increase speed.
 		transitioned_after = transitioned_before
 		if transitioned_after < 0:
-			if (self.computer.w_press) and (self.output.speed < self.base_values.max_speed):
+			if (self.computer.w_press) and (self.output.speed < (self.base_values.max_speed - self.user_var.base_speed)):
 				self.__exit_sequence_main_region_manual_r1_speed_r1_increase_speed()
 				self.__enter_sequence_main_region_manual_r1_speed_r1_increase_speed_default()
 				self.__main_region_manual_r1_speed_react(0)
@@ -717,7 +717,7 @@ class Model:
 		#The reactions of state Decrease Speed.
 		transitioned_after = transitioned_before
 		if transitioned_after < 0:
-			if (self.computer.x_press) and (self.output.speed > -(self.base_values.max_speed)):
+			if (self.computer.x_press) and (self.output.speed > (-(self.base_values.max_speed) + self.user_var.base_speed)):
 				self.__exit_sequence_main_region_manual_r1_speed_r1_decrease_speed()
 				self.__enter_sequence_main_region_manual_r1_speed_r1_decrease_speed_default()
 				self.__main_region_manual_r1_speed_react(0)
@@ -752,7 +752,7 @@ class Model:
 		#The reactions of state Incr. rot. speed right.
 		transitioned_after = transitioned_before
 		if transitioned_after < 0:
-			if (self.computer.d_press) and (self.output.rotation > -(self.base_values.max_rotation)):
+			if (self.computer.d_press) and (self.output.rotation > (-(self.base_values.max_rotation) + self.user_var.base_rotation)):
 				self.__exit_sequence_main_region_manual_r1_rotations_r1_incr__rot__speed_right()
 				self.__enter_sequence_main_region_manual_r1_rotations_r1_incr__rot__speed_right_default()
 				self.__main_region_manual_r1_rotations_react(0)
@@ -775,7 +775,7 @@ class Model:
 		#The reactions of state Incr. rot. speed left.
 		transitioned_after = transitioned_before
 		if transitioned_after < 0:
-			if (self.computer.a_press) and (self.output.rotation < self.base_values.max_rotation):
+			if (self.computer.a_press) and (self.output.rotation < (self.base_values.max_rotation - self.user_var.base_rotation)):
 				self.__exit_sequence_main_region_manual_r1_rotations_r1_incr__rot__speed_left()
 				self.__enter_sequence_main_region_manual_r1_rotations_r1_incr__rot__speed_left_default()
 				self.__main_region_manual_r1_rotations_react(0)

@@ -17,11 +17,11 @@
           <vertices xsi:type="sgraph:State" xmi:id="_-H6A8Jz3Ee-Xz_UnYjdxfg" name="Speed">
             <regions xmi:id="_-IAuoJz3Ee-Xz_UnYjdxfg" name="r1">
               <vertices xsi:type="sgraph:State" xmi:id="_Mtp1SZzrEe-A-qcX_vQmtA" specification="entry / output.speed = output.speed + userVar.baseSpeed" name="Increase speed" incomingTransitions="_MtrDZJzrEe-A-qcX_vQmtA _MtWTQJzrEe-A-qcX_vQmtA _VJLgAJz_Ee-X0PUnYjdxfg">
-                <outgoingTransitions xmi:id="_MtrDZJzrEe-A-qcX_vQmtA" specification="computer.w_press [output.speed &lt; baseValues.maxSpeed-userVar.baseSpeed]" target="_Mtp1SZzrEe-A-qcX_vQmtA"/>
+                <outgoingTransitions xmi:id="_MtrDZJzrEe-A-qcX_vQmtA" specification="computer.w_press [output.speed &lt; baseValues.maxSpeed]" target="_Mtp1SZzrEe-A-qcX_vQmtA"/>
                 <outgoingTransitions xmi:id="_ShwKwJz_Ee-X0PUnYjdxfg" specification="computer.x_press" target="_Mth5cJzrEe-A-qcX_vQmtA"/>
               </vertices>
               <vertices xsi:type="sgraph:State" xmi:id="_Mth5cJzrEe-A-qcX_vQmtA" specification="entry / output.speed = output.speed - userVar.baseSpeed" name="Decrease Speed" incomingTransitions="_Mte2IJzrEe-A-qcX_vQmtA _Mtk8wJzrEe-A-qcX_vQmtA _ShwKwJz_Ee-X0PUnYjdxfg">
-                <outgoingTransitions xmi:id="_Mtk8wJzrEe-A-qcX_vQmtA" specification="computer.x_press [output.speed > -baseValues.maxSpeed+userVar.baseSpeed]" target="_Mth5cJzrEe-A-qcX_vQmtA"/>
+                <outgoingTransitions xmi:id="_Mtk8wJzrEe-A-qcX_vQmtA" specification="computer.x_press [output.speed > -baseValues.maxSpeed]" target="_Mth5cJzrEe-A-qcX_vQmtA"/>
                 <outgoingTransitions xmi:id="_VJLgAJz_Ee-X0PUnYjdxfg" specification="computer.w_press" target="_Mtp1SZzrEe-A-qcX_vQmtA"/>
               </vertices>
             </regions>
@@ -29,11 +29,11 @@
           <vertices xsi:type="sgraph:State" xmi:id="_CM3rMJz4Ee-Xz_UnYjdxfg" name="Rotations">
             <regions xmi:id="_CM_nAJz4Ee-Xz_UnYjdxfg" name="r1">
               <vertices xsi:type="sgraph:State" xmi:id="_Enn2YJz4Ee-Xz_UnYjdxfg" specification="entry / output.rotation = output.rotation - userVar.baseRotation" name="Incr. rot. speed right" incomingTransitions="_xnAPsJz4Ee-Xz_UnYjdxfg _RL69EJz7Ee-Xz_UnYjdxfg _JuHK4Jz_Ee-X0PUnYjdxfg">
-                <outgoingTransitions xmi:id="_xnAPsJz4Ee-Xz_UnYjdxfg" specification="computer.d_press [output.rotation>-baseValues.maxRotation+userVar.baseRotation]" target="_Enn2YJz4Ee-Xz_UnYjdxfg"/>
+                <outgoingTransitions xmi:id="_xnAPsJz4Ee-Xz_UnYjdxfg" specification="computer.d_press [output.rotation>-baseValues.maxRotation]" target="_Enn2YJz4Ee-Xz_UnYjdxfg"/>
                 <outgoingTransitions xmi:id="_G0VhYJz_Ee-X0PUnYjdxfg" specification="computer.a_press" target="_oClTIJz4Ee-Xz_UnYjdxfg"/>
               </vertices>
               <vertices xsi:type="sgraph:State" xmi:id="_oClTIJz4Ee-Xz_UnYjdxfg" specification="entry / output.rotation = output.rotation + userVar.baseRotation" name="Incr. rot. speed left" incomingTransitions="_-odT0Jz4Ee-Xz_UnYjdxfg _dZiwgJz7Ee-Xz_UnYjdxfg _G0VhYJz_Ee-X0PUnYjdxfg">
-                <outgoingTransitions xmi:id="_-odT0Jz4Ee-Xz_UnYjdxfg" specification="computer.a_press [output.rotation&lt;baseValues.maxRotation-userVar.baseRotation]" target="_oClTIJz4Ee-Xz_UnYjdxfg"/>
+                <outgoingTransitions xmi:id="_-odT0Jz4Ee-Xz_UnYjdxfg" specification="computer.a_press [output.rotation&lt;baseValues.maxRotation]" target="_oClTIJz4Ee-Xz_UnYjdxfg"/>
                 <outgoingTransitions xmi:id="_JuHK4Jz_Ee-X0PUnYjdxfg" specification="computer.d_press" target="_Enn2YJz4Ee-Xz_UnYjdxfg"/>
               </vertices>
             </regions>
