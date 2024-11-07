@@ -2,35 +2,17 @@
   <testcase name="isLightOffAfterInit" classname="platform:/resource/home_automation/test/home_automation.sctunit#home_automation.isLightOffAfterInit" time="">
   </testcase>
   <testcase name="testLightOn" classname="platform:/resource/home_automation/test/home_automation.sctunit#home_automation.testLightOn" time="">
-    <failure>Assertion failed: "assert state.light == true" (Line 16)
-    	name: state.light, value: false
-    </failure>
   </testcase>
   <testcase name="testLightAuto" classname="platform:/resource/home_automation/test/home_automation.sctunit#home_automation.testLightAuto" time="">
   </testcase>
   <testcase name="testLightAutoMovement" classname="platform:/resource/home_automation/test/home_automation.sctunit#home_automation.testLightAutoMovement" time="">
-    <failure>Assertion failed: "assert state.light == true" (Line 43)
-    	name: state.light, value: false
-    </failure>
   </testcase>
   <testcase name="testArming" classname="platform:/resource/home_automation/test/home_automation.sctunit#home_automation.testArming" time="">
-    <failure>Assertion failed: "assert state.armed == true" (Line 91)
-    	name: state.armed, value: false
-    </failure>
   </testcase>
   <testcase name="testAlarmTriggeredByWindow" classname="platform:/resource/home_automation/test/home_automation.sctunit#home_automation.testAlarmTriggeredByWindow" time="">
-    <failure>Assertion failed: "assert state.armed == true" (Line 101)
-    	name: state.armed, value: false
-    </failure>
   </testcase>
   <testcase name="testAlarmTriggeredByDoor" classname="platform:/resource/home_automation/test/home_automation.sctunit#home_automation.testAlarmTriggeredByDoor" time="">
-    <failure>Assertion failed: "assert state.armed == true" (Line 113)
-    	name: state.armed, value: false
-    </failure>
   </testcase>
   <testcase name="testAlarmTriggeredByMotion" classname="platform:/resource/home_automation/test/home_automation.sctunit#home_automation.testAlarmTriggeredByMotion" time="">
-    <failure>Assertion failed: "assert state.armed == true" (Line 139)
-    	name: state.armed, value: false
-    </failure>
   </testcase>
 </testsuite>
