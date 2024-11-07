@@ -1,0 +1,179 @@
+
+testclass additional_tests_jorrit for statechart Statechart {
+    
+    // My own added test cases to increase coverage and robustness
+    
+    @Test
+    operation testLightAutomaticMode() {
+    	enter
+    	/*
+    	 * // Assert light is initially off in automatic mode
+    	raise control_panel.light
+    	raise control_panel.light
+    	assert state.light == false
+    	
+    	// Assert light gets turned on by motion sensor and goes back off again
+    	raise sensors.motion
+    	assert state.light == true
+    	proceed cons.light_timeout s
+    	assert state.light == false
+    	
+    	// Do it again to show you can loop
+    	raise sensors.motion
+    	assert state.light == true
+    	proceed cons.light_timeout s
+    	assert state.light == false
+    	 */
+    	
+    	
+    	// Check that control panel can still switch modes while activated
+    	raise control_panel.light
+    	raise control_panel.light
+    	assert state.light == false
+    	
+    	raise sensors.motion
+    	assert state.light == true
+    	raise control_panel.light
+    	assert state.light == false
+    	
+    	exit
+    }
+    
+    
+    @Test
+    operation testAlarmNoTriggeredByCat() {
+    	enter
+    	raise control_panel.alarm
+    	proceed cons.arming_delay s
+    	assert state.armed == true
+
+    	// Only trigger motion 3 times
+    	raise sensors.motion
+        raise sensors.motion
+        raise sensors.motion
+        proceed cons.motion_timeout s
+        assert !state.siren
+        assert state.armed == true
+        exit
+	}
+	
+	@Test
+	operation testArmedTurnOffLights() {
+		enter
+		// Turn light on and check if that happened correctly
+		raise control_panel.light
+		assert state.light == true
+
+		// Arm the alarm
+		raise control_panel.alarm
+		proceed cons.arming_delay s
+		// Light should now be turned off
+		assert state.light == false
+		exit
+	}
+	
+	@Test
+	operation testDisarm() {
+		enter
+		// Arm the alarm
+		raise control_panel.alarm
+		proceed cons.arming_delay s
+		assert state.armed == true
+		assert !state.siren
+		
+		// Try with wrong password
+		control_panel.code_input = "aaaa" // does not fit specs
+		raise control_panel.alarm
+		assert state.armed == true
+		
+		// Try with correct password
+		control_panel.code_input = state.alarm_code
+		raise control_panel.alarm
+		assert state.armed == false
+		assert !state.siren
+		exit
+	}
+	
+	
+	@Test
+	operation testPowerOffBasic() {
+		enter
+		// Turn off power and test alarm and lights are off
+		raise external.power_toggle // turn off
+		assert state.armed == false
+		assert state.light == false
+		assert !state.siren
+		raise external.power_toggle // back on
+
+		exit
+	}
+	
+		
+	@Test
+	operation testPowerOffResume() {
+		enter
+		
+		// Set system to armed state and check correct resumption
+		// arm the alarm
+		raise control_panel.alarm
+		proceed cons.arming_delay s
+		assert state.armed == true
+		
+		raise external.power_toggle
+		assert state.armed == false
+		assert state.light == false
+		assert !state.siren
+		
+		raise external.power_toggle
+		assert state.armed == true
+		
+		// Trigger alarm and check correct resumption
+		// Arm and trigger alarm
+		enter
+		raise control_panel.alarm
+		proceed cons.arming_delay s
+		raise sensors.window
+		assert state.siren
+		
+		raise external.power_toggle
+		// assert !state.siren // Don't know how to turn this off yet
+		
+		raise external.power_toggle
+		assert state.siren
+		
+		exit
+	}
+	
+		@Test
+	operation testPowerOffLight() {
+		enter
+		
+		// Check power off in 'on' mode
+		raise control_panel.light
+		
+		raise external.power_toggle
+		assert state.light == false
+		
+		raise external.power_toggle
+		assert state.light == false
+		
+		// Check power off while in automatic (triggered)
+		enter
+		raise control_panel.light
+		raise control_panel.light
+		raise sensors.motion
+		assert state.light == true
+
+		raise external.power_toggle // turn off
+		
+		assert state.light == false
+		
+		raise external.power_toggle // on again
+		assert state.light == false
+		
+		exit
+	}
+	
+	
+}
+    

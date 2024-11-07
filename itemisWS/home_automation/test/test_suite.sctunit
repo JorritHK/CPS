@@ -1,0 +1,4 @@
+testsuite TestSuite {
+	home_automation,
+	additional_tests_jorrit
+}

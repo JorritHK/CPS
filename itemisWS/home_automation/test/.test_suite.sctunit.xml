@@ -1,0 +1,36 @@
+<testsuite name="TestSuite" time="">
+  <testsuite name="home_automation" time="">
+    <testcase name="isLightOffAfterInit" classname="platform:/resource/home_automation/test/home_automation.sctunit#home_automation.isLightOffAfterInit" time="">
+    </testcase>
+    <testcase name="testLightOn" classname="platform:/resource/home_automation/test/home_automation.sctunit#home_automation.testLightOn" time="">
+    </testcase>
+    <testcase name="testLightAuto" classname="platform:/resource/home_automation/test/home_automation.sctunit#home_automation.testLightAuto" time="">
+    </testcase>
+    <testcase name="testLightAutoMovement" classname="platform:/resource/home_automation/test/home_automation.sctunit#home_automation.testLightAutoMovement" time="">
+    </testcase>
+    <testcase name="testArming" classname="platform:/resource/home_automation/test/home_automation.sctunit#home_automation.testArming" time="">
+    </testcase>
+    <testcase name="testAlarmTriggeredByWindow" classname="platform:/resource/home_automation/test/home_automation.sctunit#home_automation.testAlarmTriggeredByWindow" time="">
+    </testcase>
+    <testcase name="testAlarmTriggeredByDoor" classname="platform:/resource/home_automation/test/home_automation.sctunit#home_automation.testAlarmTriggeredByDoor" time="">
+    </testcase>
+    <testcase name="testAlarmTriggeredByMotion" classname="platform:/resource/home_automation/test/home_automation.sctunit#home_automation.testAlarmTriggeredByMotion" time="">
+    </testcase>
+  </testsuite>
+  <testsuite name="additional_tests_jorrit" time="">
+    <testcase name="testLightAutomaticMode" classname="platform:/resource/home_automation/test/additional_tests_jorrit.sctunit#additional_tests_jorrit.testLightAutomaticMode" time="">
+    </testcase>
+    <testcase name="testAlarmNoTriggeredByCat" classname="platform:/resource/home_automation/test/additional_tests_jorrit.sctunit#additional_tests_jorrit.testAlarmNoTriggeredByCat" time="">
+    </testcase>
+    <testcase name="testArmedTurnOffLights" classname="platform:/resource/home_automation/test/additional_tests_jorrit.sctunit#additional_tests_jorrit.testArmedTurnOffLights" time="">
+    </testcase>
+    <testcase name="testDisarm" classname="platform:/resource/home_automation/test/additional_tests_jorrit.sctunit#additional_tests_jorrit.testDisarm" time="">
+    </testcase>
+    <testcase name="testPowerOffBasic" classname="platform:/resource/home_automation/test/additional_tests_jorrit.sctunit#additional_tests_jorrit.testPowerOffBasic" time="">
+    </testcase>
+    <testcase name="testPowerOffResume" classname="platform:/resource/home_automation/test/additional_tests_jorrit.sctunit#additional_tests_jorrit.testPowerOffResume" time="">
+    </testcase>
+    <testcase name="testPowerOffLight" classname="platform:/resource/home_automation/test/additional_tests_jorrit.sctunit#additional_tests_jorrit.testPowerOffLight" time="">
+    </testcase>
+  </testsuite>
+</testsuite>
