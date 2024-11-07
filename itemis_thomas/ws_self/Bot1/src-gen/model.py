@@ -15,10 +15,15 @@ class Model:
 		"""
 		(
 			main_region_stopped,
-			main_region_increase_speed,
-			main_region_decrease_speed,
+			main_region_manual,
+			main_region_manual_r1speed,
+			main_region_manual_r1speed_r1increase_speed,
+			main_region_manual_r1speed_r1decrease_speed,
+			main_region_manual_r1rotations,
+			main_region_manual_r1rotations_r1incr__rot__speed_right,
+			main_region_manual_r1rotations_r1incr__rot__speed_left,
 			null_state
-		) = range(4)
+		) = range(9)
 	
 	
 	class UserVar:
@@ -392,10 +397,23 @@ class Model:
 		s = state
 		if s == self.__State.main_region_stopped:
 			return self.__state_vector[0] == self.__State.main_region_stopped
-		if s == self.__State.main_region_increase_speed:
-			return self.__state_vector[0] == self.__State.main_region_increase_speed
-		if s == self.__State.main_region_decrease_speed:
-			return self.__state_vector[0] == self.__State.main_region_decrease_speed
+		if s == self.__State.main_region_manual:
+			return (self.__state_vector[0] >= self.__State.main_region_manual)\
+				and (self.__state_vector[0] <= self.__State.main_region_manual_r1rotations_r1incr__rot__speed_left)
+		if s == self.__State.main_region_manual_r1speed:
+			return (self.__state_vector[0] >= self.__State.main_region_manual_r1speed)\
+				and (self.__state_vector[0] <= self.__State.main_region_manual_r1speed_r1decrease_speed)
+		if s == self.__State.main_region_manual_r1speed_r1increase_speed:
+			return self.__state_vector[0] == self.__State.main_region_manual_r1speed_r1increase_speed
+		if s == self.__State.main_region_manual_r1speed_r1decrease_speed:
+			return self.__state_vector[0] == self.__State.main_region_manual_r1speed_r1decrease_speed
+		if s == self.__State.main_region_manual_r1rotations:
+			return (self.__state_vector[0] >= self.__State.main_region_manual_r1rotations)\
+				and (self.__state_vector[0] <= self.__State.main_region_manual_r1rotations_r1incr__rot__speed_left)
+		if s == self.__State.main_region_manual_r1rotations_r1incr__rot__speed_right:
+			return self.__state_vector[0] == self.__State.main_region_manual_r1rotations_r1incr__rot__speed_right
+		if s == self.__State.main_region_manual_r1rotations_r1incr__rot__speed_left:
+			return self.__state_vector[0] == self.__State.main_region_manual_r1rotations_r1incr__rot__speed_left
 		return False
 		
 	def __execute_queued_event(self, func):
@@ -410,19 +428,32 @@ class Model:
 		"""Entry action for state 'Stopped'..
 		"""
 		#Entry action for state 'Stopped'.
-		self.output.speed = 0
+		self.output.speed = 0.0
+		self.output.rotation = 0.0
 		
-	def __entry_action_main_region_increase_speed(self):
+	def __entry_action_main_region_manual_r1_speed_r1_increase_speed(self):
 		"""Entry action for state 'Increase speed'..
 		"""
 		#Entry action for state 'Increase speed'.
-		self.output.speed = (self.output.speed + 0.02)
+		self.output.speed = (self.output.speed + self.user_var.base_speed)
 		
-	def __entry_action_main_region_decrease_speed(self):
+	def __entry_action_main_region_manual_r1_speed_r1_decrease_speed(self):
 		"""Entry action for state 'Decrease Speed'..
 		"""
 		#Entry action for state 'Decrease Speed'.
-		self.output.speed = (self.output.speed - 0.02)
+		self.output.speed = (self.output.speed - self.user_var.base_speed)
+		
+	def __entry_action_main_region_manual_r1_rotations_r1_incr__rot__speed_right(self):
+		"""Entry action for state 'Incr. rot. speed right'..
+		"""
+		#Entry action for state 'Incr. rot. speed right'.
+		self.output.rotation = (self.output.rotation - self.user_var.base_rotation)
+		
+	def __entry_action_main_region_manual_r1_rotations_r1_incr__rot__speed_left(self):
+		"""Entry action for state 'Incr. rot. speed left'..
+		"""
+		#Entry action for state 'Incr. rot. speed left'.
+		self.output.rotation = (self.output.rotation + self.user_var.base_rotation)
 		
 	def __enter_sequence_main_region_stopped_default(self):
 		"""'default' enter sequence for state Stopped.
@@ -432,20 +463,36 @@ class Model:
 		self.__state_vector[0] = self.State.main_region_stopped
 		self.__state_conf_vector_changed = True
 		
-	def __enter_sequence_main_region_increase_speed_default(self):
+	def __enter_sequence_main_region_manual_r1_speed_r1_increase_speed_default(self):
 		"""'default' enter sequence for state Increase speed.
 		"""
 		#'default' enter sequence for state Increase speed
-		self.__entry_action_main_region_increase_speed()
-		self.__state_vector[0] = self.State.main_region_increase_speed
+		self.__entry_action_main_region_manual_r1_speed_r1_increase_speed()
+		self.__state_vector[0] = self.State.main_region_manual_r1speed_r1increase_speed
 		self.__state_conf_vector_changed = True
 		
-	def __enter_sequence_main_region_decrease_speed_default(self):
+	def __enter_sequence_main_region_manual_r1_speed_r1_decrease_speed_default(self):
 		"""'default' enter sequence for state Decrease Speed.
 		"""
 		#'default' enter sequence for state Decrease Speed
-		self.__entry_action_main_region_decrease_speed()
-		self.__state_vector[0] = self.State.main_region_decrease_speed
+		self.__entry_action_main_region_manual_r1_speed_r1_decrease_speed()
+		self.__state_vector[0] = self.State.main_region_manual_r1speed_r1decrease_speed
+		self.__state_conf_vector_changed = True
+		
+	def __enter_sequence_main_region_manual_r1_rotations_r1_incr__rot__speed_right_default(self):
+		"""'default' enter sequence for state Incr. rot. speed right.
+		"""
+		#'default' enter sequence for state Incr. rot. speed right
+		self.__entry_action_main_region_manual_r1_rotations_r1_incr__rot__speed_right()
+		self.__state_vector[0] = self.State.main_region_manual_r1rotations_r1incr__rot__speed_right
+		self.__state_conf_vector_changed = True
+		
+	def __enter_sequence_main_region_manual_r1_rotations_r1_incr__rot__speed_left_default(self):
+		"""'default' enter sequence for state Incr. rot. speed left.
+		"""
+		#'default' enter sequence for state Incr. rot. speed left
+		self.__entry_action_main_region_manual_r1_rotations_r1_incr__rot__speed_left()
+		self.__state_vector[0] = self.State.main_region_manual_r1rotations_r1incr__rot__speed_left
 		self.__state_conf_vector_changed = True
 		
 	def __enter_sequence_main_region_default(self):
@@ -460,17 +507,50 @@ class Model:
 		#Default exit sequence for state Stopped
 		self.__state_vector[0] = self.State.null_state
 		
-	def __exit_sequence_main_region_increase_speed(self):
+	def __exit_sequence_main_region_manual(self):
+		"""Default exit sequence for state Manual.
+		"""
+		#Default exit sequence for state Manual
+		self.__exit_sequence_main_region_manual_r1()
+		self.__state_vector[0] = self.State.null_state
+		
+	def __exit_sequence_main_region_manual_r1_speed(self):
+		"""Default exit sequence for state Speed.
+		"""
+		#Default exit sequence for state Speed
+		self.__exit_sequence_main_region_manual_r1_speed_r1()
+		self.__state_vector[0] = self.State.main_region_manual
+		
+	def __exit_sequence_main_region_manual_r1_speed_r1_increase_speed(self):
 		"""Default exit sequence for state Increase speed.
 		"""
 		#Default exit sequence for state Increase speed
-		self.__state_vector[0] = self.State.null_state
+		self.__state_vector[0] = self.State.main_region_manual_r1speed
 		
-	def __exit_sequence_main_region_decrease_speed(self):
+	def __exit_sequence_main_region_manual_r1_speed_r1_decrease_speed(self):
 		"""Default exit sequence for state Decrease Speed.
 		"""
 		#Default exit sequence for state Decrease Speed
-		self.__state_vector[0] = self.State.null_state
+		self.__state_vector[0] = self.State.main_region_manual_r1speed
+		
+	def __exit_sequence_main_region_manual_r1_rotations(self):
+		"""Default exit sequence for state Rotations.
+		"""
+		#Default exit sequence for state Rotations
+		self.__exit_sequence_main_region_manual_r1_rotations_r1()
+		self.__state_vector[0] = self.State.main_region_manual
+		
+	def __exit_sequence_main_region_manual_r1_rotations_r1_incr__rot__speed_right(self):
+		"""Default exit sequence for state Incr. rot. speed right.
+		"""
+		#Default exit sequence for state Incr. rot. speed right
+		self.__state_vector[0] = self.State.main_region_manual_r1rotations
+		
+	def __exit_sequence_main_region_manual_r1_rotations_r1_incr__rot__speed_left(self):
+		"""Default exit sequence for state Incr. rot. speed left.
+		"""
+		#Default exit sequence for state Incr. rot. speed left
+		self.__state_vector[0] = self.State.main_region_manual_r1rotations
 		
 	def __exit_sequence_main_region(self):
 		"""Default exit sequence for region main region.
@@ -479,10 +559,58 @@ class Model:
 		state = self.__state_vector[0]
 		if state == self.State.main_region_stopped:
 			self.__exit_sequence_main_region_stopped()
-		elif state == self.State.main_region_increase_speed:
-			self.__exit_sequence_main_region_increase_speed()
-		elif state == self.State.main_region_decrease_speed:
-			self.__exit_sequence_main_region_decrease_speed()
+		elif state == self.State.main_region_manual:
+			self.__exit_sequence_main_region_manual()
+		elif state == self.State.main_region_manual_r1speed:
+			self.__exit_sequence_main_region_manual_r1_speed()
+		elif state == self.State.main_region_manual_r1speed_r1increase_speed:
+			self.__exit_sequence_main_region_manual_r1_speed_r1_increase_speed()
+		elif state == self.State.main_region_manual_r1speed_r1decrease_speed:
+			self.__exit_sequence_main_region_manual_r1_speed_r1_decrease_speed()
+		elif state == self.State.main_region_manual_r1rotations:
+			self.__exit_sequence_main_region_manual_r1_rotations()
+		elif state == self.State.main_region_manual_r1rotations_r1incr__rot__speed_right:
+			self.__exit_sequence_main_region_manual_r1_rotations_r1_incr__rot__speed_right()
+		elif state == self.State.main_region_manual_r1rotations_r1incr__rot__speed_left:
+			self.__exit_sequence_main_region_manual_r1_rotations_r1_incr__rot__speed_left()
+		
+	def __exit_sequence_main_region_manual_r1(self):
+		"""Default exit sequence for region r1.
+		"""
+		#Default exit sequence for region r1
+		state = self.__state_vector[0]
+		if state == self.State.main_region_manual_r1speed:
+			self.__exit_sequence_main_region_manual_r1_speed()
+		elif state == self.State.main_region_manual_r1speed_r1increase_speed:
+			self.__exit_sequence_main_region_manual_r1_speed_r1_increase_speed()
+		elif state == self.State.main_region_manual_r1speed_r1decrease_speed:
+			self.__exit_sequence_main_region_manual_r1_speed_r1_decrease_speed()
+		elif state == self.State.main_region_manual_r1rotations:
+			self.__exit_sequence_main_region_manual_r1_rotations()
+		elif state == self.State.main_region_manual_r1rotations_r1incr__rot__speed_right:
+			self.__exit_sequence_main_region_manual_r1_rotations_r1_incr__rot__speed_right()
+		elif state == self.State.main_region_manual_r1rotations_r1incr__rot__speed_left:
+			self.__exit_sequence_main_region_manual_r1_rotations_r1_incr__rot__speed_left()
+		
+	def __exit_sequence_main_region_manual_r1_speed_r1(self):
+		"""Default exit sequence for region r1.
+		"""
+		#Default exit sequence for region r1
+		state = self.__state_vector[0]
+		if state == self.State.main_region_manual_r1speed_r1increase_speed:
+			self.__exit_sequence_main_region_manual_r1_speed_r1_increase_speed()
+		elif state == self.State.main_region_manual_r1speed_r1decrease_speed:
+			self.__exit_sequence_main_region_manual_r1_speed_r1_decrease_speed()
+		
+	def __exit_sequence_main_region_manual_r1_rotations_r1(self):
+		"""Default exit sequence for region r1.
+		"""
+		#Default exit sequence for region r1
+		state = self.__state_vector[0]
+		if state == self.State.main_region_manual_r1rotations_r1incr__rot__speed_right:
+			self.__exit_sequence_main_region_manual_r1_rotations_r1_incr__rot__speed_right()
+		elif state == self.State.main_region_manual_r1rotations_r1incr__rot__speed_left:
+			self.__exit_sequence_main_region_manual_r1_rotations_r1_incr__rot__speed_left()
 		
 	def __react_main_region__entry_default(self):
 		"""Default react sequence for initial entry .
@@ -505,12 +633,22 @@ class Model:
 		if transitioned_after < 0:
 			if self.computer.w_press:
 				self.__exit_sequence_main_region_stopped()
-				self.__enter_sequence_main_region_increase_speed_default()
+				self.__enter_sequence_main_region_manual_r1_speed_r1_increase_speed_default()
 				self.__react(0)
 				transitioned_after = 0
 			elif self.computer.x_press:
 				self.__exit_sequence_main_region_stopped()
-				self.__enter_sequence_main_region_decrease_speed_default()
+				self.__enter_sequence_main_region_manual_r1_speed_r1_decrease_speed_default()
+				self.__react(0)
+				transitioned_after = 0
+			elif self.computer.d_press:
+				self.__exit_sequence_main_region_stopped()
+				self.__enter_sequence_main_region_manual_r1_rotations_r1_incr__rot__speed_right_default()
+				self.__react(0)
+				transitioned_after = 0
+			elif self.computer.a_press:
+				self.__exit_sequence_main_region_stopped()
+				self.__enter_sequence_main_region_manual_r1_rotations_r1_incr__rot__speed_left_default()
 				self.__react(0)
 				transitioned_after = 0
 		#If no transition was taken
@@ -520,54 +658,137 @@ class Model:
 		return transitioned_after
 	
 	
-	def __main_region_increase_speed_react(self, transitioned_before):
-		"""Implementation of __main_region_increase_speed_react function.
+	def __main_region_manual_react(self, transitioned_before):
+		"""Implementation of __main_region_manual_react function.
+		"""
+		#The reactions of state Manual.
+		transitioned_after = transitioned_before
+		if transitioned_after < 0:
+			if self.computer.s_press:
+				self.__exit_sequence_main_region_manual()
+				self.__enter_sequence_main_region_stopped_default()
+				self.__react(0)
+				transitioned_after = 0
+		#If no transition was taken
+		if transitioned_after == transitioned_before:
+			#then execute local reactions.
+			transitioned_after = self.__react(transitioned_before)
+		return transitioned_after
+	
+	
+	def __main_region_manual_r1_speed_react(self, transitioned_before):
+		"""Implementation of __main_region_manual_r1_speed_react function.
+		"""
+		#The reactions of state Speed.
+		transitioned_after = transitioned_before
+		#If no transition was taken
+		if transitioned_after == transitioned_before:
+			#then execute local reactions.
+			transitioned_after = self.__main_region_manual_react(transitioned_before)
+		return transitioned_after
+	
+	
+	def __main_region_manual_r1_speed_r1_increase_speed_react(self, transitioned_before):
+		"""Implementation of __main_region_manual_r1_speed_r1_increase_speed_react function.
 		"""
 		#The reactions of state Increase speed.
 		transitioned_after = transitioned_before
 		if transitioned_after < 0:
-			if self.computer.w_press:
-				self.__exit_sequence_main_region_increase_speed()
-				self.__enter_sequence_main_region_increase_speed_default()
-				self.__react(0)
-				transitioned_after = 0
-			elif self.computer.s_press:
-				self.__exit_sequence_main_region_increase_speed()
-				self.__enter_sequence_main_region_stopped_default()
-				self.__react(0)
+			if (self.computer.w_press) and (self.output.speed < (self.base_values.max_speed - self.user_var.base_speed)):
+				self.__exit_sequence_main_region_manual_r1_speed_r1_increase_speed()
+				self.__enter_sequence_main_region_manual_r1_speed_r1_increase_speed_default()
+				self.__main_region_manual_r1_speed_react(0)
 				transitioned_after = 0
 			elif self.computer.x_press:
-				self.__exit_sequence_main_region_increase_speed()
-				self.__enter_sequence_main_region_decrease_speed_default()
-				self.__react(0)
+				self.__exit_sequence_main_region_manual_r1_speed_r1_increase_speed()
+				self.__enter_sequence_main_region_manual_r1_speed_r1_decrease_speed_default()
+				self.__main_region_manual_r1_speed_react(0)
 				transitioned_after = 0
 		#If no transition was taken
 		if transitioned_after == transitioned_before:
 			#then execute local reactions.
-			transitioned_after = self.__react(transitioned_before)
+			transitioned_after = self.__main_region_manual_r1_speed_react(transitioned_before)
 		return transitioned_after
 	
 	
-	def __main_region_decrease_speed_react(self, transitioned_before):
-		"""Implementation of __main_region_decrease_speed_react function.
+	def __main_region_manual_r1_speed_r1_decrease_speed_react(self, transitioned_before):
+		"""Implementation of __main_region_manual_r1_speed_r1_decrease_speed_react function.
 		"""
 		#The reactions of state Decrease Speed.
 		transitioned_after = transitioned_before
 		if transitioned_after < 0:
-			if self.computer.x_press:
-				self.__exit_sequence_main_region_decrease_speed()
-				self.__enter_sequence_main_region_decrease_speed_default()
-				self.__react(0)
+			if (self.computer.x_press) and (self.output.speed > (-(self.base_values.max_speed) + self.user_var.base_speed)):
+				self.__exit_sequence_main_region_manual_r1_speed_r1_decrease_speed()
+				self.__enter_sequence_main_region_manual_r1_speed_r1_decrease_speed_default()
+				self.__main_region_manual_r1_speed_react(0)
 				transitioned_after = 0
 			elif self.computer.w_press:
-				self.__exit_sequence_main_region_decrease_speed()
-				self.__enter_sequence_main_region_increase_speed_default()
-				self.__react(0)
+				self.__exit_sequence_main_region_manual_r1_speed_r1_decrease_speed()
+				self.__enter_sequence_main_region_manual_r1_speed_r1_increase_speed_default()
+				self.__main_region_manual_r1_speed_react(0)
 				transitioned_after = 0
 		#If no transition was taken
 		if transitioned_after == transitioned_before:
 			#then execute local reactions.
-			transitioned_after = self.__react(transitioned_before)
+			transitioned_after = self.__main_region_manual_r1_speed_react(transitioned_before)
+		return transitioned_after
+	
+	
+	def __main_region_manual_r1_rotations_react(self, transitioned_before):
+		"""Implementation of __main_region_manual_r1_rotations_react function.
+		"""
+		#The reactions of state Rotations.
+		transitioned_after = transitioned_before
+		#If no transition was taken
+		if transitioned_after == transitioned_before:
+			#then execute local reactions.
+			transitioned_after = self.__main_region_manual_react(transitioned_before)
+		return transitioned_after
+	
+	
+	def __main_region_manual_r1_rotations_r1_incr__rot__speed_right_react(self, transitioned_before):
+		"""Implementation of __main_region_manual_r1_rotations_r1_incr__rot__speed_right_react function.
+		"""
+		#The reactions of state Incr. rot. speed right.
+		transitioned_after = transitioned_before
+		if transitioned_after < 0:
+			if (self.computer.d_press) and (self.output.rotation > (-(self.base_values.max_rotation) + self.user_var.base_rotation)):
+				self.__exit_sequence_main_region_manual_r1_rotations_r1_incr__rot__speed_right()
+				self.__enter_sequence_main_region_manual_r1_rotations_r1_incr__rot__speed_right_default()
+				self.__main_region_manual_r1_rotations_react(0)
+				transitioned_after = 0
+			elif self.computer.a_press:
+				self.__exit_sequence_main_region_manual_r1_rotations_r1_incr__rot__speed_right()
+				self.__enter_sequence_main_region_manual_r1_rotations_r1_incr__rot__speed_left_default()
+				self.__main_region_manual_r1_rotations_react(0)
+				transitioned_after = 0
+		#If no transition was taken
+		if transitioned_after == transitioned_before:
+			#then execute local reactions.
+			transitioned_after = self.__main_region_manual_r1_rotations_react(transitioned_before)
+		return transitioned_after
+	
+	
+	def __main_region_manual_r1_rotations_r1_incr__rot__speed_left_react(self, transitioned_before):
+		"""Implementation of __main_region_manual_r1_rotations_r1_incr__rot__speed_left_react function.
+		"""
+		#The reactions of state Incr. rot. speed left.
+		transitioned_after = transitioned_before
+		if transitioned_after < 0:
+			if (self.computer.a_press) and (self.output.rotation < (self.base_values.max_rotation - self.user_var.base_rotation)):
+				self.__exit_sequence_main_region_manual_r1_rotations_r1_incr__rot__speed_left()
+				self.__enter_sequence_main_region_manual_r1_rotations_r1_incr__rot__speed_left_default()
+				self.__main_region_manual_r1_rotations_react(0)
+				transitioned_after = 0
+			elif self.computer.d_press:
+				self.__exit_sequence_main_region_manual_r1_rotations_r1_incr__rot__speed_left()
+				self.__enter_sequence_main_region_manual_r1_rotations_r1_incr__rot__speed_right_default()
+				self.__main_region_manual_r1_rotations_react(0)
+				transitioned_after = 0
+		#If no transition was taken
+		if transitioned_after == transitioned_before:
+			#then execute local reactions.
+			transitioned_after = self.__main_region_manual_r1_rotations_react(transitioned_before)
 		return transitioned_after
 	
 	
@@ -588,10 +809,14 @@ class Model:
 		state = self.__state_vector[0]
 		if state == self.State.main_region_stopped:
 			self.__main_region_stopped_react(-1)
-		elif state == self.State.main_region_increase_speed:
-			self.__main_region_increase_speed_react(-1)
-		elif state == self.State.main_region_decrease_speed:
-			self.__main_region_decrease_speed_react(-1)
+		elif state == self.State.main_region_manual_r1speed_r1increase_speed:
+			self.__main_region_manual_r1_speed_r1_increase_speed_react(-1)
+		elif state == self.State.main_region_manual_r1speed_r1decrease_speed:
+			self.__main_region_manual_r1_speed_r1_decrease_speed_react(-1)
+		elif state == self.State.main_region_manual_r1rotations_r1incr__rot__speed_right:
+			self.__main_region_manual_r1_rotations_r1_incr__rot__speed_right_react(-1)
+		elif state == self.State.main_region_manual_r1rotations_r1incr__rot__speed_left:
+			self.__main_region_manual_r1_rotations_r1_incr__rot__speed_left_react(-1)
 	
 	
 	def run_cycle(self):
