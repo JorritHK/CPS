@@ -1,6 +1,6 @@
 
 
-
-
+itemisWS/.metadata/*
+*.metadata*
 # MAC
 .DS_Store
