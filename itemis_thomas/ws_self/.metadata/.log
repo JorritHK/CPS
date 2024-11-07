@@ -1,0 +1,18 @@
+!SESSION 2024-11-07 10:17:31.476 -----------------------------------------------
+eclipse.buildId=5.2.2.202403211005
+java.version=17.0.10
+java.vendor=Eclipse Adoptium
+BootLoader constants: OS=linux, ARCH=x86_64, WS=gtk, NL=en_US
+Command-line arguments:  -os linux -ws gtk -arch x86_64
+
+!ENTRY com.yakindu.licmgmt.ui 4 0 2024-11-07 10:18:09.478
+!MESSAGE An error occured when trying to acquire the selected license.
+
+!ENTRY com.yakindu.licmgmt.ui 4 0 2024-11-07 10:18:12.916
+!MESSAGE An error occured when trying to acquire the selected license.
+
+!ENTRY com.yakindu.licmgmt.ui 4 0 2024-11-07 10:18:26.521
+!MESSAGE An error occured when trying to acquire the selected license.
+
+!ENTRY com.yakindu.licmgmt.ui 4 0 2024-11-07 10:18:30.946
+!MESSAGE An error occured when trying to acquire the selected license.

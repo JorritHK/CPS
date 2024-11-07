@@ -1,0 +1,186 @@
+Turtlebot lab
+=============
+
+Assignment Introduction
+~~~~~~~~~~~~~~~~~~~~~~~
+You need to create a state chart model for the final lab assignment that lets a turtlebot explore and map a maze. You will make this state chart with the Itemis Create Chart Tools (``itemisCREATE``) and execute it on a Turtlebot3 running the robot operating system ``ROS2``.
+
+You will need to form groups of five to work on this assignment together. It's a good idea to divide the work within your team based on the different subtasks of the project. Examples of these subtasks are manual control, maze exploration algorithm, wall detection, calibration and grid updating.
+
+The cool thing about the turtlebot robot is that we have a simulation environment. You don't always need a turtlebot to test your code. You can use the simulator when a turtlebot is not available.
+
+For this lab, we have six Turtlebots. A Turtlebot consists of:
+
+- A raspberry pi that runs Ubuntu 20.04.
+- A Single Board Computer (SBC) that controls the sensors and the motors.
+- A 360 Lidar scanner to detect objects up to 4m away.
+- An IMU (inertial measurement unit) to detect roll, pitch and yaw.
+- An odometer to record movement in the x and y-direction.
+- Stepper motors that drive the left and right wheels.
+
+In this demo, I will first show the output of the sensors of the turtlebot. Then we will create a tiny state chart to control a virtual turtlebot in the gazebo simulator. And finally, we will control a real turtlebot using the same state chart model. 
+
+Quick turtlebot hardware demo
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+In this section, I will show the output of the turtlebot sensors. The prompt shows if the command is executed on the host laptop (``user@laptop:~$``), on the turtlebot (``ubuntu@ubuntu:~$``) or on the VM (``user@vm:~$``). The current working directory is shown before the '``$``' where '``~``' indicates the home directory.
+
+First, we connect the laptop to the lab router '``TP-LINK_8D52``' with the Wi-Fi password: 20406301
+
+Then we connect the battery cable on the turtlebot and turn it on with the switch on the SBC board. Booting the turtlebot takes about half a minute.
+The ``ip`` addresses of the turtlebots are::
+
+    Turtlebot 1: 192.168.0.101
+    Turtlebot 2: 192.168.0.102
+    Turtlebot 3: 192.168.0.103
+    Turtlebot 4: 192.168.0.104
+    Turtlebot 5: 192.168.0.105
+    Turtlebot 6: 192.168.0.106
+
+We start an SSH shell from the laptop into the turtlebot as user ``ubuntu`` with password ``essess``. For turtlebot 1 the ``ssh`` command is::
+
+    user@laptop:~$ ssh ubuntu@192.168.0.101    # with essess as password
+
+Since all the turtlebots are on the same Wi-Fi network, each turtlebot needs to run in its own ros domain. That way, they won't interfere with each other. The ros domain is controlled with the ROS_DOMAIN_ID environment variable. The ros domain of a turtlebot will match its name, so turtlebot 1 has ros domain id 1, turtlebot 2 has ros domain id 2 and so on. To check the ros domain of turtlebot 1, type the following command in the ssh shell running on the turtlebot::
+
+    ubuntu@ubuntu:~$ env | grep ROS
+    ROS_DOMAIN_ID=1
+    ...
+
+So turtlebot 1 indeed has a ros domain id of 1. Ros instances in the same domain will be able to talk to each other. Because we want to show the sensor information of the turtlebot from our laptop, we should also set the ros domain of the laptop to 1. We do this by typing the following command in a new terminal on the laptop (not in the ssh shell!)::
+
+    user@laptop:~$ export ROS_DOMAIN_ID=1
+
+Now we start a special ros node on the turtlebot. This ros node exposes all the functionality (sensor data and motor control) of this turtlebot in the ros domain 1. We start the ros node by typing the following command in the ssh shell on the turtlebot::
+
+    ubuntu@ubuntu:~$ ros2 launch turtlebot3_bringup robot.launch.py
+
+The bringup command initializes the robot's sensors such as the LiDAR, IMU (Inertial Measurement Unit) and odometer. It then starts ROS services that are responsible for motor control and sensor data processing. We can now take control of the turtlebot on the laptop by connecting to the motor control ros node with the command::
+
+    user@laptop:~$ ros2 run turtlebot3_teleop teleop_keyboard
+
+We can also check all the sensor data that the turtlebot publishes via these ros nodes with the laptop command::
+
+    user@laptop:~$ ros2 topic list
+
+We can for example query the battery status by subscribing to the `battery_state` topic with::
+
+    user@laptop:~$ ros2 topic echo /battery_state
+
+Or the lidar scanner data with::
+    
+    user@laptop:~$ ros2 topic echo /scan
+
+To visualize the laser scan data and the IMU data, type the following command in the local terminal on your laptop::
+
+    user@laptop:~$ ros2 launch turtlebot3_bringup rviz2.launch.py
+
+The laser data is shown as coloured dots, and the IMU data is shown as three arrows for the yaw, pitch and roll of the turtlebot.
+
+When you are done experimenting with the turtlebot, don't just switch it off! First type Control-C to stop bringup command and shut it down properly with the following command in the ssh shell::
+
+    ubuntu@ubuntu:~$ sudo shutdown now
+
+It takes around 30 seconds to shutdown. When the leds stop blinking and only two led remain lid, turn off the turtlebot with the power switch on the front. Now the turtlebot is fully shutdown. *Not following this procedure can damage the turtlebot!*
+
+Controlling a turtlebot with a state chart model
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Let's create a small state chart model and use it to control a virtual turtlebot in the simulator.
+The workflow for creating state charts models and running them on a turtlebot is shown in the figure below:
+
+.. image:: images/work_flow.png
+   :width: 1400
+   :alt: state chart to controlling turtle workflow
+
+You first create a state chart model in itemisCREATE in a state chart project that contains our SCT interface, as shown on the left of the image above. From this state chart model, a python file ``model.py`` with state chart code is generated when the model is saved, as shown on the right of the image. To run this python state chart code, we run the file ``main.py``, which executes the state chart code and provides the connection to the ros node to control the virtual or physical turtlebot. 
+
+Let's start by creating a tiny state chart that will allow us to move the turtlebot forward. Start the VM. You should login as the user '``ubuntu``' (password ``ubuntu``). Start itemisCREATE by typing the command ``itemisCREATE`` in a terminal. itemisCREATE starts in a workspace called ``cps`` with a Bot1 project, and the state chart file 'Statechart.ysc' is already open. This Bot1 project is a itemisCREATE state chart project containing the SCT interface used to control the turtlebot and read its sensor data. The interface documentation can be found in the ``SCT_interface_manual.pdf`` on Canvas.
+Canvas also contains the ``Bot1.zip`` file that you can import as a new itemisCREATE project. You will only do this if you want to start with a fresh copy of the project. In case you want to create a fresh copy in a different workplace, click ``import->general->'Existing projects into workspace'`` and when prompted, select the zip archive ``Bot1.zip``.
+
+Create the following state chart model in itemisCREATE:
+
+.. image:: images/example_statechart.png
+   :width: 1400
+   :alt: small state chart to show the workflow
+
+
+This state goes from the ``Stopped`` state to the ``Move forward`` state when the ``computer.w_press`` event is triggered by pressing the w + enter key. When the state chart is saved, itemisCREATE will automatically generate the file ``model.py`` containing python code that implements the state chart model. You should see the message '``Generating model to target project Bot1 ... model done``' in the SCT console when this is successful.
+If there are errors, no python code is generated, and the errors will be shown as red crosses in the state chart and in the ``Problems`` tab at the bottom of the screen.
+A new version of the 'model.py' python file with state chart code is now created in the directory
+'``~/itemisCREATE/ws/Bot1/src-gen``'.
+Check if the timestamp has been updated because sometimes the model.py file is not overwritten. If this happens, remove the ``model.py`` file, modify the state chart and save it again. You can also force python code generation by right-clicking on 'Statechart.sgen' in the project explorer window and selecting '``Generate Code artifacts``'
+
+If the state chart editor is acting strange (eg. you cannot delete an edge or a state), close the state chart file '``Statechart.ysc``' and reopen it in the project explorer on the left of the screen.
+
+Now we can simulate the turtlebot running the state chart python code. We need two terminals, both with the ROS_DOMAIN_ID environment variable set to the same value so the programs in these terminals can exchange ros messages with each other. In the VM, the ros environment variables are set in '``~/.bashrc``' and the ros domain id is set to 1 in all terminals. Start the gazebo simulator in the first terminal with the command::
+
+    user@vm:~$ ros2 launch turtlebot3_gazebo empty_world.launch.py
+
+The simulator will show a screen with an empty plane with a turtlebot. In the second terminal, change to the directory with the generated python code::
+
+    user@vm:~$ cd ~/itemisCREATE/ws/Bot1/src-gen
+
+And from there, start the state chart driver main.py with::
+
+    user@vm:~/src-gen$ python3 main.py
+
+Focus on the second terminal and type '``w``' + ``enter`` to move the turtlebot forward in the simulator for one second. Repeat until you are bored.
+
+Controlling a real turtlebot with a state chart model
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Now let's run the same generated python state chart code on a real turtlebot! The easiest way is to copy the '``src-gen``' directory from the '``~/itemisCREATE/ws/Bot1/``' directory in the VM to the host system (your laptop). One way to do this is to create a shared directory between the VM and the host system. It should then show up in the shared directory in the host system.
+Now copy the file '``src-gen``' directory from that shared directory on the host system to turtlebot 1 with the command::
+
+    user@laptop:~/shared$ scp -r src-gen ubuntu@192.168.0.101:
+
+We need two ssh shells on the turtlebot, so create two new terminals on your host and run this ssh command in both of them::
+
+    user@laptop:~$ ssh ubuntu@192.168.0.101
+
+Start the ros node in the first ssh shell with the command::
+
+    ubuntu@ubuntu:~$ ros2 launch turtlebot3_bringup robot.launch.py
+
+In the second ssh shell go to the ``src-gen`` directory::
+
+    ubuntu@ubuntu:~$ cd ~/Bot1/src-gen
+
+And then start the chart driver code just as we did for the simulation::
+
+    ubuntu@ubuntu:~/Bot1/src-gen$ python3 main.py
+
+You can now control the real turtlebot by typing the '``w``' key + ``enter`` in the second ssh shell.
+
+Maze exploration
+~~~~~~~~~~~~~~~~
+
+When you want to test your turtlebot in a maze in the gazebo simulator, you  first need to unpack the ``maze_world.tgz`` file that you can download from Canvas::
+
+    user@vm:~$ tar xf maze_world.tgz
+    user@vm:~$ cd maze_world
+
+Then you can use the ``maze_generator`` to create a new maze::
+
+    user@vm:~/mazeworld$ ./maze_generator.py
+    user@vm:~/mazeworld$ cp model.sdf maze_model
+
+And finally you can start the simulator from the ``maze_world`` directory::
+
+    user@vm:~/mazeworld$ ros2 launch maze_world.launch.py
+
+Every time you register the walls in a specific maze location (see the SCT interface documentation for more details), the python code will generate a new version of the file '``map_generation.png``' in the ``src-gen`` directory that shows the current view of the maze. If you open this file in a viewer such as '``sxiv``' (which you can install with: ``sudo apt install sxiv``), you can keep track of the model of the maze that is being created with::
+
+    user@vm:~/src-gen$ sxiv map_generation.png
+
+If you are using an actual turtlebot in a real maze, start the ssh shell with a graphical connection with the ssh command using the ``-X`` option::
+
+    user@laptop:~$ ssh -X ubuntu@192.168.0.101
+
+With a graphical ssh connection, you should be able to open the image viewer on the turtlebot and get the image file '``map_generation.png``' displayed on your laptop.
+
+itemisCREATE license server
+---------------------------
+itemisCREATE is a commercial software product that needs a valid license. We have a license server that provides you with a license for this course. itemisCREATE sometimes forgets its license settings so you will occasionally need to re-enter them in the ``Window->Preferences->Yakindu licenses`` window. The address of the license server is: ``pcs-lm-01.lab.uvalight.net``. Select both licenses with tick marks.  You should now see "Standard Features Expires in 2XX days Floating" with a borrow option.
+You might need to click the ``retry`` button to get a valid license.
+
+itemisCREATE is easy to install so you can also choose to install natively on your laptop. This makes it run faster. You can find the tar file on the Canvas course page. You can use the same license server settings.
