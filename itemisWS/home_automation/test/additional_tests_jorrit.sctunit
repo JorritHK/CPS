@@ -73,6 +73,21 @@ testclass additional_tests_jorrit for statechart Statechart {
 	}
 	
 	@Test
+	operation testAlarmTurnOnLights() {
+		enter
+		// Arm the alarm
+		raise control_panel.alarm
+		proceed cons.arming_delay s
+		// Check lights are turned off
+		assert state.light == false
+		
+		raise sensors.window
+		assert state.siren
+		assert state.light == true
+		exit
+	}
+	
+	@Test
 	operation testDisarm() {
 		enter
 		// Arm the alarm
