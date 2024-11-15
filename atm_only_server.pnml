@@ -5,228 +5,6 @@
       <text>card inserted</text>
     </name>
     <graphics />
-    <transition id="tr40">
-      <name>
-        <text>card inserted</text>
-      </name>
-      <graphics>
-        <position x="775" y="165" />
-        <dimension x="32" y="32" />
-      </graphics>
-    </transition>
-    <transition id="tr41">
-      <name>
-        <text>invalid</text>
-      </name>
-      <graphics>
-        <position x="874" y="264" />
-        <dimension x="32" y="32" />
-      </graphics>
-    </transition>
-    <transition id="tr42">
-      <name>
-        <text>valid confirm</text>
-      </name>
-      <graphics>
-        <position x="775" y="402" />
-        <dimension x="32" y="32" />
-      </graphics>
-    </transition>
-    <transition id="tr43">
-      <name>
-        <text>enter PIN</text>
-      </name>
-      <graphics>
-        <position x="775" y="528" />
-        <dimension x="32" y="32" />
-      </graphics>
-    </transition>
-    <transition id="tr44">
-      <name>
-        <text>incorrect PIN</text>
-      </name>
-      <graphics>
-        <position x="907" y="561" />
-        <dimension x="32" y="32" />
-      </graphics>
-    </transition>
-    <transition id="tr46">
-      <name>
-        <text>correct PIN</text>
-      </name>
-      <graphics>
-        <position x="775" y="660" />
-        <dimension x="32" y="32" />
-      </graphics>
-    </transition>
-    <transition id="tr47">
-      <name>
-        <text>withdrawChosen</text>
-      </name>
-      <graphics>
-        <position x="742" y="1155" />
-        <dimension x="32" y="32" />
-      </graphics>
-    </transition>
-    <transition id="tr48">
-      <name>
-        <text>balance check complete</text>
-      </name>
-      <graphics>
-        <position x="1074" y="1349" />
-        <dimension x="32" y="32" />
-      </graphics>
-    </transition>
-    <transition id="tr50">
-      <name>
-        <text>insufficient</text>
-      </name>
-      <graphics>
-        <position x="738" y="1457" />
-        <dimension x="32" y="32" />
-      </graphics>
-    </transition>
-    <transition id="tr51">
-      <name>
-        <text>checkChosen</text>
-      </name>
-      <graphics>
-        <position x="676" y="891" />
-        <dimension x="32" y="32" />
-      </graphics>
-    </transition>
-    <transition id="tr52">
-      <name>
-        <text>end session</text>
-      </name>
-      <graphics>
-        <position x="993" y="823" />
-        <dimension x="32" y="32" />
-      </graphics>
-    </transition>
-    <transition id="tr53">
-      <name>
-        <text>deposited</text>
-      </name>
-      <graphics>
-        <position x="1038" y="1099" />
-        <dimension x="32" y="32" />
-      </graphics>
-    </transition>
-    <transition id="tr55">
-      <name>
-        <text>retry</text>
-      </name>
-      <graphics>
-        <position x="842" y="1664" />
-        <dimension x="32" y="32" />
-      </graphics>
-    </transition>
-    <transition id="tr56">
-      <name>
-        <text>terminate</text>
-      </name>
-      <graphics>
-        <position x="1140" y="1726" />
-        <dimension x="32" y="32" />
-      </graphics>
-    </transition>
-    <transition id="tr39">
-      <graphics>
-        <position x="775" y="924" />
-        <dimension x="32" y="32" />
-      </graphics>
-    </transition>
-    <transition id="tr23">
-      <name>
-        <text>valid</text>
-      </name>
-      <graphics>
-        <position x="775" y="330" />
-        <dimension x="32" y="32" />
-      </graphics>
-    </transition>
-    <transition id="tr27">
-      <name>
-        <text>invalid confirm</text>
-      </name>
-      <graphics>
-        <position x="940" y="198" />
-        <dimension x="32" y="32" />
-      </graphics>
-    </transition>
-    <transition id="tr1">
-      <graphics>
-        <position x="841" y="447" />
-        <dimension x="32" y="32" />
-      </graphics>
-    </transition>
-    <transition id="tr36">
-      <name>
-        <text>confirm PIN</text>
-      </name>
-      <graphics>
-        <position x="775" y="725" />
-        <dimension x="32" y="32" />
-      </graphics>
-    </transition>
-    <transition id="tr57">
-      <graphics>
-        <position x="992" y="730" />
-        <dimension x="32" y="32" />
-      </graphics>
-    </transition>
-    <transition id="tr64">
-      <name>
-        <text>confirm deposited</text>
-      </name>
-      <graphics>
-        <position x="1038" y="1037" />
-        <dimension x="32" y="32" />
-      </graphics>
-    </transition>
-    <transition id="tr71">
-      <name>
-        <text>confirm withdraw</text>
-      </name>
-      <graphics>
-        <position x="742" y="1221" />
-        <dimension x="32" y="32" />
-      </graphics>
-    </transition>
-    <transition id="tr79">
-      <name>
-        <text>confirm</text>
-      </name>
-      <graphics>
-        <position x="1072" y="1264" />
-        <dimension x="32" y="32" />
-      </graphics>
-    </transition>
-    <transition id="tr85">
-      <graphics>
-        <position x="739" y="1531" />
-        <dimension x="32" y="32" />
-      </graphics>
-    </transition>
-    <transition id="tr37">
-      <name>
-        <text>confirm retry</text>
-      </name>
-      <graphics>
-        <position x="938" y="1613" />
-        <dimension x="32" y="32" />
-      </graphics>
-    </transition>
-    <transition id="tr3">
-      <name>
-        <text>confirm terminate</text>
-      </name>
-      <graphics>
-        <position x="1137" y="1560" />
-        <dimension x="32" y="32" />
-      </graphics>
-    </transition>
     <transition id="tr103">
       <name>
         <text>card inserted</text>
@@ -605,108 +383,12 @@
         <text>0</text>
       </initialMarking>
     </place>
-    <place id="pl7">
-      <name>
-        <text>idle</text>
-      </name>
-      <graphics>
-        <position x="874" y="99" />
-        <dimension x="20" y="20" />
-      </graphics>
-      <initialMarking>
-        <text>1</text>
-      </initialMarking>
-    </place>
-    <place id="pl9">
-      <name>
-        <text>checking card</text>
-      </name>
-      <graphics>
-        <position x="775" y="231" />
-        <dimension x="20" y="20" />
-      </graphics>
-      <initialMarking>
-        <text>0</text>
-      </initialMarking>
-    </place>
-    <place id="pl10">
-      <name>
-        <text>Waiting for PIN</text>
-      </name>
-      <graphics>
-        <position x="775" y="447" />
-        <dimension x="20" y="20" />
-      </graphics>
-      <initialMarking>
-        <text>0</text>
-      </initialMarking>
-    </place>
-    <place id="pl14">
-      <name>
-        <text>PIN Checking</text>
-      </name>
-      <graphics>
-        <position x="775" y="627" />
-        <dimension x="20" y="20" />
-      </graphics>
-      <initialMarking>
-        <text>0</text>
-      </initialMarking>
-    </place>
-    <place id="pl21">
-      <name>
-        <text>Operational</text>
-      </name>
-      <graphics>
-        <position x="874" y="891" />
-        <dimension x="20" y="20" />
-      </graphics>
-      <initialMarking>
-        <text>0</text>
-      </initialMarking>
-    </place>
-    <place id="pl24">
-      <name>
-        <text>checking Balance</text>
-      </name>
-      <graphics>
-        <position x="740" y="1415" />
-        <dimension x="20" y="20" />
-      </graphics>
-      <initialMarking>
-        <text>0</text>
-      </initialMarking>
-    </place>
-    <place id="pl27">
-      <name>
-        <text>FAULT</text>
-      </name>
-      <graphics>
-        <position x="739" y="1760" />
-        <dimension x="20" y="20" />
-      </graphics>
-      <initialMarking>
-        <text>0</text>
-      </initialMarking>
-    </place>
     <place id="pl8">
       <name>
         <text>iCheckBalanceServerACK</text>
       </name>
       <graphics>
         <position x="577" y="957" />
-        <dimension x="20" y="20" />
-      </graphics>
-      <initialMarking>
-        <text>0</text>
-      </initialMarking>
-    </place>
-    <place id="pl31">
-      <name>
-        <text>check Balance</text>
-      </name>
-      <graphics>
-        <position x="676" y="990" />
         <dimension x="20" y="20" />
       </graphics>
       <initialMarking>
@@ -749,51 +431,12 @@
         <text>0</text>
       </initialMarking>
     </place>
-    <place id="pl22">
-      <graphics>
-        <position x="775" y="363" />
-        <dimension x="20" y="20" />
-      </graphics>
-      <initialMarking>
-        <text>0</text>
-      </initialMarking>
-    </place>
-    <place id="pl25">
-      <graphics>
-        <position x="940" y="264" />
-        <dimension x="20" y="20" />
-      </graphics>
-      <initialMarking>
-        <text>0</text>
-      </initialMarking>
-    </place>
-    <place id="pl26">
-      <name>
-        <text>confirm incorrect</text>
-      </name>
-      <graphics>
-        <position x="907" y="447" />
-        <dimension x="20" y="20" />
-      </graphics>
-      <initialMarking>
-        <text>0</text>
-      </initialMarking>
-    </place>
     <place id="pl28">
       <name>
         <text>rACKPIN</text>
       </name>
       <graphics>
         <position x="577" y="726" />
-        <dimension x="20" y="20" />
-      </graphics>
-      <initialMarking>
-        <text>0</text>
-      </initialMarking>
-    </place>
-    <place id="pl29">
-      <graphics>
-        <position x="775" y="693" />
         <dimension x="20" y="20" />
       </graphics>
       <initialMarking>
@@ -812,39 +455,12 @@
         <text>0</text>
       </initialMarking>
     </place>
-    <place id="pl41">
-      <graphics>
-        <position x="993" y="781" />
-        <dimension x="20" y="20" />
-      </graphics>
-      <initialMarking>
-        <text>0</text>
-      </initialMarking>
-    </place>
     <place id="pl61">
       <name>
         <text>rdepositACK</text>
       </name>
       <graphics>
         <position x="577" y="1039" />
-        <dimension x="20" y="20" />
-      </graphics>
-      <initialMarking>
-        <text>0</text>
-      </initialMarking>
-    </place>
-    <place id="pl62">
-      <graphics>
-        <position x="1038" y="1070" />
-        <dimension x="20" y="20" />
-      </graphics>
-      <initialMarking>
-        <text>0</text>
-      </initialMarking>
-    </place>
-    <place id="pl68">
-      <graphics>
-        <position x="742" y="1188" />
         <dimension x="20" y="20" />
       </graphics>
       <initialMarking>
@@ -875,24 +491,6 @@
         <text>0</text>
       </initialMarking>
     </place>
-    <place id="pl77">
-      <graphics>
-        <position x="1073" y="1307" />
-        <dimension x="20" y="20" />
-      </graphics>
-      <initialMarking>
-        <text>0</text>
-      </initialMarking>
-    </place>
-    <place id="pl83">
-      <graphics>
-        <position x="736" y="1491" />
-        <dimension x="20" y="20" />
-      </graphics>
-      <initialMarking>
-        <text>0</text>
-      </initialMarking>
-    </place>
     <place id="pl88">
       <name>
         <text>rbalanceNACK</text>
@@ -905,30 +503,12 @@
         <text>0</text>
       </initialMarking>
     </place>
-    <place id="pl33">
-      <graphics>
-        <position x="938" y="1662" />
-        <dimension x="20" y="20" />
-      </graphics>
-      <initialMarking>
-        <text>0</text>
-      </initialMarking>
-    </place>
     <place id="pl42">
       <name>
         <text>faultRetryACK</text>
       </name>
       <graphics>
         <position x="576" y="1611" />
-        <dimension x="20" y="20" />
-      </graphics>
-      <initialMarking>
-        <text>0</text>
-      </initialMarking>
-    </place>
-    <place id="pl35">
-      <graphics>
-        <position x="1138" y="1626" />
         <dimension x="20" y="20" />
       </graphics>
       <initialMarking>
@@ -1201,249 +781,127 @@
         </graphics>
       </comment>
     </toolspecific>
-    <arc id="a1" source="pl7" target="tr40" />
-    <arc id="a2" source="tr40" target="pl9" />
-    <arc id="a3" source="pl9" target="tr41" />
-    <arc id="a4" source="tr42" target="pl10" />
-    <arc id="a5" source="pl10" target="tr43" />
-    <arc id="a6" source="tr43" target="pl14" />
-    <arc id="a7" source="pl14" target="tr44">
-      <graphics>
-        <position x="907" y="627" />
-      </graphics>
-    </arc>
-    <arc id="a8" source="pl14" target="tr46" />
-    <arc id="a9" source="pl21" target="tr47" />
-    <arc id="a10" source="pl24" target="tr48">
-      <graphics>
-        <position x="1075" y="1415" />
-      </graphics>
-    </arc>
-    <arc id="a11" source="pl24" target="tr50" />
-    <arc id="a12" source="pl21" target="tr52" />
-    <arc id="a13" source="pl21" target="tr53" />
-    <arc id="a14" source="pl27" target="tr55" />
-    <arc id="a15" source="pl27" target="tr56">
-      <graphics>
-        <position x="1140" y="1759" />
-      </graphics>
-    </arc>
-    <arc id="a16" source="tr40" target="pl13" />
-    <arc id="a17" source="pl18" target="tr41" />
-    <arc id="a18" source="tr43" target="pl34" />
-    <arc id="a19" source="pl36" target="tr46" />
-    <arc id="a20" source="tr52" target="pl32" />
-    <arc id="a21" source="tr51" target="pl38" />
-    <arc id="a22" source="tr53" target="pl44" />
-    <arc id="a23" source="tr47" target="pl3" />
-    <arc id="a24" source="pl5" target="tr48" />
-    <arc id="a25" source="pl4" target="tr50" />
-    <arc id="a26" source="tr55" target="pl52" />
-    <arc id="a27" source="tr56" target="pl57" />
-    <arc id="a28" source="tr51" target="pl31" />
-    <arc id="a29" source="pl31" target="tr39" />
-    <arc id="a30" source="tr39" target="pl21" />
-    <arc id="a31" source="pl8" target="tr39" />
-    <arc id="a32" source="pl21" target="tr51" />
-    <arc id="a33" source="tr23" target="pl22" />
-    <arc id="a34" source="pl22" target="tr42" />
-    <arc id="a35" source="pl9" target="tr23" />
-    <arc id="a36" source="tr41" target="pl25" />
-    <arc id="a37" source="pl25" target="tr27" />
-    <arc id="a38" source="tr27" target="pl7" />
-    <arc id="a39" source="tr27" target="pl12" />
-    <arc id="a40" source="tr42" target="pl17" />
-    <arc id="a41" source="pl20" target="tr23" />
-    <arc id="a42" source="tr44" target="pl26" />
-    <arc id="a43" source="pl26" target="tr1" />
-    <arc id="a44" source="tr1" target="pl10" />
-    <arc id="a45" source="tr1" target="pl16">
-      <graphics>
-        <position x="841" y="474" />
-      </graphics>
-    </arc>
-    <arc id="a46" source="tr46" target="pl29" />
-    <arc id="a47" source="pl29" target="tr36" />
-    <arc id="a48" source="tr36" target="pl21" />
-    <arc id="a49" source="tr36" target="pl28" />
-    <arc id="a50" source="tr52" target="pl41" />
-    <arc id="a51" source="pl41" target="tr57" />
-    <arc id="a52" source="tr57" target="pl7">
-      <graphics>
-        <position x="995" y="158" />
-      </graphics>
-    </arc>
-    <arc id="a53" source="pl40" target="tr57">
-      <graphics>
-        <position x="937" y="772" />
-      </graphics>
-    </arc>
-    <arc id="a54" source="tr53" target="pl62" />
-    <arc id="a55" source="pl62" target="tr64" />
-    <arc id="a56" source="tr64" target="pl7">
-      <graphics>
-        <position x="1038" y="206" />
-      </graphics>
-    </arc>
-    <arc id="a57" source="pl61" target="tr64" />
-    <arc id="a58" source="tr47" target="pl68" />
-    <arc id="a59" source="pl68" target="tr71" />
-    <arc id="a60" source="tr71" target="pl24" />
-    <arc id="a61" source="pl74" target="tr71" />
-    <arc id="a62" source="tr48" target="pl77" />
-    <arc id="a63" source="pl77" target="tr79" />
-    <arc id="a64" source="tr79" target="pl76">
-      <graphics>
-        <position x="1011" y="1278" />
-      </graphics>
-    </arc>
-    <arc id="a65" source="tr79" target="pl7">
-      <graphics>
-        <position x="1074" y="117" />
-      </graphics>
-    </arc>
-    <arc id="a66" source="tr50" target="pl83" />
-    <arc id="a67" source="pl83" target="tr85" />
-    <arc id="a68" source="tr85" target="pl27" />
-    <arc id="a69" source="tr85" target="pl88" />
-    <arc id="a70" source="tr55" target="pl33" />
-    <arc id="a71" source="pl33" target="tr37" />
-    <arc id="a72" source="tr37" target="pl21" />
-    <arc id="a73" source="pl42" target="tr37" />
-    <arc id="a74" source="tr56" target="pl35" />
-    <arc id="a75" source="pl35" target="tr3" />
-    <arc id="a76" source="tr3" target="pl7">
-      <graphics>
-        <position x="1137" y="127" />
-      </graphics>
-    </arc>
-    <arc id="a77" source="pl39" target="tr3" />
-    <arc id="a78" source="pl48" target="tr103" />
-    <arc id="a79" source="tr103" target="pl49" />
-    <arc id="a80" source="pl49" target="tr104" />
-    <arc id="a81" source="tr105" target="pl50" />
-    <arc id="a82" source="pl50" target="tr106" />
-    <arc id="a83" source="tr106" target="pl51" />
-    <arc id="a84" source="pl51" target="tr107">
+    <arc id="a1" source="pl48" target="tr103" />
+    <arc id="a2" source="tr103" target="pl49" />
+    <arc id="a3" source="pl49" target="tr104" />
+    <arc id="a4" source="tr105" target="pl50" />
+    <arc id="a5" source="pl50" target="tr106" />
+    <arc id="a6" source="tr106" target="pl51" />
+    <arc id="a7" source="pl51" target="tr107">
       <graphics>
         <position x="249" y="626" />
       </graphics>
     </arc>
-    <arc id="a85" source="pl51" target="tr108" />
-    <arc id="a86" source="pl53" target="tr109" />
-    <arc id="a87" source="pl54" target="tr110">
+    <arc id="a8" source="pl51" target="tr108" />
+    <arc id="a9" source="pl53" target="tr109" />
+    <arc id="a10" source="pl54" target="tr110">
       <graphics>
         <position x="81" y="1414" />
       </graphics>
     </arc>
-    <arc id="a88" source="pl54" target="tr111" />
-    <arc id="a89" source="pl53" target="tr112" />
-    <arc id="a90" source="pl53" target="tr113" />
-    <arc id="a91" source="pl55" target="tr114" />
-    <arc id="a92" source="pl55" target="tr115">
+    <arc id="a11" source="pl54" target="tr111" />
+    <arc id="a12" source="pl53" target="tr112" />
+    <arc id="a13" source="pl53" target="tr113" />
+    <arc id="a14" source="pl55" target="tr114" />
+    <arc id="a15" source="pl55" target="tr115">
       <graphics>
         <position x="16" y="1758" />
       </graphics>
     </arc>
-    <arc id="a93" source="tr107" target="pl60">
+    <arc id="a16" source="tr107" target="pl60">
       <graphics>
         <position x="267" y="595" />
       </graphics>
     </arc>
-    <arc id="a94" source="tr116" target="pl73" />
-    <arc id="a95" source="pl73" target="tr117" />
-    <arc id="a96" source="tr117" target="pl53" />
-    <arc id="a97" source="pl53" target="tr116" />
-    <arc id="a98" source="tr118" target="pl78" />
-    <arc id="a99" source="pl78" target="tr105" />
-    <arc id="a100" source="pl49" target="tr118" />
-    <arc id="a101" source="tr104" target="pl79" />
-    <arc id="a102" source="pl79" target="tr119" />
-    <arc id="a103" source="tr119" target="pl48" />
-    <arc id="a104" source="tr107" target="pl84" />
-    <arc id="a105" source="pl84" target="tr120" />
-    <arc id="a106" source="tr120" target="pl50" />
-    <arc id="a107" source="tr108" target="pl86" />
-    <arc id="a108" source="pl86" target="tr121" />
-    <arc id="a109" source="tr121" target="pl53" />
-    <arc id="a110" source="tr112" target="pl89" />
-    <arc id="a111" source="pl89" target="tr122" />
-    <arc id="a112" source="tr122" target="pl48">
+    <arc id="a17" source="tr116" target="pl73" />
+    <arc id="a18" source="pl73" target="tr117" />
+    <arc id="a19" source="tr117" target="pl53" />
+    <arc id="a20" source="pl53" target="tr116" />
+    <arc id="a21" source="tr118" target="pl78" />
+    <arc id="a22" source="pl78" target="tr105" />
+    <arc id="a23" source="pl49" target="tr118" />
+    <arc id="a24" source="tr104" target="pl79" />
+    <arc id="a25" source="pl79" target="tr119" />
+    <arc id="a26" source="tr119" target="pl48" />
+    <arc id="a27" source="tr107" target="pl84" />
+    <arc id="a28" source="pl84" target="tr120" />
+    <arc id="a29" source="tr120" target="pl50" />
+    <arc id="a30" source="tr108" target="pl86" />
+    <arc id="a31" source="pl86" target="tr121" />
+    <arc id="a32" source="tr121" target="pl53" />
+    <arc id="a33" source="tr112" target="pl89" />
+    <arc id="a34" source="pl89" target="tr122" />
+    <arc id="a35" source="tr122" target="pl48">
       <graphics>
         <position x="161" y="157" />
       </graphics>
     </arc>
-    <arc id="a113" source="tr113" target="pl91" />
-    <arc id="a114" source="pl91" target="tr123" />
-    <arc id="a115" source="tr123" target="pl48">
+    <arc id="a36" source="tr113" target="pl91" />
+    <arc id="a37" source="pl91" target="tr123" />
+    <arc id="a38" source="tr123" target="pl48">
       <graphics>
         <position x="118" y="205" />
       </graphics>
     </arc>
-    <arc id="a116" source="tr109" target="pl93" />
-    <arc id="a117" source="pl93" target="tr124" />
-    <arc id="a118" source="tr124" target="pl54" />
-    <arc id="a119" source="tr110" target="pl95" />
-    <arc id="a120" source="pl95" target="tr125" />
-    <arc id="a121" source="tr125" target="pl48">
+    <arc id="a39" source="tr109" target="pl93" />
+    <arc id="a40" source="pl93" target="tr124" />
+    <arc id="a41" source="tr124" target="pl54" />
+    <arc id="a42" source="tr110" target="pl95" />
+    <arc id="a43" source="pl95" target="tr125" />
+    <arc id="a44" source="tr125" target="pl48">
       <graphics>
         <position x="82" y="116" />
       </graphics>
     </arc>
-    <arc id="a122" source="tr111" target="pl97" />
-    <arc id="a123" source="pl97" target="tr126" />
-    <arc id="a124" source="tr126" target="pl55" />
-    <arc id="a125" source="tr114" target="pl99" />
-    <arc id="a126" source="pl99" target="tr127" />
-    <arc id="a127" source="tr127" target="pl53" />
-    <arc id="a128" source="tr115" target="pl101" />
-    <arc id="a129" source="pl101" target="tr128" />
-    <arc id="a130" source="tr128" target="pl48">
+    <arc id="a45" source="tr111" target="pl97" />
+    <arc id="a46" source="pl97" target="tr126" />
+    <arc id="a47" source="tr126" target="pl55" />
+    <arc id="a48" source="tr114" target="pl99" />
+    <arc id="a49" source="pl99" target="tr127" />
+    <arc id="a50" source="tr127" target="pl53" />
+    <arc id="a51" source="tr115" target="pl101" />
+    <arc id="a52" source="pl101" target="tr128" />
+    <arc id="a53" source="tr128" target="pl48">
       <graphics>
         <position x="19" y="126" />
       </graphics>
     </arc>
-    <arc id="a134" source="pl13" target="tr103" />
-    <arc id="a136" source="pl12" target="tr119" />
-    <arc id="a140" source="tr104" target="pl18" />
-    <arc id="a142" source="tr118" target="pl20" />
-    <arc id="a144" source="pl17" target="tr105" />
-    <arc id="a146" source="pl16" target="tr120">
+    <arc id="a54" source="pl13" target="tr103" />
+    <arc id="a55" source="pl12" target="tr119" />
+    <arc id="a56" source="tr104" target="pl18" />
+    <arc id="a57" source="tr118" target="pl20" />
+    <arc id="a58" source="pl17" target="tr105" />
+    <arc id="a59" source="pl16" target="tr120">
       <graphics>
         <position x="315" y="473" />
       </graphics>
     </arc>
-    <arc id="a148" source="pl34" target="tr106" />
-    <arc id="a150" source="pl60" target="tr44">
-      <graphics>
-        <position x="889" y="596" />
-      </graphics>
-    </arc>
-    <arc id="a152" source="tr108" target="pl36" />
-    <arc id="a154" source="pl28" target="tr121" />
-    <arc id="a156" source="tr122" target="pl40">
+    <arc id="a60" source="pl34" target="tr106" />
+    <arc id="a61" source="tr108" target="pl36" />
+    <arc id="a62" source="pl28" target="tr121" />
+    <arc id="a63" source="tr122" target="pl40">
       <graphics>
         <position x="219" y="771" />
       </graphics>
     </arc>
-    <arc id="a159" source="pl32" target="tr112" />
-    <arc id="a161" source="pl38" target="tr116" />
-    <arc id="a171" source="tr117" target="pl8" />
-    <arc id="a172" source="tr123" target="pl61" />
-    <arc id="a173" source="pl44" target="tr113" />
-    <arc id="a174" source="pl3" target="tr109" />
-    <arc id="a175" source="tr124" target="pl74" />
-    <arc id="a181" source="pl76" target="tr125">
+    <arc id="a64" source="pl32" target="tr112" />
+    <arc id="a65" source="pl38" target="tr116" />
+    <arc id="a66" source="tr117" target="pl8" />
+    <arc id="a67" source="tr123" target="pl61" />
+    <arc id="a68" source="pl44" target="tr113" />
+    <arc id="a69" source="pl3" target="tr109" />
+    <arc id="a70" source="tr124" target="pl74" />
+    <arc id="a71" source="pl76" target="tr125">
       <graphics>
         <position x="145" y="1277" />
       </graphics>
     </arc>
-    <arc id="a182" source="tr110" target="pl5" />
-    <arc id="a183" source="tr111" target="pl4" />
-    <arc id="a184" source="pl88" target="tr126" />
-    <arc id="a185" source="tr128" target="pl39" />
-    <arc id="a186" source="tr127" target="pl42" />
-    <arc id="a187" source="pl52" target="tr114" />
-    <arc id="a188" source="pl57" target="tr115" />
+    <arc id="a72" source="tr110" target="pl5" />
+    <arc id="a73" source="tr111" target="pl4" />
+    <arc id="a74" source="pl88" target="tr126" />
+    <arc id="a75" source="tr128" target="pl39" />
+    <arc id="a76" source="tr127" target="pl42" />
+    <arc id="a77" source="pl52" target="tr114" />
+    <arc id="a78" source="pl57" target="tr115" />
   </net>
 </pnml>
