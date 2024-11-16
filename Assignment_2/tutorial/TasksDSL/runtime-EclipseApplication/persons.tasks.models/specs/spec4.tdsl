@@ -1,0 +1,12 @@
+Planning ScopeTest
+
+Task: A Report Strategy persons: Alice Carol priority: 5
+	defineProjects: Alpha Beta useProjects: Alpha
+Task: B Meeting "Training" persons: Carol priority: 7 duration: 3 day
+	defineProjects: Gamma useProjects: Alpha Gamma Delta
+
+Person: Alice
+Person: Carol
+
+Task: C Lunch Snackbar persons: Alice priority: 1
+defineProjects: Delta useProjects: Alpha extends B
