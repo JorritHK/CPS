@@ -3,6 +3,9 @@
  */
 package life.game.validation
 
+import life.game.gameOfLifeDSL.GameOfLifeDSLPackage
+import life.game.gameOfLifeDSL.Rule
+import org.eclipse.xtext.validation.Check
 
 /**
  * This class contains custom validation rules. 
@@ -21,5 +24,14 @@ class GameOfLifeDSLValidator extends AbstractGameOfLifeDSLValidator {
 //					INVALID_NAME)
 //		}
 //	}
+
+	@Check
+	def checkSensibleNeighbors(Rule rule){
+		if (rule.reason.condition.neighbors > 8) {
+			error('Neighbor condition can not be larger than 8 since a cell has only 8 neighboring cells', null
+//				GameOfLifeDSLPackage.Literals.CONDITION__NEIGHBORS
+			)
+		}
+	}
 	
 }

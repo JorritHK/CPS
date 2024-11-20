@@ -1,0 +1,8 @@
+active
+
+// Board
+
+//Rules
+Rules:
+	die if [ < 6 ] neighbors
+	survive if [ = 3 ] neighbors

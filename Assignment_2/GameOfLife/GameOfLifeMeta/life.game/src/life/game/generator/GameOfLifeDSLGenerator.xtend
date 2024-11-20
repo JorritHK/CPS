@@ -3,6 +3,7 @@
  */
 package life.game.generator
 
+import life.game.gameOfLifeDSL.GameSpec
 import org.eclipse.emf.ecore.resource.Resource
 import org.eclipse.xtext.generator.AbstractGenerator
 import org.eclipse.xtext.generator.IFileSystemAccess2
@@ -16,6 +17,16 @@ import org.eclipse.xtext.generator.IGeneratorContext
 class GameOfLifeDSLGenerator extends AbstractGenerator {
 
 	override void doGenerate(Resource resource, IFileSystemAccess2 fsa, IGeneratorContext context) {
+		val root = resource.allContents.head as GameSpec;
+		if (root !== null) {
+			if (root.active.length > 0) {
+				var path = "../src/GameOfLife/"
+				fsa.generateFile(path+"RuleOfLife.java", JavaGenerator.toText(root))	
+			}
+			
+			var path = "generated/" + resource.getURI().lastSegment + "/"
+			fsa.generateFile(path+"RuleOfLife.java", JavaGenerator.toText(root))
+		}
 //		fsa.generateFile('greetings.txt', 'People to greet: ' + 
 //			resource.allContents
 //				.filter(Greeting)

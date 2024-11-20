@@ -2,9 +2,39 @@ grammar life.game.GameOfLifeDSL with org.eclipse.xtext.common.Terminals
 
 generate gameOfLifeDSL "http://www.game.life/GameOfLifeDSL"
 
-Model:
-	greetings+=Greeting*;
-	
-Greeting:
-	'Hello' name=ID '!'
-	'Age:' age=INT;
+
+GameSpec:
+	(active='active')?
+	(board=Board)?
+	rules=Rules
+;
+
+Board: INT;
+
+
+Rules: {Rules} 'Rules:' rules += Rule*
+;
+
+Rule: consequence = Consequence
+	Reason = Reason
+;
+
+enum Consequence:
+	DEATH = 'die' |
+	LIVE = 'survive' |
+	BORN = 'be born'
+;
+
+
+Reason: 'if'
+	'[' condition = Condition ']' 'neighbors'
+;
+
+Condition: 
+	operator = Operator
+	neighbors = INT
+;
+
+Operator:
+	SMALLER = '<' | LARGER = '>' | EQUAL = '='
+;

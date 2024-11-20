@@ -1,4 +1,4 @@
-	package GameOfLife;
+	package GameOfLife.Old;
 
 	import java.awt.Point;
 	import java.util.ArrayList;
