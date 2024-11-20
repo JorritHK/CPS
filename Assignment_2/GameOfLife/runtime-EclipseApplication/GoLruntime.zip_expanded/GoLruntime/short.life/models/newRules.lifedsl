@@ -1,8 +1,10 @@
-active
+//active
 
 // Board
 
 //Rules
 Rules:
-	die if [ < 6 ] neighbors
-	survive if [ = 3 ] neighbors
+	default: survival
+	die if [ < 6 ] companions
+	survive if [ = 3 ] companions
+	be born if [ = 2] companions

@@ -284,8 +284,6 @@ public class GameOfLife extends JFrame implements ActionListener {
             }
             ArrayList<Point> survivingCells = new ArrayList<Point>(0);
             // Iterate through the array, follow game of life rules
-           // RulesOfLifeOrig.computeSurvivors(gameBoard,survivingCells);
-//            RulesOfLife.computeSurvivors(gameBoard,survivingCells);
             
             for (int i=1; i<gameBoard.length-1; i++) {
                 for (int j=1; j<gameBoard[0].length-1; j++) {
@@ -299,16 +297,10 @@ public class GameOfLife extends JFrame implements ActionListener {
                     if (gameBoard[i+1][j])   { surrounding++; }
                     if (gameBoard[i+1][j+1]) { surrounding++; }
                     
-                    boolean alive = RulesOfLife.computeCellSurvival(alive, surrounding);
-                    if (alive)
-                    if (gameBoard[i][j]) {
-                    	survivingCells.add(new Point(i-1,j-1));
-                    }
-                    else {
-                        // Cell is dead, will the cell be given birth? (3)
-                        if (surrounding == 3) {
-                            survivingCells.add(new Point(i-1,j-1));
-                        }
+                    // Added the survival calculation from Rule Of Life module
+                    boolean alive = RuleOfLife.computeCellSurvival(gameBoard[i][j], surrounding);
+                    if (alive) {
+                    	survivingCells.add(new Point(i-1, j-1));
                     }
                 }
             }

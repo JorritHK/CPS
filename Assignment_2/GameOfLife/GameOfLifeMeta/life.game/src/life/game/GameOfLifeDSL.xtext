@@ -12,22 +12,29 @@ GameSpec:
 Board: INT;
 
 
-Rules: {Rules} 'Rules:' rules += Rule*
+Rules: {Rules} 'Rules:'
+	(default = DefaultRule)?
+	rules += Rule*
 ;
 
 Rule: consequence = Consequence
 	Reason = Reason
 ;
 
+DefaultRule: 'default:' consequence = DefaultOption;
+
+enum DefaultOption: SURVIVAL = 'survival' | DEATH = 'death';
+
+
 enum Consequence:
 	DEATH = 'die' |
-	LIVE = 'survive' |
+	SURVIVAL = 'survive' |
 	BORN = 'be born'
 ;
 
 
 Reason: 'if'
-	'[' condition = Condition ']' 'neighbors'
+	'[' condition = Condition ']' 'companions'
 ;
 
 Condition: 

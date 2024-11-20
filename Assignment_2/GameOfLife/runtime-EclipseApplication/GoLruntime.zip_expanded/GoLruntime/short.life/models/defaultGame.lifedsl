@@ -1,0 +1,11 @@
+
+active
+
+
+//Rules
+Rules:
+	default: death
+	die if [ < 2 ] companions
+	survive if [ = 2 ] companions
+	survive if [ = 3 ] companions
+	be born if [ = 3 ] companions

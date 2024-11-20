@@ -19,7 +19,7 @@ class GameOfLifeDSLGenerator extends AbstractGenerator {
 	override void doGenerate(Resource resource, IFileSystemAccess2 fsa, IGeneratorContext context) {
 		val root = resource.allContents.head as GameSpec;
 		if (root !== null) {
-			if (root.active.length > 0) {
+			if (root.active !== null) {
 				var path = "../src/GameOfLife/"
 				fsa.generateFile(path+"RuleOfLife.java", JavaGenerator.toText(root))	
 			}

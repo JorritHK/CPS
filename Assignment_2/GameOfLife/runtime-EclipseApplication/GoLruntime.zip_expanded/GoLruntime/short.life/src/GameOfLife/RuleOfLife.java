@@ -4,16 +4,24 @@
 	import java.util.ArrayList;
 
 	public class RuleOfLife {
-		public static void computeCellSurvival(boolean alive, Integer surrounding) {
+		public static boolean computeCellSurvival(boolean alive, Integer surrounding) {
 			// Survival conditions
-			if (  "survivors " life.game.gameOfLifeDSL.impl.OperatorImpl@47afa227 (SMALLER: null, LARGER: null, EQUAL: =) 3  ) {
-				return True;
+			if (!alive) {
+				// Check if cell should be born
+				if ( surrounding == 3 ) {
+					return true;
+				}
 			}
-			if  {
-				return True;
+			else {
+				// Check if cell should survive
+				if ( surrounding == 2 || surrounding == 3 ) {
+					return true;
+				}
+				// Check if cell is killed
+				if ( surrounding < 2 ) {
+					return false;
+				}
 			}
-					if (  "survivors " life.game.gameOfLifeDSL.impl.OperatorImpl@1ac69b5 (SMALLER: <, LARGER: null, EQUAL: null) 6  ) {
-						return False;
-					}
+			return false;
 		}
 	}
