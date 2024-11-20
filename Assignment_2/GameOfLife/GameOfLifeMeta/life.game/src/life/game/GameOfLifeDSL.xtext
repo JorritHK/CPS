@@ -1,0 +1,10 @@
+grammar life.game.GameOfLifeDSL with org.eclipse.xtext.common.Terminals
+
+generate gameOfLifeDSL "http://www.game.life/GameOfLifeDSL"
+
+Model:
+	greetings+=Greeting*;
+	
+Greeting:
+	'Hello' name=ID '!'
+	'Age:' age=INT;
