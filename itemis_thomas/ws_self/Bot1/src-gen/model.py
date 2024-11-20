@@ -22,8 +22,23 @@ class Model:
 			main_region_manual_r1rotations,
 			main_region_manual_r1rotations_r1incr__rot__speed_right,
 			main_region_manual_r1rotations_r1incr__rot__speed_left,
+			main_region_automatic,
+			main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration,
+			main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1initial,
+			main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1yaw_clock,
+			main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1yaw_anti_clock,
+			main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1stop_rotation,
+			main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1closer_left,
+			main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1closer_right,
+			main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1stop_rotation_alignment,
+			main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1forward,
+			main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1centered,
+			main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1turn_anti_clockwise,
+			main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1turn_clockwise,
+			main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1centered___aligned,
+			main_region_initial_calibration,
 			null_state
-		) = range(9)
+		) = range(24)
 	
 	
 	class UserVar:
@@ -286,6 +301,10 @@ class Model:
 		self.laser_intensity = Model.LaserIntensity(self)
 		
 		self.in_event_queue = queue.Queue()
+		self.__counter = None
+		self.__turn_count_clock = None
+		self.__turn_clock = None
+		
 		# enumeration of all states:
 		self.__State = Model.State
 		self.__state_conf_vector_changed = None
@@ -293,11 +312,18 @@ class Model:
 		for __state_index in range(1):
 			self.__state_vector[__state_index] = self.State.null_state
 		
+		# for timed statechart:
+		self.timer_service = None
+		self.__time_events = [None] * 5
+		
 		# initializations:
 		#Default init sequence for statechart model
 		self.user_var.base_speed = 0.05
 		self.user_var.base_rotation = 0.2
 		self.user_var.startprocedure = True
+		self.__counter = 0
+		self.__turn_count_clock = False
+		self.__turn_clock = False
 		self.base_values.max_speed = 0.22
 		self.base_values.max_rotation = 2.84
 		self.base_values.degrees_front = 10
@@ -414,8 +440,52 @@ class Model:
 			return self.__state_vector[0] == self.__State.main_region_manual_r1rotations_r1incr__rot__speed_right
 		if s == self.__State.main_region_manual_r1rotations_r1incr__rot__speed_left:
 			return self.__state_vector[0] == self.__State.main_region_manual_r1rotations_r1incr__rot__speed_left
+		if s == self.__State.main_region_automatic:
+			return (self.__state_vector[0] >= self.__State.main_region_automatic)\
+				and (self.__state_vector[0] <= self.__State.main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1centered___aligned)
+		if s == self.__State.main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration:
+			return (self.__state_vector[0] >= self.__State.main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration)\
+				and (self.__state_vector[0] <= self.__State.main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1centered___aligned)
+		if s == self.__State.main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1initial:
+			return self.__state_vector[0] == self.__State.main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1initial
+		if s == self.__State.main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1yaw_clock:
+			return self.__state_vector[0] == self.__State.main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1yaw_clock
+		if s == self.__State.main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1yaw_anti_clock:
+			return self.__state_vector[0] == self.__State.main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1yaw_anti_clock
+		if s == self.__State.main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1stop_rotation:
+			return self.__state_vector[0] == self.__State.main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1stop_rotation
+		if s == self.__State.main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1closer_left:
+			return self.__state_vector[0] == self.__State.main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1closer_left
+		if s == self.__State.main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1closer_right:
+			return self.__state_vector[0] == self.__State.main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1closer_right
+		if s == self.__State.main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1stop_rotation_alignment:
+			return self.__state_vector[0] == self.__State.main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1stop_rotation_alignment
+		if s == self.__State.main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1forward:
+			return self.__state_vector[0] == self.__State.main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1forward
+		if s == self.__State.main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1centered:
+			return self.__state_vector[0] == self.__State.main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1centered
+		if s == self.__State.main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1turn_anti_clockwise:
+			return self.__state_vector[0] == self.__State.main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1turn_anti_clockwise
+		if s == self.__State.main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1turn_clockwise:
+			return self.__state_vector[0] == self.__State.main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1turn_clockwise
+		if s == self.__State.main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1centered___aligned:
+			return self.__state_vector[0] == self.__State.main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1centered___aligned
+		if s == self.__State.main_region_initial_calibration:
+			return self.__state_vector[0] == self.__State.main_region_initial_calibration
 		return False
 		
+	def time_elapsed(self, event_id):
+		"""Add time events to in event queue
+		"""
+		if event_id in range(5):
+			self.in_event_queue.put(lambda: self.raise_time_event(event_id))
+			self.run_cycle()
+	
+	def raise_time_event(self, event_id):
+		"""Raise timed events using the event_id.
+		"""
+		self.__time_events[event_id] = True
+	
 	def __execute_queued_event(self, func):
 		func()
 	
@@ -424,12 +494,14 @@ class Model:
 			return self.in_event_queue.get()
 		return None
 	
+	
 	def __entry_action_main_region_stopped(self):
 		"""Entry action for state 'Stopped'..
 		"""
 		#Entry action for state 'Stopped'.
 		self.output.speed = 0.0
 		self.output.rotation = 0.0
+		self.__counter = 1
 		
 	def __entry_action_main_region_manual_r1_speed_r1_increase_speed(self):
 		"""Entry action for state 'Increase speed'..
@@ -454,6 +526,107 @@ class Model:
 		"""
 		#Entry action for state 'Incr. rot. speed left'.
 		self.output.rotation = (self.output.rotation + self.user_var.base_rotation)
+		
+	def __entry_action_main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1_yaw_clock(self):
+		"""Entry action for state 'Yaw clock'..
+		"""
+		#Entry action for state 'Yaw clock'.
+		self.output.rotation = self.user_var.base_rotation
+		
+	def __entry_action_main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1_yaw_anti_clock(self):
+		"""Entry action for state 'Yaw anti_clock'..
+		"""
+		#Entry action for state 'Yaw anti_clock'.
+		self.output.rotation = -(self.user_var.base_rotation)
+		
+	def __entry_action_main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1_stop_rotation(self):
+		"""Entry action for state 'Stop rotation'..
+		"""
+		#Entry action for state 'Stop rotation'.
+		self.timer_service.set_timer(self, 0, (1 * 1000), False)
+		self.timer_service.set_timer(self, 1, (1 * 1000), False)
+		self.output.rotation = 0.0
+		
+	def __entry_action_main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1_closer_left(self):
+		"""Entry action for state 'Closer left'..
+		"""
+		#Entry action for state 'Closer left'.
+		self.output.rotation = self.user_var.base_rotation
+		self.__turn_count_clock = True
+		
+	def __entry_action_main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1_closer_right(self):
+		"""Entry action for state 'Closer right'..
+		"""
+		#Entry action for state 'Closer right'.
+		self.output.rotation = -(self.user_var.base_rotation)
+		self.__turn_clock = True
+		
+	def __entry_action_main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1_stop_rotation_alignment(self):
+		"""Entry action for state 'Stop rotation alignment'..
+		"""
+		#Entry action for state 'Stop rotation alignment'.
+		self.timer_service.set_timer(self, 2, (1 * 1000), False)
+		self.output.rotation = 0.0
+		
+	def __entry_action_main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1_forward(self):
+		"""Entry action for state 'Forward'..
+		"""
+		#Entry action for state 'Forward'.
+		self.output.speed = self.user_var.base_speed
+		
+	def __entry_action_main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1_centered(self):
+		"""Entry action for state 'Centered'..
+		"""
+		#Entry action for state 'Centered'.
+		self.timer_service.set_timer(self, 3, (1 * 1000), False)
+		self.timer_service.set_timer(self, 4, (1 * 1000), False)
+		self.output.speed = 0.0
+		
+	def __entry_action_main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1_turn_anti_clockwise(self):
+		"""Entry action for state 'Turn anti-clockwise'..
+		"""
+		#Entry action for state 'Turn anti-clockwise'.
+		self.output.rotation = -(self.user_var.base_rotation)
+		self.__turn_count_clock = False
+		
+	def __entry_action_main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1_turn_clockwise(self):
+		"""Entry action for state 'Turn clockwise'..
+		"""
+		#Entry action for state 'Turn clockwise'.
+		self.output.rotation = self.user_var.base_rotation
+		self.__turn_clock = False
+		
+	def __entry_action_main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1_centered___aligned(self):
+		"""Entry action for state 'Centered & Aligned'..
+		"""
+		#Entry action for state 'Centered & Aligned'.
+		self.output.rotation = 0.0
+		
+	def __entry_action_main_region_initial_calibration(self):
+		"""Entry action for state 'Initial Calibration'..
+		"""
+		#Entry action for state 'Initial Calibration'.
+		self.start_pos.set_zero = True
+		
+	def __exit_action_main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1_stop_rotation(self):
+		"""Exit action for state 'Stop rotation'..
+		"""
+		#Exit action for state 'Stop rotation'.
+		self.timer_service.unset_timer(self, 0)
+		self.timer_service.unset_timer(self, 1)
+		
+	def __exit_action_main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1_stop_rotation_alignment(self):
+		"""Exit action for state 'Stop rotation alignment'..
+		"""
+		#Exit action for state 'Stop rotation alignment'.
+		self.timer_service.unset_timer(self, 2)
+		
+	def __exit_action_main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1_centered(self):
+		"""Exit action for state 'Centered'..
+		"""
+		#Exit action for state 'Centered'.
+		self.timer_service.unset_timer(self, 3)
+		self.timer_service.unset_timer(self, 4)
 		
 	def __enter_sequence_main_region_stopped_default(self):
 		"""'default' enter sequence for state Stopped.
@@ -493,6 +666,109 @@ class Model:
 		#'default' enter sequence for state Incr. rot. speed left
 		self.__entry_action_main_region_manual_r1_rotations_r1_incr__rot__speed_left()
 		self.__state_vector[0] = self.State.main_region_manual_r1rotations_r1incr__rot__speed_left
+		self.__state_conf_vector_changed = True
+		
+	def __enter_sequence_main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1_initial_default(self):
+		"""'default' enter sequence for state Initial.
+		"""
+		#'default' enter sequence for state Initial
+		self.__state_vector[0] = self.State.main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1initial
+		self.__state_conf_vector_changed = True
+		
+	def __enter_sequence_main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1_yaw_clock_default(self):
+		"""'default' enter sequence for state Yaw clock.
+		"""
+		#'default' enter sequence for state Yaw clock
+		self.__entry_action_main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1_yaw_clock()
+		self.__state_vector[0] = self.State.main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1yaw_clock
+		self.__state_conf_vector_changed = True
+		
+	def __enter_sequence_main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1_yaw_anti_clock_default(self):
+		"""'default' enter sequence for state Yaw anti_clock.
+		"""
+		#'default' enter sequence for state Yaw anti_clock
+		self.__entry_action_main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1_yaw_anti_clock()
+		self.__state_vector[0] = self.State.main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1yaw_anti_clock
+		self.__state_conf_vector_changed = True
+		
+	def __enter_sequence_main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1_stop_rotation_default(self):
+		"""'default' enter sequence for state Stop rotation.
+		"""
+		#'default' enter sequence for state Stop rotation
+		self.__entry_action_main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1_stop_rotation()
+		self.__state_vector[0] = self.State.main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1stop_rotation
+		self.__state_conf_vector_changed = True
+		
+	def __enter_sequence_main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1_closer_left_default(self):
+		"""'default' enter sequence for state Closer left.
+		"""
+		#'default' enter sequence for state Closer left
+		self.__entry_action_main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1_closer_left()
+		self.__state_vector[0] = self.State.main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1closer_left
+		self.__state_conf_vector_changed = True
+		
+	def __enter_sequence_main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1_closer_right_default(self):
+		"""'default' enter sequence for state Closer right.
+		"""
+		#'default' enter sequence for state Closer right
+		self.__entry_action_main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1_closer_right()
+		self.__state_vector[0] = self.State.main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1closer_right
+		self.__state_conf_vector_changed = True
+		
+	def __enter_sequence_main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1_stop_rotation_alignment_default(self):
+		"""'default' enter sequence for state Stop rotation alignment.
+		"""
+		#'default' enter sequence for state Stop rotation alignment
+		self.__entry_action_main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1_stop_rotation_alignment()
+		self.__state_vector[0] = self.State.main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1stop_rotation_alignment
+		self.__state_conf_vector_changed = True
+		
+	def __enter_sequence_main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1_forward_default(self):
+		"""'default' enter sequence for state Forward.
+		"""
+		#'default' enter sequence for state Forward
+		self.__entry_action_main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1_forward()
+		self.__state_vector[0] = self.State.main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1forward
+		self.__state_conf_vector_changed = True
+		
+	def __enter_sequence_main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1_centered_default(self):
+		"""'default' enter sequence for state Centered.
+		"""
+		#'default' enter sequence for state Centered
+		self.__entry_action_main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1_centered()
+		self.__state_vector[0] = self.State.main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1centered
+		self.__state_conf_vector_changed = True
+		
+	def __enter_sequence_main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1_turn_anti_clockwise_default(self):
+		"""'default' enter sequence for state Turn anti-clockwise.
+		"""
+		#'default' enter sequence for state Turn anti-clockwise
+		self.__entry_action_main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1_turn_anti_clockwise()
+		self.__state_vector[0] = self.State.main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1turn_anti_clockwise
+		self.__state_conf_vector_changed = True
+		
+	def __enter_sequence_main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1_turn_clockwise_default(self):
+		"""'default' enter sequence for state Turn clockwise.
+		"""
+		#'default' enter sequence for state Turn clockwise
+		self.__entry_action_main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1_turn_clockwise()
+		self.__state_vector[0] = self.State.main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1turn_clockwise
+		self.__state_conf_vector_changed = True
+		
+	def __enter_sequence_main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1_centered___aligned_default(self):
+		"""'default' enter sequence for state Centered & Aligned.
+		"""
+		#'default' enter sequence for state Centered & Aligned
+		self.__entry_action_main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1_centered___aligned()
+		self.__state_vector[0] = self.State.main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1centered___aligned
+		self.__state_conf_vector_changed = True
+		
+	def __enter_sequence_main_region_initial_calibration_default(self):
+		"""'default' enter sequence for state Initial Calibration.
+		"""
+		#'default' enter sequence for state Initial Calibration
+		self.__entry_action_main_region_initial_calibration()
+		self.__state_vector[0] = self.State.main_region_initial_calibration
 		self.__state_conf_vector_changed = True
 		
 	def __enter_sequence_main_region_default(self):
@@ -552,6 +828,101 @@ class Model:
 		#Default exit sequence for state Incr. rot. speed left
 		self.__state_vector[0] = self.State.main_region_manual_r1rotations
 		
+	def __exit_sequence_main_region_automatic(self):
+		"""Default exit sequence for state Automatic.
+		"""
+		#Default exit sequence for state Automatic
+		self.__exit_sequence_main_region_automatic_drive_straight__turn_right__turn_left_c__calibration()
+		self.__state_vector[0] = self.State.null_state
+		
+	def __exit_sequence_main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration(self):
+		"""Default exit sequence for state Calibration.
+		"""
+		#Default exit sequence for state Calibration
+		self.__exit_sequence_main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1()
+		self.__state_vector[0] = self.State.main_region_automatic
+		
+	def __exit_sequence_main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1_initial(self):
+		"""Default exit sequence for state Initial.
+		"""
+		#Default exit sequence for state Initial
+		self.__state_vector[0] = self.State.main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration
+		
+	def __exit_sequence_main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1_yaw_clock(self):
+		"""Default exit sequence for state Yaw clock.
+		"""
+		#Default exit sequence for state Yaw clock
+		self.__state_vector[0] = self.State.main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration
+		
+	def __exit_sequence_main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1_yaw_anti_clock(self):
+		"""Default exit sequence for state Yaw anti_clock.
+		"""
+		#Default exit sequence for state Yaw anti_clock
+		self.__state_vector[0] = self.State.main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration
+		
+	def __exit_sequence_main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1_stop_rotation(self):
+		"""Default exit sequence for state Stop rotation.
+		"""
+		#Default exit sequence for state Stop rotation
+		self.__state_vector[0] = self.State.main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration
+		self.__exit_action_main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1_stop_rotation()
+		
+	def __exit_sequence_main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1_closer_left(self):
+		"""Default exit sequence for state Closer left.
+		"""
+		#Default exit sequence for state Closer left
+		self.__state_vector[0] = self.State.main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration
+		
+	def __exit_sequence_main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1_closer_right(self):
+		"""Default exit sequence for state Closer right.
+		"""
+		#Default exit sequence for state Closer right
+		self.__state_vector[0] = self.State.main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration
+		
+	def __exit_sequence_main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1_stop_rotation_alignment(self):
+		"""Default exit sequence for state Stop rotation alignment.
+		"""
+		#Default exit sequence for state Stop rotation alignment
+		self.__state_vector[0] = self.State.main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration
+		self.__exit_action_main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1_stop_rotation_alignment()
+		
+	def __exit_sequence_main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1_forward(self):
+		"""Default exit sequence for state Forward.
+		"""
+		#Default exit sequence for state Forward
+		self.__state_vector[0] = self.State.main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration
+		
+	def __exit_sequence_main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1_centered(self):
+		"""Default exit sequence for state Centered.
+		"""
+		#Default exit sequence for state Centered
+		self.__state_vector[0] = self.State.main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration
+		self.__exit_action_main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1_centered()
+		
+	def __exit_sequence_main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1_turn_anti_clockwise(self):
+		"""Default exit sequence for state Turn anti-clockwise.
+		"""
+		#Default exit sequence for state Turn anti-clockwise
+		self.__state_vector[0] = self.State.main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration
+		
+	def __exit_sequence_main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1_turn_clockwise(self):
+		"""Default exit sequence for state Turn clockwise.
+		"""
+		#Default exit sequence for state Turn clockwise
+		self.__state_vector[0] = self.State.main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration
+		
+	def __exit_sequence_main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1_centered___aligned(self):
+		"""Default exit sequence for state Centered & Aligned.
+		"""
+		#Default exit sequence for state Centered & Aligned
+		self.__state_vector[0] = self.State.main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration
+		
+	def __exit_sequence_main_region_initial_calibration(self):
+		"""Default exit sequence for state Initial Calibration.
+		"""
+		#Default exit sequence for state Initial Calibration
+		self.__state_vector[0] = self.State.null_state
+		
 	def __exit_sequence_main_region(self):
 		"""Default exit sequence for region main region.
 		"""
@@ -573,6 +944,36 @@ class Model:
 			self.__exit_sequence_main_region_manual_r1_rotations_r1_incr__rot__speed_right()
 		elif state == self.State.main_region_manual_r1rotations_r1incr__rot__speed_left:
 			self.__exit_sequence_main_region_manual_r1_rotations_r1_incr__rot__speed_left()
+		elif state == self.State.main_region_automatic:
+			self.__exit_sequence_main_region_automatic()
+		elif state == self.State.main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration:
+			self.__exit_sequence_main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration()
+		elif state == self.State.main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1initial:
+			self.__exit_sequence_main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1_initial()
+		elif state == self.State.main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1yaw_clock:
+			self.__exit_sequence_main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1_yaw_clock()
+		elif state == self.State.main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1yaw_anti_clock:
+			self.__exit_sequence_main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1_yaw_anti_clock()
+		elif state == self.State.main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1stop_rotation:
+			self.__exit_sequence_main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1_stop_rotation()
+		elif state == self.State.main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1closer_left:
+			self.__exit_sequence_main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1_closer_left()
+		elif state == self.State.main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1closer_right:
+			self.__exit_sequence_main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1_closer_right()
+		elif state == self.State.main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1stop_rotation_alignment:
+			self.__exit_sequence_main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1_stop_rotation_alignment()
+		elif state == self.State.main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1forward:
+			self.__exit_sequence_main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1_forward()
+		elif state == self.State.main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1centered:
+			self.__exit_sequence_main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1_centered()
+		elif state == self.State.main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1turn_anti_clockwise:
+			self.__exit_sequence_main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1_turn_anti_clockwise()
+		elif state == self.State.main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1turn_clockwise:
+			self.__exit_sequence_main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1_turn_clockwise()
+		elif state == self.State.main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1centered___aligned:
+			self.__exit_sequence_main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1_centered___aligned()
+		elif state == self.State.main_region_initial_calibration:
+			self.__exit_sequence_main_region_initial_calibration()
 		
 	def __exit_sequence_main_region_manual_r1(self):
 		"""Default exit sequence for region r1.
@@ -612,6 +1013,68 @@ class Model:
 		elif state == self.State.main_region_manual_r1rotations_r1incr__rot__speed_left:
 			self.__exit_sequence_main_region_manual_r1_rotations_r1_incr__rot__speed_left()
 		
+	def __exit_sequence_main_region_automatic_drive_straight__turn_right__turn_left_c__calibration(self):
+		"""Default exit sequence for region Drive straight, turn right, turn left c, calibration.
+		"""
+		#Default exit sequence for region Drive straight, turn right, turn left c, calibration
+		state = self.__state_vector[0]
+		if state == self.State.main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration:
+			self.__exit_sequence_main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration()
+		elif state == self.State.main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1initial:
+			self.__exit_sequence_main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1_initial()
+		elif state == self.State.main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1yaw_clock:
+			self.__exit_sequence_main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1_yaw_clock()
+		elif state == self.State.main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1yaw_anti_clock:
+			self.__exit_sequence_main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1_yaw_anti_clock()
+		elif state == self.State.main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1stop_rotation:
+			self.__exit_sequence_main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1_stop_rotation()
+		elif state == self.State.main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1closer_left:
+			self.__exit_sequence_main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1_closer_left()
+		elif state == self.State.main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1closer_right:
+			self.__exit_sequence_main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1_closer_right()
+		elif state == self.State.main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1stop_rotation_alignment:
+			self.__exit_sequence_main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1_stop_rotation_alignment()
+		elif state == self.State.main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1forward:
+			self.__exit_sequence_main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1_forward()
+		elif state == self.State.main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1centered:
+			self.__exit_sequence_main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1_centered()
+		elif state == self.State.main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1turn_anti_clockwise:
+			self.__exit_sequence_main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1_turn_anti_clockwise()
+		elif state == self.State.main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1turn_clockwise:
+			self.__exit_sequence_main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1_turn_clockwise()
+		elif state == self.State.main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1centered___aligned:
+			self.__exit_sequence_main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1_centered___aligned()
+		
+	def __exit_sequence_main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1(self):
+		"""Default exit sequence for region r1.
+		"""
+		#Default exit sequence for region r1
+		state = self.__state_vector[0]
+		if state == self.State.main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1initial:
+			self.__exit_sequence_main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1_initial()
+		elif state == self.State.main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1yaw_clock:
+			self.__exit_sequence_main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1_yaw_clock()
+		elif state == self.State.main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1yaw_anti_clock:
+			self.__exit_sequence_main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1_yaw_anti_clock()
+		elif state == self.State.main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1stop_rotation:
+			self.__exit_sequence_main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1_stop_rotation()
+		elif state == self.State.main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1closer_left:
+			self.__exit_sequence_main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1_closer_left()
+		elif state == self.State.main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1closer_right:
+			self.__exit_sequence_main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1_closer_right()
+		elif state == self.State.main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1stop_rotation_alignment:
+			self.__exit_sequence_main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1_stop_rotation_alignment()
+		elif state == self.State.main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1forward:
+			self.__exit_sequence_main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1_forward()
+		elif state == self.State.main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1centered:
+			self.__exit_sequence_main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1_centered()
+		elif state == self.State.main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1turn_anti_clockwise:
+			self.__exit_sequence_main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1_turn_anti_clockwise()
+		elif state == self.State.main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1turn_clockwise:
+			self.__exit_sequence_main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1_turn_clockwise()
+		elif state == self.State.main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1centered___aligned:
+			self.__exit_sequence_main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1_centered___aligned()
+		
 	def __react_main_region__entry_default(self):
 		"""Default react sequence for initial entry .
 		"""
@@ -649,6 +1112,16 @@ class Model:
 			elif self.computer.a_press:
 				self.__exit_sequence_main_region_stopped()
 				self.__enter_sequence_main_region_manual_r1_rotations_r1_incr__rot__speed_left_default()
+				self.__react(0)
+				transitioned_after = 0
+			elif (self.computer.m_press) and (self.__counter == 0):
+				self.__exit_sequence_main_region_stopped()
+				self.__enter_sequence_main_region_initial_calibration_default()
+				self.__react(0)
+				transitioned_after = 0
+			elif self.computer.m_press:
+				self.__exit_sequence_main_region_stopped()
+				self.__enter_sequence_main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1_initial_default()
 				self.__react(0)
 				transitioned_after = 0
 		#If no transition was taken
@@ -792,6 +1265,264 @@ class Model:
 		return transitioned_after
 	
 	
+	def __main_region_automatic_react(self, transitioned_before):
+		"""Implementation of __main_region_automatic_react function.
+		"""
+		#The reactions of state Automatic.
+		transitioned_after = transitioned_before
+		#Always execute local reactions.
+		transitioned_after = self.__react(transitioned_before)
+		return transitioned_after
+	
+	
+	def __main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_react(self, transitioned_before):
+		"""Implementation of __main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_react function.
+		"""
+		#The reactions of state Calibration.
+		transitioned_after = transitioned_before
+		#Always execute local reactions.
+		transitioned_after = self.__main_region_automatic_react(transitioned_before)
+		return transitioned_after
+	
+	
+	def __main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1_initial_react(self, transitioned_before):
+		"""Implementation of __main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1_initial_react function.
+		"""
+		#The reactions of state Initial.
+		transitioned_after = transitioned_before
+		if transitioned_after < 0:
+			if self.imu.yaw < 0.0:
+				self.__exit_sequence_main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1_initial()
+				self.__enter_sequence_main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1_yaw_clock_default()
+				self.__main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_react(0)
+				transitioned_after = 0
+			elif self.imu.yaw > 0.0:
+				self.__exit_sequence_main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1_initial()
+				self.__enter_sequence_main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1_yaw_anti_clock_default()
+				self.__main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_react(0)
+				transitioned_after = 0
+		#If no transition was taken
+		if transitioned_after == transitioned_before:
+			#then execute local reactions.
+			transitioned_after = self.__main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_react(transitioned_before)
+		return transitioned_after
+	
+	
+	def __main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1_yaw_clock_react(self, transitioned_before):
+		"""Implementation of __main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1_yaw_clock_react function.
+		"""
+		#The reactions of state Yaw clock.
+		transitioned_after = transitioned_before
+		if transitioned_after < 0:
+			if self.imu.yaw == 0.0:
+				self.__exit_sequence_main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1_yaw_clock()
+				self.__enter_sequence_main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1_stop_rotation_default()
+				self.__main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_react(0)
+				transitioned_after = 0
+		#If no transition was taken
+		if transitioned_after == transitioned_before:
+			#then execute local reactions.
+			transitioned_after = self.__main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_react(transitioned_before)
+		return transitioned_after
+	
+	
+	def __main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1_yaw_anti_clock_react(self, transitioned_before):
+		"""Implementation of __main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1_yaw_anti_clock_react function.
+		"""
+		#The reactions of state Yaw anti_clock.
+		transitioned_after = transitioned_before
+		if transitioned_after < 0:
+			if self.imu.yaw == 0.0:
+				self.__exit_sequence_main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1_yaw_anti_clock()
+				self.__enter_sequence_main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1_stop_rotation_default()
+				self.__main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_react(0)
+				transitioned_after = 0
+		#If no transition was taken
+		if transitioned_after == transitioned_before:
+			#then execute local reactions.
+			transitioned_after = self.__main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_react(transitioned_before)
+		return transitioned_after
+	
+	
+	def __main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1_stop_rotation_react(self, transitioned_before):
+		"""Implementation of __main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1_stop_rotation_react function.
+		"""
+		#The reactions of state Stop rotation.
+		transitioned_after = transitioned_before
+		if transitioned_after < 0:
+			if (self.__time_events[0]) and (self.laser_distance.dright_mean < self.laser_distance.dleft_mean):
+				self.__exit_sequence_main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1_stop_rotation()
+				self.__time_events[0] = False
+				self.__enter_sequence_main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1_closer_right_default()
+				self.__main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_react(0)
+				transitioned_after = 0
+			elif (self.__time_events[1]) and (self.laser_distance.dright_mean > self.laser_distance.dleft_mean):
+				self.__exit_sequence_main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1_stop_rotation()
+				self.__time_events[1] = False
+				self.__enter_sequence_main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1_closer_left_default()
+				self.__main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_react(0)
+				transitioned_after = 0
+		#If no transition was taken
+		if transitioned_after == transitioned_before:
+			#then execute local reactions.
+			transitioned_after = self.__main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_react(transitioned_before)
+		return transitioned_after
+	
+	
+	def __main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1_closer_left_react(self, transitioned_before):
+		"""Implementation of __main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1_closer_left_react function.
+		"""
+		#The reactions of state Closer left.
+		transitioned_after = transitioned_before
+		if transitioned_after < 0:
+			if self.imu.yaw == 90.0:
+				self.__exit_sequence_main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1_closer_left()
+				self.__enter_sequence_main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1_stop_rotation_alignment_default()
+				self.__main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_react(0)
+				transitioned_after = 0
+		#If no transition was taken
+		if transitioned_after == transitioned_before:
+			#then execute local reactions.
+			transitioned_after = self.__main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_react(transitioned_before)
+		return transitioned_after
+	
+	
+	def __main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1_closer_right_react(self, transitioned_before):
+		"""Implementation of __main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1_closer_right_react function.
+		"""
+		#The reactions of state Closer right.
+		transitioned_after = transitioned_before
+		if transitioned_after < 0:
+			if self.imu.yaw == -(90.0):
+				self.__exit_sequence_main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1_closer_right()
+				self.__enter_sequence_main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1_stop_rotation_alignment_default()
+				self.__main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_react(0)
+				transitioned_after = 0
+		#If no transition was taken
+		if transitioned_after == transitioned_before:
+			#then execute local reactions.
+			transitioned_after = self.__main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_react(transitioned_before)
+		return transitioned_after
+	
+	
+	def __main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1_stop_rotation_alignment_react(self, transitioned_before):
+		"""Implementation of __main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1_stop_rotation_alignment_react function.
+		"""
+		#The reactions of state Stop rotation alignment.
+		transitioned_after = transitioned_before
+		if transitioned_after < 0:
+			if self.__time_events[2]:
+				self.__exit_sequence_main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1_stop_rotation_alignment()
+				self.__time_events[2] = False
+				self.__enter_sequence_main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1_forward_default()
+				self.__main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_react(0)
+				transitioned_after = 0
+		#If no transition was taken
+		if transitioned_after == transitioned_before:
+			#then execute local reactions.
+			transitioned_after = self.__main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_react(transitioned_before)
+		return transitioned_after
+	
+	
+	def __main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1_forward_react(self, transitioned_before):
+		"""Implementation of __main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1_forward_react function.
+		"""
+		#The reactions of state Forward.
+		transitioned_after = transitioned_before
+		if transitioned_after < 0:
+			if self.laser_distance.dfront_mean == self.laser_distance.dback_mean:
+				self.__exit_sequence_main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1_forward()
+				self.__enter_sequence_main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1_centered_default()
+				self.__main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_react(0)
+				transitioned_after = 0
+		#If no transition was taken
+		if transitioned_after == transitioned_before:
+			#then execute local reactions.
+			transitioned_after = self.__main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_react(transitioned_before)
+		return transitioned_after
+	
+	
+	def __main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1_centered_react(self, transitioned_before):
+		"""Implementation of __main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1_centered_react function.
+		"""
+		#The reactions of state Centered.
+		transitioned_after = transitioned_before
+		if transitioned_after < 0:
+			if (self.__time_events[3]) and (self.__turn_clock):
+				self.__exit_sequence_main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1_centered()
+				self.__time_events[3] = False
+				self.__enter_sequence_main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1_turn_clockwise_default()
+				self.__main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_react(0)
+				transitioned_after = 0
+			elif (self.__time_events[4]) and (self.__turn_count_clock):
+				self.__exit_sequence_main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1_centered()
+				self.__time_events[4] = False
+				self.__enter_sequence_main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1_turn_anti_clockwise_default()
+				self.__main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_react(0)
+				transitioned_after = 0
+		#If no transition was taken
+		if transitioned_after == transitioned_before:
+			#then execute local reactions.
+			transitioned_after = self.__main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_react(transitioned_before)
+		return transitioned_after
+	
+	
+	def __main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1_turn_anti_clockwise_react(self, transitioned_before):
+		"""Implementation of __main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1_turn_anti_clockwise_react function.
+		"""
+		#The reactions of state Turn anti-clockwise.
+		transitioned_after = transitioned_before
+		if transitioned_after < 0:
+			if self.imu.yaw == 0.0:
+				self.__exit_sequence_main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1_turn_anti_clockwise()
+				self.__enter_sequence_main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1_centered___aligned_default()
+				self.__main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_react(0)
+				transitioned_after = 0
+		#If no transition was taken
+		if transitioned_after == transitioned_before:
+			#then execute local reactions.
+			transitioned_after = self.__main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_react(transitioned_before)
+		return transitioned_after
+	
+	
+	def __main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1_turn_clockwise_react(self, transitioned_before):
+		"""Implementation of __main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1_turn_clockwise_react function.
+		"""
+		#The reactions of state Turn clockwise.
+		transitioned_after = transitioned_before
+		if transitioned_after < 0:
+			if self.imu.yaw == 0.0:
+				self.__exit_sequence_main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1_turn_clockwise()
+				self.__enter_sequence_main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1_centered___aligned_default()
+				self.__main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_react(0)
+				transitioned_after = 0
+		#If no transition was taken
+		if transitioned_after == transitioned_before:
+			#then execute local reactions.
+			transitioned_after = self.__main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_react(transitioned_before)
+		return transitioned_after
+	
+	
+	def __main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1_centered___aligned_react(self, transitioned_before):
+		"""Implementation of __main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1_centered___aligned_react function.
+		"""
+		#The reactions of state Centered & Aligned.
+		transitioned_after = transitioned_before
+		#Always execute local reactions.
+		transitioned_after = self.__main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_react(transitioned_before)
+		return transitioned_after
+	
+	
+	def __main_region_initial_calibration_react(self, transitioned_before):
+		"""Implementation of __main_region_initial_calibration_react function.
+		"""
+		#The reactions of state Initial Calibration.
+		transitioned_after = transitioned_before
+		#Always execute local reactions.
+		transitioned_after = self.__react(transitioned_before)
+		return transitioned_after
+	
+	
 	def __clear_in_events(self):
 		"""Implementation of __clear_in_events function.
 		"""
@@ -801,6 +1532,11 @@ class Model:
 		self.computer.s_press = False
 		self.computer.d_press = False
 		self.computer.x_press = False
+		self.__time_events[0] = False
+		self.__time_events[1] = False
+		self.__time_events[2] = False
+		self.__time_events[3] = False
+		self.__time_events[4] = False
 	
 	
 	def __micro_step(self):
@@ -817,12 +1553,41 @@ class Model:
 			self.__main_region_manual_r1_rotations_r1_incr__rot__speed_right_react(-1)
 		elif state == self.State.main_region_manual_r1rotations_r1incr__rot__speed_left:
 			self.__main_region_manual_r1_rotations_r1_incr__rot__speed_left_react(-1)
+		elif state == self.State.main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1initial:
+			self.__main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1_initial_react(-1)
+		elif state == self.State.main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1yaw_clock:
+			self.__main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1_yaw_clock_react(-1)
+		elif state == self.State.main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1yaw_anti_clock:
+			self.__main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1_yaw_anti_clock_react(-1)
+		elif state == self.State.main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1stop_rotation:
+			self.__main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1_stop_rotation_react(-1)
+		elif state == self.State.main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1closer_left:
+			self.__main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1_closer_left_react(-1)
+		elif state == self.State.main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1closer_right:
+			self.__main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1_closer_right_react(-1)
+		elif state == self.State.main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1stop_rotation_alignment:
+			self.__main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1_stop_rotation_alignment_react(-1)
+		elif state == self.State.main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1forward:
+			self.__main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1_forward_react(-1)
+		elif state == self.State.main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1centered:
+			self.__main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1_centered_react(-1)
+		elif state == self.State.main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1turn_anti_clockwise:
+			self.__main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1_turn_anti_clockwise_react(-1)
+		elif state == self.State.main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1turn_clockwise:
+			self.__main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1_turn_clockwise_react(-1)
+		elif state == self.State.main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1centered___aligned:
+			self.__main_region_automatic_drive_straight__turn_right__turn_left_c__calibration_calibration_r1_centered___aligned_react(-1)
+		elif state == self.State.main_region_initial_calibration:
+			self.__main_region_initial_calibration_react(-1)
 	
 	
 	def run_cycle(self):
 		"""Implementation of run_cycle function.
 		"""
 		#Performs a 'run to completion' step.
+		if self.timer_service is None:
+			raise ValueError('Timer service must be set.')
+		
 		if self.__is_executing:
 			return
 		self.__is_executing = True
@@ -845,6 +1610,9 @@ class Model:
 		"""Implementation of enter function.
 		"""
 		#Activates the state machine.
+		if self.timer_service is None:
+			raise ValueError('Timer service must be set.')
+		
 		if self.__is_executing:
 			return
 		self.__is_executing = True

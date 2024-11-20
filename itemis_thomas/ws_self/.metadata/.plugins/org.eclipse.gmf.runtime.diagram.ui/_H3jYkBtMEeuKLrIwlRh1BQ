@@ -1,9 +1,11 @@
-#Thu Nov 07 10:22:37 CET 2024
+#Thu Nov 14 13:11:39 CET 2024
 print.useInches=true
 rulergrid.rulerunit=0
 print.margin.left=0.5
+viewport.x=-20
 rulergrid.gridlinestyle=6
-zoom=1.0
+viewport.y=574
+zoom=0.8
 print.usePortrait=true
 print.page.height=11.0
 print.page.width=8.5

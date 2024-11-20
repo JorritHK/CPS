@@ -5,7 +5,7 @@
       <vertices xsi:type="sgraph:Entry" xmi:id="_H3fuNBtMEeuKLrIwlRh1BQ">
         <outgoingTransitions xmi:id="_H3fuNRtMEeuKLrIwlRh1BQ" target="_H3fuNhtMEeuKLrIwlRh1BQ"/>
       </vertices>
-      <vertices xsi:type="sgraph:State" xmi:id="_H3fuNhtMEeuKLrIwlRh1BQ" specification="entry / output.speed = 0.0&#xA;entry / output.rotation = 0.0&#xA;entry/ counter = 1" name="Stopped" incomingTransitions="_H3fuNRtMEeuKLrIwlRh1BQ _HBJLIJz7Ee-Xz_UnYjdxfg">
+      <vertices xsi:type="sgraph:State" xmi:id="_H3fuNhtMEeuKLrIwlRh1BQ" specification="entry / output.speed = 0.0&#xA;entry / output.rotation = 0.0" name="Stopped" incomingTransitions="_H3fuNRtMEeuKLrIwlRh1BQ _HBJLIJz7Ee-Xz_UnYjdxfg">
         <outgoingTransitions xmi:id="_MtWTQJzrEe-A-qcX_vQmtA" specification="computer.w_press" target="_Mtp1SZzrEe-A-qcX_vQmtA"/>
         <outgoingTransitions xmi:id="_Mte2IJzrEe-A-qcX_vQmtA" specification="computer.x_press" target="_Mth5cJzrEe-A-qcX_vQmtA"/>
         <outgoingTransitions xmi:id="_RL69EJz7Ee-Xz_UnYjdxfg" specification="computer.d_press" target="_Enn2YJz4Ee-Xz_UnYjdxfg"/>
