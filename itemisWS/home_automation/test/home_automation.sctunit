@@ -151,3 +151,4 @@ testclass home_automation for statechart Statechart {
         exit
     }
 }
+
