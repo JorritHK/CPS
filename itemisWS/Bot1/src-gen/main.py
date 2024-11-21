@@ -30,12 +30,14 @@ from rclpy.node import Node
 from geometry_msgs.msg import Quaternion
 from geometry_msgs.msg import Twist
 
+from grid.util import Callback as UtilCallback
 
 class SCTConnect():
 
     """
     initialise class and main variables
     """
+
     def __init__(self):
         # start the ROS 2 node
         rclpy.init()
@@ -43,6 +45,10 @@ class SCTConnect():
 
         # Initialize the statecharts
         self.sm = Model()
+
+        # setup callback
+        self.sm.internal_operation_callback = UtilCallback()
+    
 
     """
     Setup the statemachine and the ROS 2 node

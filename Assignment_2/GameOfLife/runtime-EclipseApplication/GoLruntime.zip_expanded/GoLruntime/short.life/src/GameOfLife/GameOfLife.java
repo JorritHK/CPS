@@ -12,14 +12,15 @@ import javax.swing.*;
  * mathematician John Conway.
  */
 public class GameOfLife extends JFrame implements ActionListener {
-    private static final Dimension DEFAULT_WINDOW_SIZE = new Dimension(800, 600);
-    private static final Dimension MINIMUM_WINDOW_SIZE = new Dimension(400, 400);
+	private static Point newDem = RulesOfLife.getGridSize();
     private static final int BLOCK_SIZE = 10;
+    private static final Dimension DEFAULT_WINDOW_SIZE = new Dimension(newDem.x * BLOCK_SIZE + 100, newDem.y * BLOCK_SIZE + 100);
+    private static final Dimension MINIMUM_WINDOW_SIZE = new Dimension(400, 400);
  
     private JMenuBar mb_menu;
     private JMenu m_file, m_game, m_help;
     private JMenuItem mi_file_options, mi_file_exit;
-    private JMenuItem mi_game_autofill, mi_game_play, mi_game_stop, mi_game_reset;
+    private JMenuItem mi_game_loadpreset, mi_game_play, mi_game_stop, mi_game_reset;
     private JMenuItem mi_help_about, mi_help_source;
     private int i_movesPerSecond = 3;
     private GameBoard gb_gameBoard;
@@ -55,8 +56,8 @@ public class GameOfLife extends JFrame implements ActionListener {
         m_file.add(mi_file_options);
         m_file.add(new JSeparator());
         m_file.add(mi_file_exit);
-        mi_game_autofill = new JMenuItem("Autofill");
-        mi_game_autofill.addActionListener(this);
+        mi_game_loadpreset = new JMenuItem("Reload Config Preset");
+        mi_game_loadpreset.addActionListener(this);
         mi_game_play = new JMenuItem("Play");
         mi_game_play.addActionListener(this);
         mi_game_stop = new JMenuItem("Stop");
@@ -64,7 +65,7 @@ public class GameOfLife extends JFrame implements ActionListener {
         mi_game_stop.addActionListener(this);
         mi_game_reset = new JMenuItem("Reset");
         mi_game_reset.addActionListener(this);
-        m_game.add(mi_game_autofill);
+        m_game.add(mi_game_loadpreset);
         m_game.add(new JSeparator());
         m_game.add(mi_game_play);
         m_game.add(mi_game_stop);
@@ -78,6 +79,9 @@ public class GameOfLife extends JFrame implements ActionListener {
         // Setup game board
         gb_gameBoard = new GameBoard();
         add(gb_gameBoard);
+        
+        // Add preset coordinates in initialization 
+        gb_gameBoard.addPresetCoordinates();
     }
  
     public void setGameBeingPlayed(boolean isBeingPlayed) {
@@ -122,31 +126,37 @@ public class GameOfLife extends JFrame implements ActionListener {
                 }
             });
             f_options.setVisible(true);
-        } else if (ae.getSource().equals(mi_game_autofill)) {
-            final JFrame f_autoFill = new JFrame();
-            f_autoFill.setTitle("Autofill");
-            f_autoFill.setSize(360, 60);
-            f_autoFill.setLocation((Toolkit.getDefaultToolkit().getScreenSize().width - f_autoFill.getWidth())/2, 
-                (Toolkit.getDefaultToolkit().getScreenSize().height - f_autoFill.getHeight())/2);
-            f_autoFill.setResizable(false);
-            JPanel p_autoFill = new JPanel();
-            p_autoFill.setOpaque(false);
-            f_autoFill.add(p_autoFill);
-            p_autoFill.add(new JLabel("What percentage should be filled? "));
-            Object[] percentageOptions = {"Select",5,10,15,20,25,30,40,50,60,70,80,90,95};
-            final JComboBox cb_percent = new JComboBox(percentageOptions);
-            p_autoFill.add(cb_percent);
-            cb_percent.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    if (cb_percent.getSelectedIndex() > 0) {
-                        gb_gameBoard.resetBoard();
-                        gb_gameBoard.randomlyFillBoard((Integer)cb_percent.getSelectedItem());
-                        f_autoFill.dispose();
-                    }
-                }
-            });
-            f_autoFill.setVisible(true);
+        } else if (ae.getSource().equals(mi_game_loadpreset)) {
+        	
+        	gb_gameBoard.resetBoard();
+            gb_gameBoard.addPresetCoordinates();
+        	
+        	
+        	
+//            final JFrame f_autoFill = new JFrame();
+//            f_autoFill.setTitle("Load Manual Preset");
+//            f_autoFill.setSize(360, 60);
+//            f_autoFill.setLocation((Toolkit.getDefaultToolkit().getScreenSize().width - f_autoFill.getWidth())/2, 
+//                (Toolkit.getDefaultToolkit().getScreenSize().height - f_autoFill.getHeight())/2);
+//            f_autoFill.setResizable(false);
+//            JPanel p_autoFill = new JPanel();
+//            p_autoFill.setOpaque(false);
+//            f_autoFill.add(p_autoFill);
+//            p_autoFill.add(new JLabel("What percentage should be filled? "));
+//            Object[] percentageOptions = {"Select",5,10,15,20,25,30,40,50,60,70,80,90,95};
+//            final JComboBox cb_percent = new JComboBox(percentageOptions);
+//            p_autoFill.add(cb_percent);
+//            cb_percent.addActionListener(new ActionListener() {
+//                @Override
+//                public void actionPerformed(ActionEvent e) {
+//                    if (cb_percent.getSelectedIndex() > 0) {
+//                        gb_gameBoard.resetBoard();
+//                        gb_gameBoard.addPresetCoordinates();
+//                        f_autoFill.dispose();
+//                    }
+//                }
+//            });
+//            f_autoFill.setVisible(true);
         } else if (ae.getSource().equals(mi_game_reset)) {
             gb_gameBoard.resetBoard();
             gb_gameBoard.repaint();
@@ -220,6 +230,15 @@ public class GameOfLife extends JFrame implements ActionListener {
                 }
             }
         }
+        
+        // Custom method added to load preset from .lifedsl
+        public void addPresetCoordinates() {
+        	ArrayList<Point> coordinates = RulesOfLife.getPresetCoordinates();
+        	for (Point point : coordinates) {
+        		addPoint(point.x, point.y);
+        	}
+        }
+
  
         @Override
         public void paintComponent(Graphics g) {
@@ -244,7 +263,11 @@ public class GameOfLife extends JFrame implements ActionListener {
         @Override
         public void componentResized(ComponentEvent e) {
             // Setup the game board size with proper boundries
-            d_gameBoardSize = new Dimension(getWidth()/BLOCK_SIZE-2, getHeight()/BLOCK_SIZE-2);
+//            d_gameBoardSize = new Dimension(getWidth()/BLOCK_SIZE-2, getHeight()/BLOCK_SIZE-2);
+//            updateArraySize();
+        	// Resize board based on input from DSL
+        	Point newDem = RulesOfLife.getGridSize();
+        	d_gameBoardSize = new Dimension(newDem.x, newDem.y);
             updateArraySize();
         }
         @Override
@@ -298,7 +321,7 @@ public class GameOfLife extends JFrame implements ActionListener {
                     if (gameBoard[i+1][j+1]) { surrounding++; }
                     
                     // Added the survival calculation from Rule Of Life module
-                    boolean alive = RuleOfLife.computeCellSurvival(gameBoard[i][j], surrounding);
+                    boolean alive = RulesOfLife.computeCellSurvival(gameBoard[i][j], surrounding);
                     if (alive) {
                     	survivingCells.add(new Point(i-1, j-1));
                     }

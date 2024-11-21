@@ -1,0 +1,29 @@
+
+
+// This is testing a version of Game of Life called InverseLife (Jason Rampe)
+// B3678/S23
+
+// The inital board has two known 'spaceships' for this variant
+
+
+ // uncommenting 'active' will mean RulesOfLife.java will be generated using this .lifedsl file
+ 
+//active
+
+// Initial board
+Coordinates =  [31, 38]  [30, 39] [32, 39]  [30,40] [31,40] [32,40]  [30,41] [31,41] // small spaceship
+	[60, 40] [61, 40] [62, 40]  [62, 41] [61, 42]
+
+GridSize = [100 x 60]
+
+//Rules
+Rules:
+	default: die
+	
+	be born if [ = 3 ] companions 
+	be born if [ = 6 ] companions 
+	be born if [ = 7 ] companions 
+	be born if [ = 8 ] companions 
+	
+	survive if [ = 2 ] companions
+	survive if [ = 3 ] companions

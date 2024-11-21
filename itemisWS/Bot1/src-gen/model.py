@@ -308,6 +308,9 @@ class Model:
 		self.__calibrated_yaw = None
 		self.__degree_off_orientation = None
 		self.__normalized_yaw = None
+		self.GRID_DIRECTION_Y = -(1)
+		self.GRID_DIRECTION_X = 1
+		self.internal_operation_callback = None
 		
 		# enumeration of all states:
 		self.__State = Model.State
@@ -546,6 +549,7 @@ class Model:
 		"""
 		#Entry action for state 'calibrate'.
 		self.start_pos.set_zero = True
+		self.internal_operation_callback.debug("Calibrating...")
 		
 	def __entry_action_main_region_test_logging_grid_record_r1_start_record(self):
 		""".
@@ -558,6 +562,7 @@ class Model:
 		self.grid.wall_left = 1
 		self.grid.wall_right = 1
 		self.grid.wall_back = 0
+		self.internal_operation_callback.debug_real("normalizedYaw", self.__normalized_yaw)
 		self.__completed = True
 		
 	def __entry_action_main_region_test_logging_grid_record_r1_orientation_north(self):
@@ -1553,8 +1558,8 @@ class Model:
 			if transitioned_after == transitioned_before:
 				#then execute local reactions.
 				if self.__time_events[0]:
-					self.__calibrated_x = ((self.odom.x - self.start_pos.zero_x))
-					self.__calibrated_y = ((self.odom.y - self.start_pos.zero_y))
+					self.__calibrated_x = (((self.odom.x - self.start_pos.zero_x)) * self.GRID_DIRECTION_X)
+					self.__calibrated_y = (((self.odom.y - self.start_pos.zero_y)) * self.GRID_DIRECTION_Y)
 					self.__cur_x = (int(((self.__calibrated_x / self.grid.grid_size))))
 					self.__cur_y = (int(((self.__calibrated_y / self.grid.grid_size))))
 					self.grid.column = self.__cur_x
@@ -1562,6 +1567,9 @@ class Model:
 					self.__calibrated_yaw = (self.imu.yaw - self.start_pos.zero_south_degree)
 					self.__degree_off_orientation = (((self.__calibrated_yaw + 180)) % 90)
 					self.grid.receive = True
+					self.internal_operation_callback.debug_real("curX", self.__cur_x)
+					self.internal_operation_callback.debug_real("curY", self.__cur_y)
+					self.internal_operation_callback.debug_bool("is gird visited", self.grid.visited)
 				transitioned_after = self.__main_region_test_react(transitioned_before)
 		return transitioned_after
 	
@@ -1627,6 +1635,9 @@ class Model:
 		if self.timer_service is None:
 			raise ValueError('Timer service must be set.')
 		
+		if self.internal_operation_callback is None:
+			raise ValueError("Internal operation callback must be set.")
+		
 		if self.__is_executing:
 			return
 		self.__is_executing = True
@@ -1659,6 +1670,9 @@ class Model:
 		#Activates the state machine.
 		if self.timer_service is None:
 			raise ValueError('Timer service must be set.')
+		
+		if self.internal_operation_callback is None:
+			raise ValueError("Internal operation callback must be set.")
 		
 		if self.__is_executing:
 			return

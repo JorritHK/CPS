@@ -3,8 +3,15 @@
  */
 package life.game.validation
 
+import java.util.ArrayList
+import java.util.Arrays
+import java.util.stream.IntStream
+import life.game.gameOfLifeDSL.Consequence
+import life.game.gameOfLifeDSL.DefaultConsequence
 import life.game.gameOfLifeDSL.GameOfLifeDSLPackage
+import life.game.gameOfLifeDSL.GameSpec
 import life.game.gameOfLifeDSL.Rule
+import life.game.gameOfLifeDSL.Rules
 import org.eclipse.xtext.validation.Check
 
 /**
@@ -28,10 +35,140 @@ class GameOfLifeDSLValidator extends AbstractGameOfLifeDSLValidator {
 	@Check
 	def checkSensibleNeighbors(Rule rule){
 		if (rule.reason.condition.neighbors > 8) {
-			error('Neighbor condition can not be larger than 8 since a cell has only 8 neighboring cells', null
+			error('Neighbor condition can not be larger than 8 since a cell has only 8 neighboring cells', rule.reason.condition, GameOfLifeDSLPackage.Literals.CONDITION__NEIGHBORS
 //				GameOfLifeDSLPackage.Literals.CONDITION__NEIGHBORS
 			)
 		}
 	}
+	
+	@Check
+	def defaultNotSet(Rules ruleSet) {
+		var DefaultConsequence defaultConsequence = ruleSet.defaultConsequence;
+		
+		if (defaultConsequence === DefaultConsequence.EMPTY) {
+			defaultConsequence = DefaultConsequence.DEATH;
+			info("No default outcome specified, meaning cells unaffected by rules will: " + defaultConsequence, GameOfLifeDSLPackage.Literals.RULES__DEFAULT_CONSEQUENCE)
+		}
+	}
+	
+	@Check
+	def defaultCorrespondsRules(Rules ruleSet) {
+		
+		var DefaultConsequence defaultConsequence = ruleSet.defaultConsequence;
+		
+		if (defaultConsequence === DefaultConsequence.EMPTY) {
+			defaultConsequence = DefaultConsequence.DEATH;
+		}
+
+		for (r: ruleSet.rules) {
+			val String dc = defaultConsequence.literal;
+			val String rc = r.consequence.literal;
+			if (dc.equals(rc)) {
+				warning("Rule has same consequence as the default, meaning it will have no effect.", r, GameOfLifeDSLPackage.Literals.RULE__CONSEQUENCE);
+			}
+		}
+		
+	}
+	
+	@Check
+	def checkRulesForOverlap(Rules ruleSet) {
+		val ArrayList<Integer> affectedInts = new ArrayList();
+		
+		for (r: ruleSet.rules) {
+			if (r.consequence !== Consequence.BORN) {
+
+				val condition = r.reason.condition;
+				if (condition.operator.EQUAL !== null) {
+			 		if (affectedInts.contains(condition.neighbors)) {
+			 			error(
+			 			"Rule affects neighbor amount, which is already covered by another rule: " + condition.neighbors,
+			 			condition,
+			 			GameOfLifeDSLPackage.Literals.CONDITION__NEIGHBORS)
+		 			}
+		 			affectedInts.add(condition.neighbors);
+	 			}
+		 		else if (condition.operator.SMALLER !== null) {
+		 			val neighborList = IntStream.range(0, condition.neighbors).toArray();
+		 			val overlap = getSubsection(affectedInts, new ArrayList(neighborList));
+		 			if (overlap.size() > 0) {
+		 				error("Rule creates overlap with another previously specified rule" + Arrays.toString(overlap.toArray()),
+		 					condition,
+		 					GameOfLifeDSLPackage.Literals.CONDITION__NEIGHBORS
+		 				)
+		 			}
+		 			affectedInts.addAll(neighborList);
+			 	}
+			 	else if (condition.operator.LARGER !== null) {
+		 			val neighborList = IntStream.rangeClosed(condition.neighbors + 1, 8).toArray();
+		 			val overlap = getSubsection(affectedInts, new ArrayList(neighborList));
+		 			if (overlap.size() > 0) {
+		 				error("Rule creates overlap with another previously specified rule" + Arrays.toString(overlap.toArray()),
+		 					condition,
+		 					GameOfLifeDSLPackage.Literals.CONDITION__NEIGHBORS
+		 				)
+		 			}
+		 			affectedInts.addAll(neighborList);
+			 	}
+		 	}
+		}
+	}
+	
+	def static ArrayList<Integer> getSubsection(ArrayList<Integer> A, ArrayList<Integer> B) {
+		
+		val ArrayList<Integer> result = new ArrayList();
+        for (b: B) {
+ 
+            // Removing the elements from the collection
+            if (A.contains(b) == true) {
+                result.add(b);
+            }
+        }
+        return result;
+    }
+	
+	
+	
+	
+	
+	public static val INVALID_COORD = 'invalidCoordinate'
+
+	@Check
+	def checkCoordinateDoesNotExceedGrid(GameSpec root) {
+		// Check coordinates based on user specified grid 
+		if (root.coordinates !== null && root.grid !== null) {
+	        for (coordinate : root.coordinates.coordlist) {
+	            if (coordinate.x > root.grid.gridNum.x) {
+	            	error("The x-coordinate value: " + coordinate.x +" cannot exceed grid size of " + root.grid.gridNum.x + "!",
+	            		 	coordinate, 
+      						GameOfLifeDSLPackage.Literals.COORDINATE__X,
+      						INVALID_COORD            		
+	            	);
+	            } if (coordinate.y > root.grid.gridNum.y) {
+	            	error("The y-coordinate value: " + coordinate.y +" cannot exceed grid size of " + root.grid.gridNum.y + "!",
+	            		 	coordinate, 
+      						GameOfLifeDSLPackage.Literals.COORDINATE__Y,
+      						INVALID_COORD            		
+	            	);
+	            }
+	        } 
+	    } else if (root.coordinates !== null && root.grid === null) { // If not grid specified, add warning and different error messages
+	    	warning("When no grid is specified, the default size is [20x20]. Example implementation: GridSize = [50 x 70]", null, null);
+	        for (coordinate : root.coordinates.coordlist) {
+	            if (coordinate.x > 20) {
+	            	error("The x-coordinate value: " + coordinate.x +" cannot exceed grid size of 20!",
+	            		 	coordinate, 
+      						GameOfLifeDSLPackage.Literals.COORDINATE__X,
+      						INVALID_COORD            		
+	            	);
+	            } if (coordinate.y > 20) {
+	            	error("The y-coordinate value: " + coordinate.y +" cannot exceed grid size of 20!",
+	            		 	coordinate, 
+      						GameOfLifeDSLPackage.Literals.COORDINATE__Y,
+      						INVALID_COORD            		
+	            	);
+	            }
+	        }
+	    }
+	}	
 	
 }
