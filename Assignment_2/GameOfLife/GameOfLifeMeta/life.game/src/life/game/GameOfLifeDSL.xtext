@@ -2,9 +2,35 @@ grammar life.game.GameOfLifeDSL with org.eclipse.xtext.common.Terminals
 
 generate gameOfLifeDSL "http://www.game.life/GameOfLifeDSL"
 
-Model:
-	greetings+=Greeting*;
-	
-Greeting:
-	'Hello' name=ID '!'
-	'Age:' age=INT;
+
+GameSpec:
+	(active='active')?
+	(coordinates=Coordinates)?
+	(grid=GridSize)?
+//	(rules=Rules)?
+;
+
+Coordinates: {Coordinates} 'Coordinates' '=' coordlist+=Coordinate*;
+
+Coordinate: '[' x=INT ',' y=INT ']';
+
+GridSize : {GridSize} 'GridSize' '=' gridNum=Grid;
+
+Grid: '[' x=INT 'x' y=INT ']';
+
+    // Coords = [1,2],[1,2]
+//Action: LunchAction | MeetingAction | PaperAction | PaymentAction
+//;
+//LunchAction: 'Lunch' location = ID
+//;
+//MeetingAction: 'Meeting' topic = STRING
+//;
+//PaperAction: 'Report' report = ID
+//;
+//PaymentAction: 'Pay' amount = INT 'euro'
+//;
+//enum TimeUnit:
+//MINUTE = 'min' |
+//HOUR = 'hour' |
+//DAY = 'day' |
+//WEEK = 'week';

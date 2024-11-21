@@ -3,6 +3,9 @@
  */
 package life.game.validation
 
+import life.game.gameOfLifeDSL.GameOfLifeDSLPackage
+import life.game.gameOfLifeDSL.GameSpec
+import org.eclipse.xtext.validation.Check
 
 /**
  * This class contains custom validation rules. 
@@ -11,15 +14,44 @@ package life.game.validation
  */
 class GameOfLifeDSLValidator extends AbstractGameOfLifeDSLValidator {
 	
-//	public static val INVALID_NAME = 'invalidName'
-//
-//	@Check
-//	def checkGreetingStartsWithCapital(Greeting greeting) {
-//		if (!Character.isUpperCase(greeting.name.charAt(0))) {
-//			warning('Name should start with a capital', 
-//					GameOfLifeDSLPackage.Literals.GREETING__NAME,
-//					INVALID_NAME)
-//		}
-//	}
-	
+	public static val INVALID_COORD = 'invalidCoordinate'
+
+	@Check
+	def checkCoordinateDoesNotExceedGrid(GameSpec root) {
+		// Check coordinates based on user specified grid 
+		if (root.coordinates !== null && root.grid !== null) {
+	        for (coordinate : root.coordinates.coordlist) {
+	            if (coordinate.x > root.grid.gridNum.x) {
+	            	error("The x-coordinate value: " + coordinate.x +" cannot exceed grid size of " + root.grid.gridNum.x + "!",
+	            		 	coordinate, 
+      						GameOfLifeDSLPackage.Literals.COORDINATE__X,
+      						INVALID_COORD            		
+	            	);
+	            } if (coordinate.y > root.grid.gridNum.y) {
+	            	error("The y-coordinate value: " + coordinate.y +" cannot exceed grid size of " + root.grid.gridNum.y + "!",
+	            		 	coordinate, 
+      						GameOfLifeDSLPackage.Literals.COORDINATE__Y,
+      						INVALID_COORD            		
+	            	);
+	            }
+	        } 
+	    } else if (root.coordinates !== null && root.grid === null) { // If not grid specified, add warning and different error messages
+	    	warning("When no grid is specified, the default size is [20x20]. Example implementation: GridSize = [50 x 70]", null, null);
+	        for (coordinate : root.coordinates.coordlist) {
+	            if (coordinate.x > 20) {
+	            	error("The x-coordinate value: " + coordinate.x +" cannot exceed grid size of 20!",
+	            		 	coordinate, 
+      						GameOfLifeDSLPackage.Literals.COORDINATE__X,
+      						INVALID_COORD            		
+	            	);
+	            } if (coordinate.y > 20) {
+	            	error("The y-coordinate value: " + coordinate.y +" cannot exceed grid size of 20!",
+	            		 	coordinate, 
+      						GameOfLifeDSLPackage.Literals.COORDINATE__Y,
+      						INVALID_COORD            		
+	            	);
+	            }
+	        }
+	    }
+	}	
 }
