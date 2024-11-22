@@ -6,6 +6,7 @@ package life.game.ui.quickfix
 import life.game.gameOfLifeDSL.Coordinate
 import life.game.gameOfLifeDSL.GameSpec
 import life.game.validation.GameOfLifeDSLValidator
+import org.eclipse.emf.ecore.EObject
 import org.eclipse.xtext.resource.XtextResource
 import org.eclipse.xtext.ui.editor.quickfix.DefaultQuickfixProvider
 import org.eclipse.xtext.ui.editor.quickfix.Fix
@@ -33,31 +34,36 @@ class GameOfLifeDSLQuickfixProvider extends DefaultQuickfixProvider {
 			context |
 			val xtextDocument = context.xtextDocument
 			
-			val element = xtextDocument.readOnly[ state |
-                val resource = state as XtextResource
-                resource.getEObject(issue.uriToProblem.toString)
-            ] as Coordinate
-			val root = element.eContainer.eContainer as GameSpec
+			// I spent a long time trying to implement a dynamic quickfix, so it would replace the out of range
+			// number with one in range, however, the quickfix would not work with line 43 uncommented, even if I 
+			// don't use root at all.
 			
-			var xgrid = 20
-			var ygrid = 20
-
+//			val element = xtextDocument.readOnly[ state |
+//                val resource = state as XtextResource
+//                resource.getEObject(issue.uriToProblem.toString())
+//            ] as Coordinate
+//			val root = element.eContainer.eContainer as GameSpec
+//
+//			var xgrid = 20
+//			var ygrid = 20
+//
 //			if (root.grid !== null) {
 //				xgrid = root.grid.gridNum.x
 //				ygrid = root.grid.gridNum.y
 //			}
 //			
-			// Check if x or y coordinate 
-			val replacex = xgrid/2
-			val replacey = ygrid/2
-			var replacement = ""
-			if (issue.data.get(0).equals('x')) {
-				replacement = replacex.toString
-			} else {
-				replacement = replacey.toString
-			}
+//			val replacex = xgrid/2
+//			val replacey = ygrid/2
+//			var replacement = ""
+//			if (issue.data.get(0).equals('x')) {
+//				replacement = replacex.toString
+//			} else {
+//				replacement = replacey.toString
+//			}
+//
+			val replace = 0
+			var replacement = replace.toString
 			
-			// if (issue.data.get(0).equals("x")) xreplace.toString else yreplace.toString
 			xtextDocument.replace(issue.offset, issue.length, replacement)
 		]
 	}
