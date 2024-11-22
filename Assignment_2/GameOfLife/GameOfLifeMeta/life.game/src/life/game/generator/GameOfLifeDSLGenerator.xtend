@@ -19,7 +19,7 @@ class GameOfLifeDSLGenerator extends AbstractGenerator {
 	override void doGenerate(Resource resource, IFileSystemAccess2 fsa, IGeneratorContext context) {
 		val root = resource.allContents.head as GameSpec;
 		if (root !== null) {
-			if (root.active.length > 0) {
+			if (root.active !== null) {
 				var path = "../src/GameOfLife/"
 				fsa.generateFile(path+"RulesOfLife.java", JavaGenerator.toText(root))	
 			}
@@ -27,5 +27,10 @@ class GameOfLifeDSLGenerator extends AbstractGenerator {
 			var path = "generated/" + resource.getURI().lastSegment + "/"
 			fsa.generateFile(path+"RulesOfLife.java", JavaGenerator.toText(root))
 		}
+//		fsa.generateFile('greetings.txt', 'People to greet: ' + 
+//			resource.allContents
+//				.filter(Greeting)
+//				.map[name]
+//				.join(', '))
 	}
 }

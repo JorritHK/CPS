@@ -3,7 +3,14 @@
  */
 package life.game.ui.quickfix
 
+import life.game.gameOfLifeDSL.Coordinate
+import life.game.gameOfLifeDSL.GameSpec
+import life.game.validation.GameOfLifeDSLValidator
+import org.eclipse.xtext.resource.XtextResource
 import org.eclipse.xtext.ui.editor.quickfix.DefaultQuickfixProvider
+import org.eclipse.xtext.ui.editor.quickfix.Fix
+import org.eclipse.xtext.ui.editor.quickfix.IssueResolutionAcceptor
+import org.eclipse.xtext.validation.Issue
 
 /**
  * Custom quickfixes.
@@ -11,14 +18,47 @@ import org.eclipse.xtext.ui.editor.quickfix.DefaultQuickfixProvider
  * See https://www.eclipse.org/Xtext/documentation/310_eclipse_support.html#quick-fixes
  */
 class GameOfLifeDSLQuickfixProvider extends DefaultQuickfixProvider {
+	
+	// Quickfix for missing Rules keyword
+        
+	@Fix(GameOfLifeDSLValidator.INVALID_RANGE_COORD)
+	def centerCoordinate(Issue issue, IssueResolutionAcceptor acceptor) {
+		
+		acceptor.accept(
+			issue, 
+			'Change the number to in range', 
+			'Change the number.', 
+			null
+		) [
+			context |
+			val xtextDocument = context.xtextDocument
+			
+			val element = xtextDocument.readOnly[ state |
+                val resource = state as XtextResource
+                resource.getEObject(issue.uriToProblem.toString)
+            ] as Coordinate
+			val root = element.eContainer.eContainer as GameSpec
+			
+			var xgrid = 20
+			var ygrid = 20
 
-//	@Fix(GameOfLifeDSLValidator.INVALID_NAME)
-//	def capitalizeName(Issue issue, IssueResolutionAcceptor acceptor) {
-//		acceptor.accept(issue, 'Capitalize name', 'Capitalize the name.', 'upcase.png') [
-//			context |
-//			val xtextDocument = context.xtextDocument
-//			val firstLetter = xtextDocument.get(issue.offset, 1)
-//			xtextDocument.replace(issue.offset, 1, firstLetter.toUpperCase)
-//		]
-//	}
+//			if (root.grid !== null) {
+//				xgrid = root.grid.gridNum.x
+//				ygrid = root.grid.gridNum.y
+//			}
+//			
+			// Check if x or y coordinate 
+			val replacex = xgrid/2
+			val replacey = ygrid/2
+			var replacement = ""
+			if (issue.data.get(0).equals('x')) {
+				replacement = replacex.toString
+			} else {
+				replacement = replacey.toString
+			}
+			
+			// if (issue.data.get(0).equals("x")) xreplace.toString else yreplace.toString
+			xtextDocument.replace(issue.offset, issue.length, replacement)
+		]
+	}
 }

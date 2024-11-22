@@ -3,8 +3,15 @@
  */
 package life.game.validation
 
+import java.util.ArrayList 
+import java.util.Arrays
+import java.util.stream.IntStream
+import life.game.gameOfLifeDSL.Consequence
+import life.game.gameOfLifeDSL.DefaultConsequence
 import life.game.gameOfLifeDSL.GameOfLifeDSLPackage
 import life.game.gameOfLifeDSL.GameSpec
+import life.game.gameOfLifeDSL.Rule
+import life.game.gameOfLifeDSL.Rules
 import org.eclipse.xtext.validation.Check
 
 /**
@@ -14,7 +21,117 @@ import org.eclipse.xtext.validation.Check
  */
 class GameOfLifeDSLValidator extends AbstractGameOfLifeDSLValidator {
 	
-	public static val INVALID_COORD = 'invalidCoordinate'
+//	public static val INVALID_NAME = 'invalidName'
+//
+//	@Check
+//	def checkGreetingStartsWithCapital(Greeting greeting) {
+//		if (!Character.isUpperCase(greeting.name.charAt(0))) {
+//			warning('Name should start with a capital', 
+//					GameOfLifeDSLPackage.Literals.GREETING__NAME,
+//					INVALID_NAME)
+//		}
+//	}
+
+	@Check
+	def checkSensibleNeighbors(Rule rule){
+		if (rule.reason.condition.neighbors > 8) {
+			error('Neighbor condition can not be larger than 8 since a cell has only 8 neighboring cells', rule.reason.condition, GameOfLifeDSLPackage.Literals.CONDITION__NEIGHBORS
+//				GameOfLifeDSLPackage.Literals.CONDITION__NEIGHBORS
+			)
+		}
+	}
+	
+	
+	
+	@Check
+	def defaultNotSet(Rules ruleSet) {
+		var DefaultConsequence defaultConsequence = ruleSet.defaultConsequence;
+		
+		if (defaultConsequence === DefaultConsequence.EMPTY) {
+			defaultConsequence = DefaultConsequence.DEATH;
+			error("No default outcome specified, meaning cells unaffected by rules will: " + defaultConsequence, 
+				GameOfLifeDSLPackage.Literals.RULES__DEFAULT_CONSEQUENCE
+			)
+		}
+	}
+	
+	@Check
+	def defaultCorrespondsRules(Rules ruleSet) {
+		
+		var DefaultConsequence defaultConsequence = ruleSet.defaultConsequence;
+		
+		if (defaultConsequence === DefaultConsequence.EMPTY) {
+			defaultConsequence = DefaultConsequence.DEATH;
+		}
+
+		for (r: ruleSet.rules) {
+			val String dc = defaultConsequence.literal;
+			val String rc = r.consequence.literal;
+			if (dc.equals(rc)) {
+				warning("Rule has same consequence as the default, meaning it will have no effect.", r, GameOfLifeDSLPackage.Literals.RULE__CONSEQUENCE);
+			}
+		}
+		
+	}
+	
+	@Check
+	def checkRulesForOverlap(Rules ruleSet) {
+		val ArrayList<Integer> affectedInts = new ArrayList();
+		
+		for (r: ruleSet.rules) {
+			if (r.consequence !== Consequence.BORN) {
+
+				val condition = r.reason.condition;
+				if (condition.operator.EQUAL !== null) {
+			 		if (affectedInts.contains(condition.neighbors)) {
+			 			error(
+			 			"Rule affects neighbor amount, which is already covered by another rule: " + condition.neighbors,
+			 			condition,
+			 			GameOfLifeDSLPackage.Literals.CONDITION__NEIGHBORS)
+		 			}
+		 			affectedInts.add(condition.neighbors);
+	 			}
+		 		else if (condition.operator.SMALLER !== null) {
+		 			val neighborList = IntStream.range(0, condition.neighbors).toArray();
+		 			val overlap = getSubsection(affectedInts, new ArrayList(neighborList));
+		 			if (overlap.size() > 0) {
+		 				error("Rule creates overlap with another previously specified rule" + Arrays.toString(overlap.toArray()),
+		 					condition,
+		 					GameOfLifeDSLPackage.Literals.CONDITION__NEIGHBORS
+		 				)
+		 			}
+		 			affectedInts.addAll(neighborList);
+			 	}
+			 	else if (condition.operator.LARGER !== null) {
+		 			val neighborList = IntStream.rangeClosed(condition.neighbors + 1, 8).toArray();
+		 			val overlap = getSubsection(affectedInts, new ArrayList(neighborList));
+		 			if (overlap.size() > 0) {
+		 				error("Rule creates overlap with another previously specified rule" + Arrays.toString(overlap.toArray()),
+		 					condition,
+		 					GameOfLifeDSLPackage.Literals.CONDITION__NEIGHBORS
+		 				)
+		 			}
+		 			affectedInts.addAll(neighborList);
+			 	}
+		 	}
+		}
+	}
+	
+	def static ArrayList<Integer> getSubsection(ArrayList<Integer> A, ArrayList<Integer> B) {
+		
+		val ArrayList<Integer> result = new ArrayList();
+        for (b: B) {
+ 
+            // Removing the elements from the collection
+            if (A.contains(b) == true) {
+                result.add(b);
+            }
+        }
+        return result;
+    }
+	
+		
+	public static val INVALID_RANGE_COORD = 'invalidCoordinate'
 
 	@Check
 	def checkCoordinateDoesNotExceedGrid(GameSpec root) {
@@ -25,13 +142,13 @@ class GameOfLifeDSLValidator extends AbstractGameOfLifeDSLValidator {
 	            	error("The x-coordinate value: " + coordinate.x +" cannot exceed grid size of " + root.grid.gridNum.x + "!",
 	            		 	coordinate, 
       						GameOfLifeDSLPackage.Literals.COORDINATE__X,
-      						INVALID_COORD            		
+      						INVALID_RANGE_COORD            		
 	            	);
 	            } if (coordinate.y > root.grid.gridNum.y) {
 	            	error("The y-coordinate value: " + coordinate.y +" cannot exceed grid size of " + root.grid.gridNum.y + "!",
 	            		 	coordinate, 
       						GameOfLifeDSLPackage.Literals.COORDINATE__Y,
-      						INVALID_COORD            		
+      						INVALID_RANGE_COORD            		
 	            	);
 	            }
 	        } 
@@ -42,16 +159,31 @@ class GameOfLifeDSLValidator extends AbstractGameOfLifeDSLValidator {
 	            	error("The x-coordinate value: " + coordinate.x +" cannot exceed grid size of 20!",
 	            		 	coordinate, 
       						GameOfLifeDSLPackage.Literals.COORDINATE__X,
-      						INVALID_COORD            		
+      						INVALID_RANGE_COORD            		
 	            	);
 	            } if (coordinate.y > 20) {
 	            	error("The y-coordinate value: " + coordinate.y +" cannot exceed grid size of 20!",
 	            		 	coordinate, 
       						GameOfLifeDSLPackage.Literals.COORDINATE__Y,
-      						INVALID_COORD            		
+      						INVALID_RANGE_COORD            		
 	            	);
 	            }
 	        }
 	    }
-	}	
+	}
+	
+//	@Check
+//	def checkForCoordinatesSpelling(GameSpec root) {
+//	    // Get all issues and check if the word "coordinates" is present in them
+//	    val allIssues = validatorContext.getAllIssues()
+//	    allIssues.forEach [ issue |
+//	        val rawText = issue.data.get(0) // Raw text from the issue
+//	        if (rawText != null && rawText.toLowerCase.contains("coordinates")) {
+//	            error("Did you mean 'Coordinates'?",
+//	                  issue, // Attach the issue to the correct location in the DSL
+//	                  GameOfLifeDSLValidator.INVALID_NAME)
+//	        }
+//	    ]
+//	}	
+	
 }
