@@ -5,8 +5,8 @@ generate gameOfLifeDSL "http://www.game.life/GameOfLifeDSL"
 // root structure
 GameSpec:
 	(active='active')?
-	(coordinates=Coordinates)?
 	(grid=GridSize)?
+	(initial=Initial)?
 	rules=Rules
 ;
 
@@ -16,6 +16,17 @@ Coordinates: {Coordinates} 'Coordinates' '=' coordlist+=Coordinate*;
 Coordinate: '[' x=INT ',' y=INT ']';
 
 GridSize : {GridSize} 'GridSize' '=' gridNum=Grid;
+
+
+Initial: {Initial} 'Initial:'
+	(coordinates = Coordinates)?
+	('Patterns:' patterns+=PatternRLE*)?
+;
+
+PatternRLE:
+	start = Coordinate
+	pattern = STRING
+;
 
 Grid: '[' x=INT 'x' y=INT ']';
 

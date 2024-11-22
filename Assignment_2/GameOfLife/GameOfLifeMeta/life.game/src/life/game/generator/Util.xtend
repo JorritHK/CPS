@@ -30,15 +30,61 @@ class Util {
 	
 	def static ArrayList<Point> getCoordinates(GameSpec gameSpec) {
 	    val coordinatesList = new ArrayList<Point>()
+	    val initialBoard = gameSpec.initial;
 	    
-	    if (gameSpec.coordinates !== null) {
-	        for (coordinate : gameSpec.coordinates.coordlist) {
+	    // Add manual point coordinates
+	    if (initialBoard.coordinates !== null) {
+	        for (coordinate : initialBoard.coordinates.coordlist) {
 	            // Create a Point and add it to the list
 	            coordinatesList.add(new Point(coordinate.x, coordinate.y))
 	        }
 	    }
 	    
-	    return coordinatesList
+	    // Add RLE patterns to the initial board Coordinates
+	   if (initialBoard.patterns !== null) {
+	   	for (p: initialBoard.patterns) {
+	   		val x = p.start.x;
+	   		val y = p.start.y;
+	   		
+	   		val char aliveChar = 'o';
+	   		
+	   		// Get pattern and replace line breaks
+	   		val String rle = p.pattern.replace("\n", "").replace("\r", "").replace("\\s", "").replace("!", "");
+	   		
+	   		val String[] rows = rle.split("\\$");
+	   		
+	   		for (i: 0 .. rows.size() - 1) {
+	   			val curY = y + i;
+	   			var curX = x;
+	   			
+	   			val tokens = rows.get(i).split("(?<=[bo])");
+	   			for (t: tokens) { // run count is 1
+	   				if (t.length !== 0) {
+		   				if (t.length === 1) {
+		   					if (t.equals("o")) {
+		   						coordinatesList.add(new Point(curX,curY));
+		   					}
+		   					curX += 1;
+		   				}
+		   				else { // run_count is not empty
+		   					val char tag = t.charAt(t.length() - 1);
+		   					val String rest = t.replaceFirst(".$","");
+		   					val amount = Integer.valueOf(rest);
+		   					if (tag == aliveChar) {
+		   						for (j: curX .. curX + amount - 1 ) {
+		   							coordinatesList.add(new Point(j, curY));
+		   						}
+		   					}
+		   					curX += amount;
+		   				}
+	   				}
+	   				
+   				}
+   			}
+   		 }
+    	}
+	    
+		return coordinatesList
 	}
 	
 	def static Point getGridSize(GameSpec gameSpec) {

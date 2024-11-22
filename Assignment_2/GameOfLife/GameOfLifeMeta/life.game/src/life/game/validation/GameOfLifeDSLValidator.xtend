@@ -7,11 +7,14 @@ import java.util.ArrayList
 import java.util.Arrays
 import java.util.stream.IntStream
 import life.game.gameOfLifeDSL.Consequence
+import life.game.gameOfLifeDSL.Coordinate
 import life.game.gameOfLifeDSL.DefaultConsequence
 import life.game.gameOfLifeDSL.GameOfLifeDSLPackage
 import life.game.gameOfLifeDSL.GameSpec
+import life.game.gameOfLifeDSL.PatternRLE
 import life.game.gameOfLifeDSL.Rule
 import life.game.gameOfLifeDSL.Rules
+import org.eclipse.emf.ecore.EObject
 import org.eclipse.xtext.validation.Check
 
 /**
@@ -21,22 +24,12 @@ import org.eclipse.xtext.validation.Check
  */
 class GameOfLifeDSLValidator extends AbstractGameOfLifeDSLValidator {
 	
-//	public static val INVALID_NAME = 'invalidName'
-//
-//	@Check
-//	def checkGreetingStartsWithCapital(Greeting greeting) {
-//		if (!Character.isUpperCase(greeting.name.charAt(0))) {
-//			warning('Name should start with a capital', 
-//					GameOfLifeDSLPackage.Literals.GREETING__NAME,
-//					INVALID_NAME)
-//		}
-//	}
 
 	@Check
 	def checkSensibleNeighbors(Rule rule){
 		if (rule.reason.condition.neighbors > 8) {
 			error('Neighbor condition can not be larger than 8 since a cell has only 8 neighboring cells', rule.reason.condition, GameOfLifeDSLPackage.Literals.CONDITION__NEIGHBORS
-//				GameOfLifeDSLPackage.Literals.CONDITION__NEIGHBORS
+
 			)
 		}
 	}
@@ -113,6 +106,7 @@ class GameOfLifeDSLValidator extends AbstractGameOfLifeDSLValidator {
 		}
 	}
 	
+	// helper function to get overlap between neighbor rules
 	def static ArrayList<Integer> getSubsection(ArrayList<Integer> A, ArrayList<Integer> B) {
 		
 		val ArrayList<Integer> result = new ArrayList();
@@ -131,44 +125,80 @@ class GameOfLifeDSLValidator extends AbstractGameOfLifeDSLValidator {
 	
 	
 	public static val INVALID_COORD = 'invalidCoordinate'
-
+	
+	
+	// Check whether gridSize exists and give warning if not
 	@Check
-	def checkCoordinateDoesNotExceedGrid(GameSpec root) {
-		// Check coordinates based on user specified grid 
-		if (root.coordinates !== null && root.grid !== null) {
-	        for (coordinate : root.coordinates.coordlist) {
-	            if (coordinate.x > root.grid.gridNum.x) {
-	            	error("The x-coordinate value: " + coordinate.x +" cannot exceed grid size of " + root.grid.gridNum.x + "!",
-	            		 	coordinate, 
-      						GameOfLifeDSLPackage.Literals.COORDINATE__X,
-      						INVALID_COORD            		
-	            	);
-	            } if (coordinate.y > root.grid.gridNum.y) {
-	            	error("The y-coordinate value: " + coordinate.y +" cannot exceed grid size of " + root.grid.gridNum.y + "!",
-	            		 	coordinate, 
-      						GameOfLifeDSLPackage.Literals.COORDINATE__Y,
-      						INVALID_COORD            		
-	            	);
-	            }
-	        } 
-	    } else if (root.coordinates !== null && root.grid === null) { // If not grid specified, add warning and different error messages
-	    	warning("When no grid is specified, the default size is [20x20]. Example implementation: GridSize = [50 x 70]", null, null);
-	        for (coordinate : root.coordinates.coordlist) {
-	            if (coordinate.x > 20) {
-	            	error("The x-coordinate value: " + coordinate.x +" cannot exceed grid size of 20!",
-	            		 	coordinate, 
-      						GameOfLifeDSLPackage.Literals.COORDINATE__X,
-      						INVALID_COORD            		
-	            	);
-	            } if (coordinate.y > 20) {
-	            	error("The y-coordinate value: " + coordinate.y +" cannot exceed grid size of 20!",
-	            		 	coordinate, 
-      						GameOfLifeDSLPackage.Literals.COORDINATE__Y,
-      						INVALID_COORD            		
-	            	);
-	            }
-	        }
+	def checkGridFalse(GameSpec root) {
+		val initial = root.initial;
+		if (initial.coordinates !== null && root.grid === null) { // If not grid specified, add warning and different error messages
+	    	warning("When no grid is specified, the default size is [100x60]. Example implementation: GridSize = [50 x 70]", null, null);
 	    }
-	}	
+	}
+	
+	// Check coordinates against grid (or default grid)
+	@Check
+	def checkCoordinates(Coordinate coordinate) {
+		val grid = getRoot(coordinate).grid;
+		var int maxX;
+		var int maxY;
+
+		if (grid !== null) {
+			maxX = grid.gridNum.x;
+			maxY = grid.gridNum.y;
+			
+		} else {
+			maxX = 100;
+			maxY = 60;
+		}
+		validateCoordinate(coordinate, maxX, maxY);
+	}
+	
+	
+	def GameSpec getRoot(EObject c) {
+		var EObject parent = c;
+		var EObject root;
+		while (parent !== null) {
+			root = parent
+			parent = root.eContainer();
+		}
+		return root as GameSpec;
+	}
+	
+	
+	
+	def validateCoordinate(Coordinate coordinate, int x, int y) {
+		// Check coordinates based on user specified grid 
+		if (coordinate.x > x) {
+        	error("The x-coordinate value: " + coordinate.x +" cannot exceed grid size of " + x + "!",
+        		 	coordinate, 
+					GameOfLifeDSLPackage.Literals.COORDINATE__X,
+					INVALID_COORD            		
+        	);
+        } if (coordinate.y > y) {
+        	error("The y-coordinate value: " + coordinate.y +" cannot exceed grid size of " + y + "!",
+        		 	coordinate, 
+					GameOfLifeDSLPackage.Literals.COORDINATE__Y,
+					INVALID_COORD            		
+        	);
+        }
+	}
+	
+	@Check
+	def validateRLEStructure(PatternRLE rle) {
+		
+		val String pattern = rle.pattern.replace("\n", "").replace("\r", "").replace("\\s", "");
+		
+		for (i: 0 .. pattern.length() - 1) {
+			val char c = pattern.charAt(i);
+			if (!String.valueOf(c).matches("[\\$bo!0-9]")) {
+				error(
+				"RLE pattern contains unsupported characters: " + c + " at location: " + i,
+				GameOfLifeDSLPackage.Literals.PATTERN_RLE__PATTERN
+				)
+			}
+			
+		}
+	}
 	
 }
