@@ -90,10 +90,26 @@ def create_wall(n, r, c, hor=True):
 
     return create_link(n, x_base + x_pos, y_base + y_pos, x_size, y_size, WALL_HEIGHT)
 
+# Rotate maze by 90 degrees clockwise
+def rotate_maze(h_ws,v_ws):
+    #new_h_walls = np.zeros((MAZE_SIZE + 1, MAZE_SIZE), dtype=bool)
+    #new_v_walls = np.zeros((MAZE_SIZE, MAZE_SIZE + 1), dtype=bool)
+    new_h_walls = np.zeros((MAZE_SIZE + 1, MAZE_SIZE))
+    new_v_walls = np.zeros((MAZE_SIZE, MAZE_SIZE + 1))
+    for i in range(MAZE_SIZE):
+        for j in range(MAZE_SIZE + 1):
+            new_h_walls[MAZE_SIZE - j,i] = v_ws[i,j]
+            new_v_walls[MAZE_SIZE-1-i,j] = h_ws[j,i]
+    return new_h_walls,new_v_walls
 
 # Generate the maze in SDF XML format in the file 'model.sdf' from the
 # horizontal and vertical wall matrices h_ws and v_ws.
-def generate_xml(h_ws, v_ws):
+def generate_xml(h_ws_raw, v_ws_raw):
+
+    #rotate
+    h_ws, v_ws = rotate_maze(h_ws_raw,v_ws_raw)
+
+
     # create sdf/model structure
     root = etree.Element('sdf', version='1.6')
     root.append(etree.Comment("Generated maze model"))
@@ -125,6 +141,18 @@ def generate():
     generate_xml(h_walls, v_walls)
 
 
+def animate_invalid_change(curr, final_color, remaining=8):
+    n = remaining - 1
+    if n % 2 == 1:
+      C.itemconfigure(curr, fill="red")
+    else:
+      C.itemconfigure(curr, fill=final_color)
+    if n > 0:
+      C.after(200, lambda : animate_invalid_change(curr,final_color,n))
+    else:
+      C.itemconfigure(curr, fill=final_color)
+
+
 # Handle click event: toggle the corresponding wall
 def detect_click(event):
     tags = C.gettags("current")
@@ -132,6 +160,13 @@ def detect_click(event):
     col = int(tags[1])
     hor = True if tags[2] == 'h' else False
     # print("r: {} c: {} hor: {}".format(row, col, hor))
+
+    # don't change outter walls:
+    # rejects change if it's on an outer wall
+    if (hor and (row == 0 or row == MAZE_SIZE)) or (not hor and (col == 0 or col == MAZE_SIZE)):
+        fill_color = C.itemcget("current", "fill")
+        animate_invalid_change(C.find_withtag("current"), fill_color)
+        return
 
     if hor:
         if not h_walls[row, col]:
@@ -163,18 +198,22 @@ def detect_click(event):
 # Main
 def main():
     global h_walls, v_walls, C
+
     # Initialize horizontal and vertical wall matrices
+    # Note that horizontal walls have 1 more row and vertical
+    # walls have 1 more column. This is because of the outter
+    # walls (sice MAZE_SIZE reffers to the cells)
     h_walls = np.zeros((MAZE_SIZE + 1, MAZE_SIZE), dtype=bool)
     v_walls = np.zeros((MAZE_SIZE, MAZE_SIZE + 1), dtype=bool)
     for c in range(MAZE_SIZE):
         h_walls[0, c] = True
         h_walls[MAZE_SIZE, c] = True
-    for r in range(0, MAZE_SIZE):
-        v_walls[r, 0] = True
     for r in range(MAZE_SIZE):
+        v_walls[r, 0] = True
         v_walls[r, MAZE_SIZE] = True
 
-    h_walls[MAZE_SIZE, 0] = False
+    # opening starts at west wall of the north-west cell
+    v_walls[0, 0] = False
 
     # Initialize canvas and draw all the walls.
     root = tk.Tk()
