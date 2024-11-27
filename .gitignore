@@ -6,7 +6,7 @@
 .DS_Store
 
 # Eclipse DSL
-**/src-gen/*
+Assignment_2/**/src-gen/*
 **/xtend-gen/*
 **/bin/
 **/test-bin/
