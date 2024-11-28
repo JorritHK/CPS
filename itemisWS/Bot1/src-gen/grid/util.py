@@ -71,6 +71,9 @@ class Callback:
             laser_deg_offset=laser_deg_offset,
         )
 
+    def abs_real(self, x: float):
+        return abs(x)
+
     def grid_position(
         self,
         current: Coord,
@@ -151,6 +154,21 @@ class Callback:
         self.debug(f"GRID: Off orientation by: {yaw_from_south % 90}")
 
         return int(orientation)
+
+    def orientation_to_yaw(self, orientation: int):
+        if orientation < 0 or orientation > 4:
+            raise Exception(f"Orientation of {orientation} is not valid")
+        direction = Orientation(orientation)
+
+        if direction == Orientation.NORTH:
+            return 180
+        if direction == Orientation.EAST:
+            return 90
+        if direction == Orientation.SOUTH:
+            return 0
+        if direction == Orientation.WEST:
+            return -90
+        raise Exception("Invalid orientation")
 
     def direction_has_wall(
         self, distance: float, grid_size: float = None, margin: float = 0.20
