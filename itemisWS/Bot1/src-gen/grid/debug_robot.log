@@ -1,17 +1,22 @@
-INFO:debug:GRID: In (-2, 4). Distance: (-0.040000000000000036, 0.08000000000000007)
-INFO:debug:GRID: In (2, -2). Distance: (-1.96, -0.040000000000000036)
-INFO:debug:GRID: Robot facing SOUTH (2) for yaw = 35
-INFO:debug:GRID: Off orientation by: 35
-INFO:debug:GRID: Robot facing WEST (3) for yaw = 46
-INFO:debug:GRID: Off orientation by: 46
-INFO:debug:GRID: Robot facing WEST (3) for yaw = 80
-INFO:debug:GRID: Off orientation by: 80
-INFO:debug:GRID: Robot facing SOUTH (2) for yaw = 1
-INFO:debug:GRID: Off orientation by: 1
+INFO:debug:GRID: Robot facing WEST (3) for yaw = -90
+INFO:debug:GRID: Off orientation by: 0
 INFO:debug:GRID: Robot facing NORTH (0) for yaw = -180
 INFO:debug:GRID: Off orientation by: 0
-INFO:debug:GRID: In (2, -2). Distance: (-2.16, -0.040000000000000036)
-INFO:debug:GRID: In (-2, -2). Distance: (1.76, -0.040000000000000036)
-INFO:debug:GRID: In (0, 0). Distance: (-0.19999999999999996, 0.0)
-INFO:debug:GRID: In (2, 0). Distance: (-1.96, 0.0)
-INFO:debug:GRID: In (1, 0). Distance: (-1.08, 0.0)
+INFO:debug:GRID: Robot facing NORTH (0) for yaw = 180
+INFO:debug:GRID: Off orientation by: 0
+INFO:debug:GRID: Robot facing NORTH (0) for yaw = 179
+INFO:debug:GRID: Off orientation by: 89
+INFO:debug:GRID: Robot facing NORTH (0) for yaw = -179
+INFO:debug:GRID: Off orientation by: 1
+INFO:debug:GRID: Robot facing NORTH (0) for yaw = -200
+INFO:debug:GRID: Off orientation by: 70
+INFO:debug:GRID: Robot facing EAST (1) for yaw = -230
+INFO:debug:GRID: Off orientation by: 40
+INFO:debug:GRID: Robot facing EAST (1) for yaw = 90
+INFO:debug:GRID: Off orientation by: 0
+INFO:debug:GRID: Robot facing SOUTH (2) for yaw = 5
+INFO:debug:GRID: Off orientation by: 5
+INFO:debug:GRID: Robot facing SOUTH (2) for yaw = 4
+INFO:debug:GRID: Off orientation by: 4
+INFO:debug:GRID: Robot facing NORTH (0) for yaw = -180
+INFO:debug:GRID: Off orientation by: 0

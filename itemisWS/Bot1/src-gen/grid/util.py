@@ -71,6 +71,9 @@ class Callback:
             laser_deg_offset=laser_deg_offset,
         )
 
+    def abs_real(self, x: float):
+        return abs(x)
+
     def grid_position(
         self,
         current: Coord,
@@ -81,9 +84,6 @@ class Callback:
     ) -> Tuple[int, int]:
         if not start:
             start = self.calibration.coord
-
-        print(start)
-        print(current)
 
         diff: Coord = start - current
         grid_x: int = round(diff.x / self.grid_size)
@@ -135,22 +135,40 @@ class Callback:
     def calc_orientation(self, yaw: float, south_degree: float = None) -> int:
         """Finds the current orientation of the robot, with the meaning:
         - north = 0, east = 1, south = 2, west = 3
+        - normalized_yaw: north=180, east=-90, west=90, south=0
         - We use south_degree to calibrate the robot
         """
 
         if not south_degree:
             south_degree = self.calibration.zero_south_degree
 
-        yaw_south_calibrated = yaw - south_degree
-        orientation: int = round((yaw_south_calibrated + 180) / 90 % 4)
+        yaw_from_south = yaw - south_degree
+
+        # Convert
+        orientation: int = int(round((-yaw_from_south + 180) / 90) % 4)
 
         self.debug(
             f"GRID: Robot facing {Orientation(orientation).name} "
             f"({orientation}) for yaw = {yaw}"
         )
-        self.debug(f"GRID: Off orientation by: {yaw_south_calibrated % 90}")
+        self.debug(f"GRID: Off orientation by: {yaw_from_south % 90}")
 
         return int(orientation)
+
+    def orientation_to_yaw(self, orientation: int):
+        if orientation < 0 or orientation > 4:
+            raise Exception(f"Orientation of {orientation} is not valid")
+        direction = Orientation(orientation)
+
+        if direction == Orientation.NORTH:
+            return 180
+        if direction == Orientation.EAST:
+            return 90
+        if direction == Orientation.SOUTH:
+            return 0
+        if direction == Orientation.WEST:
+            return -90
+        raise Exception("Invalid orientation")
 
     def direction_has_wall(
         self, distance: float, grid_size: float = None, margin: float = 0.20
