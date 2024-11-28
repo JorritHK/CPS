@@ -483,15 +483,14 @@ class Model:
 		"""Entry action for state 'Forward'..
 		"""
 		#Entry action for state 'Forward'.
-		self.output.speed = self.user_var.base_speed
+		self.output.speed = (self.user_var.base_speed * 3)
 		self.user_var.current_yaw = self.imu.yaw
 		
 	def __entry_action_main_region_auto_r1_turn_right(self):
 		"""Entry action for state 'Turn Right'..
 		"""
 		#Entry action for state 'Turn Right'.
-		self.output.rotation = (-(1) * self.user_var.base_rotation)
-		self.user_var.after_turn_yaw = self.imu.yaw
+		self.output.rotation = (-(self.user_var.base_rotation) * 0.4)
 		
 	def __entry_action_main_region_auto_r1_forward_stop(self):
 		"""Entry action for state 'ForwardStop'..
@@ -987,12 +986,12 @@ class Model:
 		#The reactions of state Turn Right.
 		transitioned_after = transitioned_before
 		if transitioned_after < 0:
-			if self.imu.yaw > (self.user_var.current_yaw - 88) and self.imu.yaw < 0:
+			if (self.imu.yaw > -(89) and self.imu.yaw < 0) or (self.imu.yaw < -(90) and self.imu.yaw > -(179)) or (self.imu.yaw < 178 and self.imu.yaw > 90) or (self.imu.yaw < 89 and self.imu.yaw > 0):
 				self.__exit_sequence_main_region_auto_r1_turn_right()
 				self.__enter_sequence_main_region_auto_r1_turn_right_default()
 				self.__main_region_auto_react(0)
 				transitioned_after = 0
-			elif self.imu.yaw <= (self.user_var.current_yaw - 88):
+			elif (self.imu.yaw < -(88) and self.imu.yaw > -(91)) or (self.imu.yaw <= -(177)) or (self.imu.yaw >= 88 and self.imu.yaw <= 91) or (self.imu.yaw > -(2) and self.imu.yaw < 3):
 				self.__exit_sequence_main_region_auto_r1_turn_right()
 				self.__enter_sequence_main_region_auto_r1_turn_stop_default()
 				self.__main_region_auto_react(0)
