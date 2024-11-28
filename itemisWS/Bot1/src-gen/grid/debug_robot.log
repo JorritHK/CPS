@@ -1,0 +1,22 @@
+INFO:debug:GRID: Robot facing WEST (3) for yaw = -90
+INFO:debug:GRID: Off orientation by: 0
+INFO:debug:GRID: Robot facing NORTH (0) for yaw = -180
+INFO:debug:GRID: Off orientation by: 0
+INFO:debug:GRID: Robot facing NORTH (0) for yaw = 180
+INFO:debug:GRID: Off orientation by: 0
+INFO:debug:GRID: Robot facing NORTH (0) for yaw = 179
+INFO:debug:GRID: Off orientation by: 89
+INFO:debug:GRID: Robot facing NORTH (0) for yaw = -179
+INFO:debug:GRID: Off orientation by: 1
+INFO:debug:GRID: Robot facing NORTH (0) for yaw = -200
+INFO:debug:GRID: Off orientation by: 70
+INFO:debug:GRID: Robot facing EAST (1) for yaw = -230
+INFO:debug:GRID: Off orientation by: 40
+INFO:debug:GRID: Robot facing EAST (1) for yaw = 90
+INFO:debug:GRID: Off orientation by: 0
+INFO:debug:GRID: Robot facing SOUTH (2) for yaw = 5
+INFO:debug:GRID: Off orientation by: 5
+INFO:debug:GRID: Robot facing SOUTH (2) for yaw = 4
+INFO:debug:GRID: Off orientation by: 4
+INFO:debug:GRID: Robot facing NORTH (0) for yaw = -180
+INFO:debug:GRID: Off orientation by: 0

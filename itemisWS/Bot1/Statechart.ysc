@@ -58,8 +58,8 @@
                   <vertices xsi:type="sgraph:State" xmi:id="_5NNM0KJuEe-vKrnrhd8vwA" name="Follow left" incomingTransitions="_F94NgKJwEe-vKrnrhd8vwA">
                     <regions xmi:id="_5NVvsKJuEe-vKrnrhd8vwA" name="r1">
                       <vertices xsi:type="sgraph:State" xmi:id="_G2-_wKJwEe-vKrnrhd8vwA" specification="entry / startPos.setZero = true&#xA;entry / debug(&quot;Calibrating...&quot;)" name="calibrate" incomingTransitions="_H2qUEKJwEe-vKrnrhd8vwA _jteFkK12Ee-JaN6pWGebAw">
-                        <outgoingTransitions xmi:id="_k0GdAKsyEe-ZXJTKYoco1w" specification="after 500 ms [startPos.setZero == false]" target="_fYP4UKsyEe-ZXJTKYoco1w"/>
-                        <outgoingTransitions xmi:id="_jteFkK12Ee-JaN6pWGebAw" specification="every 1 s" target="_G2-_wKJwEe-vKrnrhd8vwA"/>
+                        <outgoingTransitions xmi:id="_k0GdAKsyEe-ZXJTKYoco1w" specification="after 1 s [startPos.setZero == false]" target="_fYP4UKsyEe-ZXJTKYoco1w"/>
+                        <outgoingTransitions xmi:id="_jteFkK12Ee-JaN6pWGebAw" specification="every 3 s" target="_G2-_wKJwEe-vKrnrhd8vwA"/>
                       </vertices>
                       <vertices xsi:type="sgraph:Entry" xmi:id="_HO3UQKJwEe-vKrnrhd8vwA">
                         <outgoingTransitions xmi:id="_H2qUEKJwEe-vKrnrhd8vwA" specification="" target="_G2-_wKJwEe-vKrnrhd8vwA"/>
@@ -98,8 +98,9 @@
           <vertices xsi:type="sgraph:State" xmi:id="_OWKT0KKAEe-4dpLEDetQeg" name="record" incomingTransitions="_5gnmUKKVEe-4A-JqqoV3hw">
             <outgoingTransitions xmi:id="_nC7tkKKWEe-4A-JqqoV3hw" specification="" target="_MxZI4KKVEe-4A-JqqoV3hw"/>
             <regions xmi:id="_OWfD8KKAEe-4dpLEDetQeg" name="r1">
-              <vertices xsi:type="sgraph:State" xmi:id="_KH3LkKJ5Ee-vKrnrhd8vwA" specification="&#xA;entry / grid.wallFront = direction_has_wall(laserDistance.d0);&#xA;&#x9;grid.wallLeft = direction_has_wall(laserDistance.d90);&#xA;&#x9;grid.wallBack = direction_has_wall(laserDistance.d180);&#xA;&#x9;grid.wallRight = direction_has_wall(laserDistance.dm90);&#xA;&#x9;grid.orientation = calc_orientation(imu.yaw);&#xA;&#x9;grid.visited = true;&#xA;&#x9;grid.update = true;&#xA;&#x9; debug(&quot;Recorded walls:&quot;);&#xA;&#x9; debug_real(&quot;wallFront&quot;, grid.wallFront);&#xA;&#x9; debug_real(&quot;wallRight&quot;, grid.wallRight);&#xA;&#x9; debug_real(&quot;wallBack&quot;, grid.wallBack);&#xA;&#x9; debug_real(&quot;wallLeft&quot;, grid.wallLeft)" name="start record" incomingTransitions="_eCd0oKKAEe-4dpLEDetQeg">
-                <outgoingTransitions xmi:id="_azs9IKKBEe-4dpLEDetQeg" specification="every 500 ms [grid.update == false]" target="_xEpFEKKAEe-4dpLEDetQeg"/>
+              <vertices xsi:type="sgraph:State" xmi:id="_KH3LkKJ5Ee-vKrnrhd8vwA" specification="&#xA;entry / grid.wallFront = direction_has_wall(laserDistance.d0);&#xA;&#x9;grid.wallLeft = direction_has_wall(laserDistance.d90);&#xA;&#x9;grid.wallBack = direction_has_wall(laserDistance.d180);&#xA;&#x9;grid.wallRight = direction_has_wall(laserDistance.dm90);&#xA;&#x9;grid.orientation = calc_orientation(imu.yaw);&#xA;&#x9;grid.visited = true;&#xA;&#x9;grid.update = true;&#xA;&#x9; debug(&quot;Recorded walls:&quot;);&#xA;&#x9; debug_real(&quot;wallFront&quot;, grid.wallFront);&#xA;&#x9; debug_real(&quot;wallRight&quot;, grid.wallRight);&#xA;&#x9; debug_real(&quot;wallBack&quot;, grid.wallBack);&#xA;&#x9; debug_real(&quot;wallLeft&quot;, grid.wallLeft)" name="start record" incomingTransitions="_eCd0oKKAEe-4dpLEDetQeg _YJzGsK15Ee-JaN6pWGebAw">
+                <outgoingTransitions xmi:id="_azs9IKKBEe-4dpLEDetQeg" specification="after 1 s [grid.update == false]" target="_xEpFEKKAEe-4dpLEDetQeg"/>
+                <outgoingTransitions xmi:id="_YJzGsK15Ee-JaN6pWGebAw" specification="every 3 s" target="_KH3LkKJ5Ee-vKrnrhd8vwA"/>
               </vertices>
               <vertices xsi:type="sgraph:Entry" xmi:id="_SXbw4KKAEe-4dpLEDetQeg">
                 <outgoingTransitions xmi:id="_eCd0oKKAEe-4dpLEDetQeg" target="_KH3LkKJ5Ee-vKrnrhd8vwA"/>
@@ -1094,6 +1095,17 @@
       <bendpoints xsi:type="notation:RelativeBendpoints" xmi:id="_jti-Eq12Ee-JaN6pWGebAw" points="[0, 8, 2, 25]$[31, 8, 33, 25]$[31, 41, 33, 58]$[-40, 41, -38, 58]$[-40, 22, -38, 39]"/>
       <sourceAnchor xsi:type="notation:IdentityAnchor" xmi:id="_jtt9MK12Ee-JaN6pWGebAw" id="(1.0,0.5849056603773585)"/>
       <targetAnchor xsi:type="notation:IdentityAnchor" xmi:id="_jtt9Ma12Ee-JaN6pWGebAw" id="(0.9878787878787879,0.2641509433962264)"/>
+    </edges>
+    <edges xmi:id="_YJ-F0K15Ee-JaN6pWGebAw" type="Transition" element="_YJzGsK15Ee-JaN6pWGebAw" source="_qmtYVaKAEe-4dpLEDetQeg" target="_qmtYVaKAEe-4dpLEDetQeg">
+      <children xsi:type="notation:DecorationNode" xmi:id="_YKAiEK15Ee-JaN6pWGebAw" type="TransitionExpression">
+        <styles xsi:type="notation:ShapeStyle" xmi:id="_YKAiEa15Ee-JaN6pWGebAw"/>
+        <layoutConstraint xsi:type="notation:Location" xmi:id="_YKAiEq15Ee-JaN6pWGebAw" y="10"/>
+      </children>
+      <styles xsi:type="notation:ConnectorStyle" xmi:id="_YJ-F0a15Ee-JaN6pWGebAw" routing="Rectilinear" lineColor="4210752"/>
+      <styles xsi:type="notation:FontStyle" xmi:id="_YJ_7AK15Ee-JaN6pWGebAw" fontName="Verdana"/>
+      <bendpoints xsi:type="notation:RelativeBendpoints" xmi:id="_YJ-F0q15Ee-JaN6pWGebAw" points="[0, -23, 47, -39]$[22, -23, 69, -39]$[22, 50, 69, 34]$[-101, 50, -54, 34]$[-101, 19, -54, 3]"/>
+      <sourceAnchor xsi:type="notation:IdentityAnchor" xmi:id="_YKGBoK15Ee-JaN6pWGebAw" id="(1.0,0.888235294117647)"/>
+      <targetAnchor xsi:type="notation:IdentityAnchor" xmi:id="_YKGosK15Ee-JaN6pWGebAw" id="(0.8850855745721271,0.9823529411764705)"/>
     </edges>
   </notation:Diagram>
 </xmi:XMI>

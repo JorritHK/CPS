@@ -318,7 +318,7 @@ class Model:
 		
 		# for timed statechart:
 		self.timer_service = None
-		self.__time_events = [None] * 4
+		self.__time_events = [None] * 5
 		
 		# initializations:
 		#Default init sequence for statechart model
@@ -486,7 +486,7 @@ class Model:
 	def time_elapsed(self, event_id):
 		"""Add time events to in event queue
 		"""
-		if event_id in range(4):
+		if event_id in range(5):
 			self.in_event_queue.put(lambda: self.raise_time_event(event_id))
 			self.run_cycle()
 	
@@ -551,8 +551,8 @@ class Model:
 		"""Entry action for state 'calibrate'..
 		"""
 		#Entry action for state 'calibrate'.
-		self.timer_service.set_timer(self, 0, 500, False)
-		self.timer_service.set_timer(self, 1, (1 * 1000), True)
+		self.timer_service.set_timer(self, 0, (1 * 1000), False)
+		self.timer_service.set_timer(self, 1, (3 * 1000), True)
 		self.start_pos.set_zero = True
 		self.internal_operation_callback.debug("Calibrating...")
 		
@@ -568,7 +568,8 @@ class Model:
 		"""Entry action for state 'start record'..
 		"""
 		#Entry action for state 'start record'.
-		self.timer_service.set_timer(self, 2, 500, True)
+		self.timer_service.set_timer(self, 2, (1 * 1000), False)
+		self.timer_service.set_timer(self, 3, (3 * 1000), True)
 		self.grid.wall_front = self.internal_operation_callback.direction_has_wall(self.laser_distance.d0)
 		self.grid.wall_left = self.internal_operation_callback.direction_has_wall(self.laser_distance.d90)
 		self.grid.wall_back = self.internal_operation_callback.direction_has_wall(self.laser_distance.d180)
@@ -591,7 +592,7 @@ class Model:
 		"""Entry action for state 'check status'..
 		"""
 		#Entry action for state 'check status'.
-		self.timer_service.set_timer(self, 3, (3 * 1000), True)
+		self.timer_service.set_timer(self, 4, (3 * 1000), True)
 		
 	def __exit_action_main_region_test_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_calibrate(self):
 		"""Exit action for state 'calibrate'..
@@ -605,12 +606,13 @@ class Model:
 		"""
 		#Exit action for state 'start record'.
 		self.timer_service.unset_timer(self, 2)
+		self.timer_service.unset_timer(self, 3)
 		
 	def __exit_action_main_region_test_logging_grid_check_status(self):
 		"""Exit action for state 'check status'..
 		"""
 		#Exit action for state 'check status'.
-		self.timer_service.unset_timer(self, 3)
+		self.timer_service.unset_timer(self, 4)
 		
 	def __enter_sequence_main_region_test_default(self):
 		"""'default' enter sequence for state test.
@@ -1498,6 +1500,12 @@ class Model:
 					self.__time_events[2] = False
 					self.__enter_sequence_main_region_test_logging_grid_record_r1__final__default()
 					transitioned_after = 3
+				elif self.__time_events[3]:
+					self.__exit_sequence_main_region_test_logging_grid_record_r1_start_record()
+					self.__time_events[3] = False
+					self.__enter_sequence_main_region_test_logging_grid_record_r1_start_record_default()
+					self.__main_region_test_logging_grid_record_react(3)
+					transitioned_after = 3
 			#If no transition was taken
 			if transitioned_after == transitioned_before:
 				#then execute local reactions.
@@ -1527,7 +1535,7 @@ class Model:
 			#If no transition was taken
 			if transitioned_after == transitioned_before:
 				#then execute local reactions.
-				if self.__time_events[3]:
+				if self.__time_events[4]:
 					self.grid.column = self.internal_operation_callback.grid_position_column(self.odom.x)
 					self.grid.row = self.internal_operation_callback.grid_position_row(self.odom.y)
 					self.grid.receive = True
@@ -1570,6 +1578,7 @@ class Model:
 		self.__time_events[1] = False
 		self.__time_events[2] = False
 		self.__time_events[3] = False
+		self.__time_events[4] = False
 	
 	
 	def __clear_internal_events(self):
