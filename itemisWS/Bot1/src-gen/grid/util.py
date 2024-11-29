@@ -50,6 +50,8 @@ class Callback:
         self.calibration: Calibration = None
         self.grid_size = 0.48
 
+    # == Debug Logging ==#
+
     def debug(self, text: str):
         self.logger.info(text)
 
@@ -62,18 +64,61 @@ class Callback:
     def debug_coord(self, name: str, x: float, y: float):
         self.debug(f"DEBUG Coord {name}: ({x}, {y})")
 
+    # == Simple util functions ==#
+    def abs_real(self, x: float):
+        return abs(x)
+
+    def ease_out_exp(
+        self, distance: float, total_distance: float, exponent: int = 2
+    ) -> float:
+        if total_distance == 0:
+            return 0
+
+        diff_factor = (total_distance - distance) / total_distance
+
+        return 1 - diff_factor**exponent
+
+    # == Initial calibration frame of reference ==#
+
     def set_calibration(
         self, start_x, start_y, zero_south_degree, laser_deg_offset
     ):
+        if self.calibration:
+            self.logger.warning(
+                "Calibrating again even though this has already been done. "
+                "Previous values will be overwritten"
+            )
+
+        if zero_south_degree > 180 or zero_south_degree < -180:
+            raise Exception(
+                f"Incorrect value for Zero South calibration: {zero_south_degree}"
+            )
+
         self.calibration = Calibration(
             coord=Coord(start_x, start_y),
             zero_south_degree=zero_south_degree,
             laser_deg_offset=laser_deg_offset,
         )
 
-    def abs_real(self, x: float):
-        return abs(x)
+    def relative_yaw(self, yaw: float, zero_south_degree: float = None):
+        """Translates the 'objective' imu yaw to the yaw relative to the south
+        degree we calibrated on"""
 
+        if not zero_south_degree:
+            zero_south_degree = self.calibration.zero_south_degree
+
+        yaw_from_south = yaw - zero_south_degree
+        if yaw_from_south > 180:
+            return -180 + (yaw_from_south - 180)
+        if yaw_from_south < -180:
+            return 180 + (yaw_from_south + 180)
+        return yaw_from_south
+
+    def calc_yaw_rotation(self, yawA: float, yawB: float):
+        a = yawA - yawB
+        return (a + 180) % 360 - 180
+
+    # == Grid positioning ==#
     def grid_position(
         self,
         current: Coord,
@@ -122,20 +167,20 @@ class Callback:
 
     def distance_to_grid_center(self, current_x: float, current_y: float):
 
-        diff: Coord = self.calibration.coord - Coord(current_x, current_y)
-        grid_x, grid_y = self.grid_position(
-            Coord(current_x, current_y), debug=False
-        )
-        distance: Coord = diff - Coord(
-            grid_x * self.grid_size, grid_y * self.grid_size
+        current = Coord(current_x, current_y)
+        grid_x, grid_y = self.grid_position(current, debug=False)
+        distance: Coord = current - Coord(
+            grid_x * self.grid_size, grid_y * self.grid_size * -1
         )
 
         return math.sqrt(distance.x**2 + distance.y**2)
 
+    # == Orientation ==#
     def calc_orientation(self, yaw: float, south_degree: float = None) -> int:
         """Finds the current orientation of the robot, with the meaning:
         - north = 0, east = 1, south = 2, west = 3
-        - normalized_yaw: north=180, east=-90, west=90, south=0
+        - normalized_yaw: north=180, east=90, west=-90, south=0
+        (counter clockwise)
         - We use south_degree to calibrate the robot
         """
 
@@ -173,11 +218,14 @@ class Callback:
     def direction_has_wall(
         self, distance: float, grid_size: float = None, margin: float = 0.20
     ):
+        """Reusable function, which specifies our way to get whether a wall
+        exists in a certain direction based on lidar data"""
 
         if not grid_size:
             grid_size = self.grid_size
 
-        # Distance of 4m encodes that there is no valid info, so we return -1 (meaning no information)
+        # Distance of 4m encodes that there is no valid info,
+        # so we return -1 (meaning no information)
         if distance == 4:
             return -1
 

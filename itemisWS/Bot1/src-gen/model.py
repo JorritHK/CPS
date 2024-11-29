@@ -30,21 +30,22 @@ class Model:
 			main_region_test_drive_main_r1automatic_mode_automatic_algorithm_follow_left_r1finished_calibration,
 			main_region_test_drive_main_r1automatic_mode_automatic_algorithm_follow_left_r1forward,
 			main_region_test_drive_main_r1automatic_mode_automatic_algorithm_follow_left_r1turn_right,
-			main_region_test_drive_main_r1automatic_mode_automatic_algorithm_follow_left_r1forward_stop,
+			main_region_test_drive_main_r1automatic_mode_automatic_algorithm_follow_left_r1stop_wall,
 			main_region_test_drive_main_r1automatic_mode_automatic_algorithm_follow_left_r1turn_stop,
 			main_region_test_drive_main_r1automatic_mode_automatic_algorithm_follow_left_r1turning_to_target,
 			main_region_test_drive_main_r1automatic_mode_automatic_algorithm_follow_left_r1turn_left,
 			main_region_test_drive_main_r1automatic_mode_automatic_algorithm_follow_left_r1turn_around,
-			main_region_test_drive_main_r1automatic_mode_r2overrides,
-			main_region_test_drive_main_r1automatic_mode_r2overrides_lidaridle,
-			main_region_test_drive_main_r1automatic_mode_r2overrides_pitchcorrect,
+			main_region_test_drive_main_r1automatic_mode_automatic_algorithm_follow_left_r1start,
+			main_region_test_drive_main_r1automatic_mode_automatic_algorithm_follow_left_r1stop_left_corridor,
+			main_region_test_drive_main_r1automatic_mode_panic__override_start,
+			main_region_test_drive_main_r1automatic_mode_panic__override_monitoring_generally,
 			main_region_test_logging_grid_record,
 			main_region_test_logging_grid_record_r1start_record,
 			main_region_test_logging_grid_record_r1_final_,
 			main_region_test_logging_grid_check_status,
 			main_region_test_logging_grid_start,
 			null_state
-		) = range(30)
+		) = range(31)
 	
 	
 	class UserVar:
@@ -55,14 +56,21 @@ class Model:
 			self.base_speed = None
 			self.base_rotation = None
 			self.startprocedure = None
+			self.has_calibrated = None
 			self.min_wall_distance = None
 			self.min_wall_turn = None
 			self.current_yaw = None
 			self.after_turn_yaw = None
 			self.target_yaw = None
 			self.yaw_to_go = None
+			self.total_yaw_to_go = None
 			self.yaw_error = None
 			self.rotation_direction = None
+			self.total_distance_to_go = None
+			self.distance_to_go = None
+			self.panic_mode_enable = None
+			self.mapping_mode_enabled = None
+			self.max_rotation = None
 			
 			self.statemachine = statemachine
 		
@@ -314,26 +322,24 @@ class Model:
 		self.laser_distance = Model.LaserDistance(self)
 		self.laser_intensity = Model.LaserIntensity(self)
 		
-		self.__internal_event_queue = queue.Queue()
 		self.in_event_queue = queue.Queue()
 		self.__calibrated_yaw = None
 		self.__normalized_yaw = None
 		self.GRID_DIRECTION_Y = -(1)
 		self.GRID_DIRECTION_X = 1
 		self.__distance_to_center = None
-		self.has_calibrated = None
 		self.internal_operation_callback = None
 		
 		# enumeration of all states:
 		self.__State = Model.State
 		self.__state_conf_vector_changed = None
-		self.__state_vector = [None] * 4
-		for __state_index in range(4):
+		self.__state_vector = [None] * 3
+		for __state_index in range(3):
 			self.__state_vector[__state_index] = self.State.null_state
 		
 		# for timed statechart:
 		self.timer_service = None
-		self.__time_events = [None] * 9
+		self.__time_events = [None] * 12
 		
 		# initializations:
 		#Default init sequence for statechart model
@@ -343,14 +349,21 @@ class Model:
 		self.user_var.base_speed = 0.05
 		self.user_var.base_rotation = 0.2
 		self.user_var.startprocedure = True
+		self.user_var.has_calibrated = False
 		self.user_var.min_wall_distance = 0.15
 		self.user_var.min_wall_turn = 0.3
 		self.user_var.current_yaw = 0.0
 		self.user_var.after_turn_yaw = 0.0
 		self.user_var.target_yaw = 0.0
 		self.user_var.yaw_to_go = 0.0
-		self.user_var.yaw_error = 1
+		self.user_var.total_yaw_to_go = 0.0
+		self.user_var.yaw_error = 0.5
 		self.user_var.rotation_direction = 1
+		self.user_var.total_distance_to_go = 0.0
+		self.user_var.distance_to_go = 0.0
+		self.user_var.panic_mode_enable = False
+		self.user_var.mapping_mode_enabled = False
+		self.user_var.max_rotation = (self.user_var.base_rotation * 5)
 		self.base_values.max_speed = 0.22
 		self.base_values.max_rotation = 2.84
 		self.base_values.degrees_front = 10
@@ -439,7 +452,7 @@ class Model:
 	def is_active(self):
 		"""Checks if the state machine is active.
 		"""
-		return self.__state_vector[0] is not self.__State.null_state or self.__state_vector[1] is not self.__State.null_state or self.__state_vector[2] is not self.__State.null_state or self.__state_vector[3] is not self.__State.null_state
+		return self.__state_vector[0] is not self.__State.null_state or self.__state_vector[1] is not self.__State.null_state or self.__state_vector[2] is not self.__State.null_state
 	
 	def is_final(self):
 		"""Checks if the statemachine is final.
@@ -456,7 +469,7 @@ class Model:
 				and (self.__state_vector[0] <= self.__State.main_region_test_logging_grid_start)
 		if s == self.__State.main_region_test_drive_main:
 			return (self.__state_vector[0] >= self.__State.main_region_test_drive_main)\
-				and (self.__state_vector[0] <= self.__State.main_region_test_drive_main_r1automatic_mode_r2overrides_pitchcorrect)
+				and (self.__state_vector[0] <= self.__State.main_region_test_drive_main_r1automatic_mode_panic__override_monitoring_generally)
 		if s == self.__State.main_region_test_drive_main_r1stopped:
 			return self.__state_vector[0] == self.__State.main_region_test_drive_main_r1stopped
 		if s == self.__State.main_region_test_drive_main_r1manual:
@@ -478,10 +491,10 @@ class Model:
 			return self.__state_vector[0] == self.__State.main_region_test_drive_main_r1manual_r1rotations_r1incr__rot__speed_left
 		if s == self.__State.main_region_test_drive_main_r1automatic_mode:
 			return (self.__state_vector[0] >= self.__State.main_region_test_drive_main_r1automatic_mode)\
-				and (self.__state_vector[0] <= self.__State.main_region_test_drive_main_r1automatic_mode_r2overrides_pitchcorrect)
+				and (self.__state_vector[0] <= self.__State.main_region_test_drive_main_r1automatic_mode_panic__override_monitoring_generally)
 		if s == self.__State.main_region_test_drive_main_r1automatic_mode_automatic_algorithm_follow_left:
 			return (self.__state_vector[0] >= self.__State.main_region_test_drive_main_r1automatic_mode_automatic_algorithm_follow_left)\
-				and (self.__state_vector[0] <= self.__State.main_region_test_drive_main_r1automatic_mode_automatic_algorithm_follow_left_r1turn_around)
+				and (self.__state_vector[0] <= self.__State.main_region_test_drive_main_r1automatic_mode_automatic_algorithm_follow_left_r1stop_left_corridor)
 		if s == self.__State.main_region_test_drive_main_r1automatic_mode_automatic_algorithm_follow_left_r1calibrate:
 			return self.__state_vector[0] == self.__State.main_region_test_drive_main_r1automatic_mode_automatic_algorithm_follow_left_r1calibrate
 		if s == self.__State.main_region_test_drive_main_r1automatic_mode_automatic_algorithm_follow_left_r1finished_calibration:
@@ -490,8 +503,8 @@ class Model:
 			return self.__state_vector[0] == self.__State.main_region_test_drive_main_r1automatic_mode_automatic_algorithm_follow_left_r1forward
 		if s == self.__State.main_region_test_drive_main_r1automatic_mode_automatic_algorithm_follow_left_r1turn_right:
 			return self.__state_vector[0] == self.__State.main_region_test_drive_main_r1automatic_mode_automatic_algorithm_follow_left_r1turn_right
-		if s == self.__State.main_region_test_drive_main_r1automatic_mode_automatic_algorithm_follow_left_r1forward_stop:
-			return self.__state_vector[0] == self.__State.main_region_test_drive_main_r1automatic_mode_automatic_algorithm_follow_left_r1forward_stop
+		if s == self.__State.main_region_test_drive_main_r1automatic_mode_automatic_algorithm_follow_left_r1stop_wall:
+			return self.__state_vector[0] == self.__State.main_region_test_drive_main_r1automatic_mode_automatic_algorithm_follow_left_r1stop_wall
 		if s == self.__State.main_region_test_drive_main_r1automatic_mode_automatic_algorithm_follow_left_r1turn_stop:
 			return self.__state_vector[0] == self.__State.main_region_test_drive_main_r1automatic_mode_automatic_algorithm_follow_left_r1turn_stop
 		if s == self.__State.main_region_test_drive_main_r1automatic_mode_automatic_algorithm_follow_left_r1turning_to_target:
@@ -500,30 +513,31 @@ class Model:
 			return self.__state_vector[0] == self.__State.main_region_test_drive_main_r1automatic_mode_automatic_algorithm_follow_left_r1turn_left
 		if s == self.__State.main_region_test_drive_main_r1automatic_mode_automatic_algorithm_follow_left_r1turn_around:
 			return self.__state_vector[0] == self.__State.main_region_test_drive_main_r1automatic_mode_automatic_algorithm_follow_left_r1turn_around
-		if s == self.__State.main_region_test_drive_main_r1automatic_mode_r2overrides:
-			return (self.__state_vector[1] >= self.__State.main_region_test_drive_main_r1automatic_mode_r2overrides)\
-				and (self.__state_vector[1] <= self.__State.main_region_test_drive_main_r1automatic_mode_r2overrides_pitchcorrect)
-		if s == self.__State.main_region_test_drive_main_r1automatic_mode_r2overrides_lidaridle:
-			return self.__state_vector[1] == self.__State.main_region_test_drive_main_r1automatic_mode_r2overrides_lidaridle
-		if s == self.__State.main_region_test_drive_main_r1automatic_mode_r2overrides_pitchcorrect:
-			return self.__state_vector[2] == self.__State.main_region_test_drive_main_r1automatic_mode_r2overrides_pitchcorrect
+		if s == self.__State.main_region_test_drive_main_r1automatic_mode_automatic_algorithm_follow_left_r1start:
+			return self.__state_vector[0] == self.__State.main_region_test_drive_main_r1automatic_mode_automatic_algorithm_follow_left_r1start
+		if s == self.__State.main_region_test_drive_main_r1automatic_mode_automatic_algorithm_follow_left_r1stop_left_corridor:
+			return self.__state_vector[0] == self.__State.main_region_test_drive_main_r1automatic_mode_automatic_algorithm_follow_left_r1stop_left_corridor
+		if s == self.__State.main_region_test_drive_main_r1automatic_mode_panic__override_start:
+			return self.__state_vector[1] == self.__State.main_region_test_drive_main_r1automatic_mode_panic__override_start
+		if s == self.__State.main_region_test_drive_main_r1automatic_mode_panic__override_monitoring_generally:
+			return self.__state_vector[1] == self.__State.main_region_test_drive_main_r1automatic_mode_panic__override_monitoring_generally
 		if s == self.__State.main_region_test_logging_grid_record:
-			return (self.__state_vector[3] >= self.__State.main_region_test_logging_grid_record)\
-				and (self.__state_vector[3] <= self.__State.main_region_test_logging_grid_record_r1_final_)
+			return (self.__state_vector[2] >= self.__State.main_region_test_logging_grid_record)\
+				and (self.__state_vector[2] <= self.__State.main_region_test_logging_grid_record_r1_final_)
 		if s == self.__State.main_region_test_logging_grid_record_r1start_record:
-			return self.__state_vector[3] == self.__State.main_region_test_logging_grid_record_r1start_record
+			return self.__state_vector[2] == self.__State.main_region_test_logging_grid_record_r1start_record
 		if s == self.__State.main_region_test_logging_grid_record_r1_final_:
-			return self.__state_vector[3] == self.__State.main_region_test_logging_grid_record_r1_final_
+			return self.__state_vector[2] == self.__State.main_region_test_logging_grid_record_r1_final_
 		if s == self.__State.main_region_test_logging_grid_check_status:
-			return self.__state_vector[3] == self.__State.main_region_test_logging_grid_check_status
+			return self.__state_vector[2] == self.__State.main_region_test_logging_grid_check_status
 		if s == self.__State.main_region_test_logging_grid_start:
-			return self.__state_vector[3] == self.__State.main_region_test_logging_grid_start
+			return self.__state_vector[2] == self.__State.main_region_test_logging_grid_start
 		return False
 		
 	def time_elapsed(self, event_id):
 		"""Add time events to in event queue
 		"""
-		if event_id in range(9):
+		if event_id in range(12):
 			self.in_event_queue.put(lambda: self.raise_time_event(event_id))
 			self.run_cycle()
 	
@@ -536,22 +550,10 @@ class Model:
 		func()
 	
 	def __get_next_event(self):
-		if not self.__internal_event_queue.empty():
-			return self.__internal_event_queue.get()
 		if not self.in_event_queue.empty():
 			return self.in_event_queue.get()
 		return None
 	
-	
-	def raise_has_calibrated(self):
-		"""Raise method for event has_calibrated.
-		"""
-		self.__internal_event_queue.put(self.__raise_has_calibrated_call)
-	
-	def __raise_has_calibrated_call(self):
-		"""Raise callback for event has_calibrated.
-		"""
-		self.has_calibrated = True
 	
 	def __entry_action_main_region_test_drive_main_r1_stopped(self):
 		"""Entry action for state 'Stopped'..
@@ -597,40 +599,39 @@ class Model:
 		"""Entry action for state 'finished calibration'..
 		"""
 		#Entry action for state 'finished calibration'.
+		self.timer_service.set_timer(self, 2, 100, False)
 		self.internal_operation_callback.set_calibration(self.start_pos.zero_x, self.start_pos.zero_y, self.start_pos.zero_south_degree, self.start_pos.laser_deg_offset)
-		self.raise_has_calibrated()
+		self.user_var.has_calibrated = True
 		self.internal_operation_callback.debug("Has Calibrated")
 		
 	def __entry_action_main_region_test_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_forward(self):
 		"""Entry action for state 'Forward'..
 		"""
 		#Entry action for state 'Forward'.
+		self.timer_service.set_timer(self, 3, 300, True)
 		self.output.speed = (self.user_var.base_speed * 3)
-		self.user_var.current_yaw = self.imu.yaw
 		self.internal_operation_callback.debug("STRAIGHT AHEAD!")
 		
 	def __entry_action_main_region_test_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_turn_right(self):
 		"""Entry action for state 'Turn Right'..
 		"""
 		#Entry action for state 'Turn Right'.
-		self.timer_service.set_timer(self, 2, 500, False)
-		self.grid.orientation = self.internal_operation_callback.calc_orientation(self.imu.yaw)
+		self.timer_service.set_timer(self, 4, 500, False)
 		self.user_var.target_yaw = self.internal_operation_callback.orientation_to_yaw((((self.grid.orientation + 1)) % 4))
 		self.user_var.rotation_direction = -(1)
 		self.user_var.yaw_to_go = 90
 		self.internal_operation_callback.debug("Turning right")
-		self.internal_operation_callback.debug_real("Current yaw", (self.imu.yaw - self.start_pos.zero_south_degree))
+		self.internal_operation_callback.debug_real("Current yaw", self.internal_operation_callback.relative_yaw(self.imu.yaw))
 		self.internal_operation_callback.debug_real("Target yaw is going to be", self.user_var.target_yaw)
 		
-	def __entry_action_main_region_test_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_forward_stop(self):
-		"""Entry action for state 'ForwardStop'..
+	def __entry_action_main_region_test_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_stop_wall(self):
+		"""Entry action for state 'Stop wall'..
 		"""
-		#Entry action for state 'ForwardStop'.
+		#Entry action for state 'Stop wall'.
 		self.output.speed = 0.0
 		self.internal_operation_callback.debug("Stop going forward")
 		self.grid.wall_front = self.internal_operation_callback.direction_has_wall(self.laser_distance.d0)
 		self.grid.wall_left = self.internal_operation_callback.direction_has_wall(self.laser_distance.d90)
-		self.grid.wall_back = self.internal_operation_callback.direction_has_wall(self.laser_distance.d180)
 		self.grid.wall_right = self.internal_operation_callback.direction_has_wall(self.laser_distance.dm90)
 		
 	def __entry_action_main_region_test_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_turn_stop(self):
@@ -645,42 +646,55 @@ class Model:
 		"""Entry action for state 'turning to target'..
 		"""
 		#Entry action for state 'turning to target'.
-		self.timer_service.set_timer(self, 3, 200, True)
+		self.timer_service.set_timer(self, 5, 200, True)
+		self.user_var.total_yaw_to_go = self.user_var.yaw_to_go
 		
 	def __entry_action_main_region_test_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_turn_left(self):
 		"""Entry action for state 'Turn Left'..
 		"""
 		#Entry action for state 'Turn Left'.
-		self.timer_service.set_timer(self, 4, 500, False)
-		self.grid.orientation = self.internal_operation_callback.calc_orientation(self.imu.yaw)
+		self.timer_service.set_timer(self, 6, 500, False)
 		self.user_var.target_yaw = self.internal_operation_callback.orientation_to_yaw((((self.grid.orientation - 1)) % 4))
 		self.user_var.rotation_direction = 1
 		self.user_var.yaw_to_go = 90
 		self.internal_operation_callback.debug("Turning left")
-		self.internal_operation_callback.debug_real("Zero south degree", self.start_pos.zero_south_degree)
-		self.internal_operation_callback.debug_real("Current yaw", self.imu.yaw)
-		self.internal_operation_callback.debug_real("Target yaw", self.user_var.target_yaw)
+		self.internal_operation_callback.debug_real("Current yaw (relative)", self.internal_operation_callback.relative_yaw(self.imu.yaw))
+		self.internal_operation_callback.debug_real("Target yaw (relative)", self.user_var.target_yaw)
 		
 	def __entry_action_main_region_test_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_turn_around(self):
 		"""Entry action for state 'Turn around'..
 		"""
 		#Entry action for state 'Turn around'.
-		self.timer_service.set_timer(self, 5, 500, False)
-		self.grid.orientation = self.internal_operation_callback.calc_orientation(self.imu.yaw)
+		self.timer_service.set_timer(self, 7, 500, False)
 		self.user_var.target_yaw = self.internal_operation_callback.orientation_to_yaw((((self.grid.orientation + 2)) % 4))
 		self.user_var.rotation_direction = -(1)
-		self.user_var.yaw_to_go = 90
+		self.user_var.yaw_to_go = 180
 		self.internal_operation_callback.debug("Turning right to go around")
-		self.internal_operation_callback.debug_real("Zero south degree", self.start_pos.zero_south_degree)
-		self.internal_operation_callback.debug_real("Current yaw", (self.imu.yaw - self.start_pos.zero_south_degree))
+		self.internal_operation_callback.debug_real("Current yaw", self.internal_operation_callback.relative_yaw(self.imu.yaw))
 		self.internal_operation_callback.debug_real("Target yaw", self.user_var.target_yaw)
+		
+	def __entry_action_main_region_test_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_start(self):
+		""".
+		"""
+		#Entry action for state 'start'.
+		self.internal_operation_callback.debug("###### ENTRY AUTOMATIC MODE #####")
+		self.__completed = True
+		
+	def __entry_action_main_region_test_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_stop_left_corridor(self):
+		"""Entry action for state 'Stop Left corridor'..
+		"""
+		#Entry action for state 'Stop Left corridor'.
+		self.timer_service.set_timer(self, 8, 200, True)
+		self.user_var.total_distance_to_go = self.internal_operation_callback.abs_real(self.internal_operation_callback.distance_to_grid_center(self.odom.x, self.odom.y))
+		self.user_var.distance_to_go = (self.grid.grid_size / 2)
+		self.internal_operation_callback.debug("Stopping because there is a left corridor")
 		
 	def __entry_action_main_region_test_logging_grid_record_r1_start_record(self):
 		"""Entry action for state 'start record'..
 		"""
 		#Entry action for state 'start record'.
-		self.timer_service.set_timer(self, 6, (1 * 1000), False)
-		self.timer_service.set_timer(self, 7, (3 * 1000), True)
+		self.timer_service.set_timer(self, 9, (1 * 1000), False)
+		self.timer_service.set_timer(self, 10, (3 * 1000), True)
 		self.grid.wall_front = self.internal_operation_callback.direction_has_wall(self.laser_distance.d0)
 		self.grid.wall_left = self.internal_operation_callback.direction_has_wall(self.laser_distance.d90)
 		self.grid.wall_back = self.internal_operation_callback.direction_has_wall(self.laser_distance.d180)
@@ -703,7 +717,7 @@ class Model:
 		"""Entry action for state 'check status'..
 		"""
 		#Entry action for state 'check status'.
-		self.timer_service.set_timer(self, 8, (3 * 1000), True)
+		self.timer_service.set_timer(self, 11, (3 * 1000), True)
 		
 	def __exit_action_main_region_test_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_calibrate(self):
 		"""Exit action for state 'calibrate'..
@@ -712,42 +726,66 @@ class Model:
 		self.timer_service.unset_timer(self, 0)
 		self.timer_service.unset_timer(self, 1)
 		
+	def __exit_action_main_region_test_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_finished_calibration(self):
+		"""Exit action for state 'finished calibration'..
+		"""
+		#Exit action for state 'finished calibration'.
+		self.timer_service.unset_timer(self, 2)
+		
+	def __exit_action_main_region_test_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_forward(self):
+		"""Exit action for state 'Forward'..
+		"""
+		#Exit action for state 'Forward'.
+		self.timer_service.unset_timer(self, 3)
+		
 	def __exit_action_main_region_test_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_turn_right(self):
 		"""Exit action for state 'Turn Right'..
 		"""
 		#Exit action for state 'Turn Right'.
-		self.timer_service.unset_timer(self, 2)
+		self.timer_service.unset_timer(self, 4)
+		
+	def __exit_action_main_region_test_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_stop_wall(self):
+		"""Exit action for state 'Stop wall'..
+		"""
+		#Exit action for state 'Stop wall'.
+		self.grid.orientation = self.internal_operation_callback.calc_orientation(self.imu.yaw)
 		
 	def __exit_action_main_region_test_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_turning_to_target(self):
 		"""Exit action for state 'turning to target'..
 		"""
 		#Exit action for state 'turning to target'.
-		self.timer_service.unset_timer(self, 3)
+		self.timer_service.unset_timer(self, 5)
 		
 	def __exit_action_main_region_test_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_turn_left(self):
 		"""Exit action for state 'Turn Left'..
 		"""
 		#Exit action for state 'Turn Left'.
-		self.timer_service.unset_timer(self, 4)
+		self.timer_service.unset_timer(self, 6)
 		
 	def __exit_action_main_region_test_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_turn_around(self):
 		"""Exit action for state 'Turn around'..
 		"""
 		#Exit action for state 'Turn around'.
-		self.timer_service.unset_timer(self, 5)
+		self.timer_service.unset_timer(self, 7)
+		
+	def __exit_action_main_region_test_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_stop_left_corridor(self):
+		"""Exit action for state 'Stop Left corridor'..
+		"""
+		#Exit action for state 'Stop Left corridor'.
+		self.timer_service.unset_timer(self, 8)
 		
 	def __exit_action_main_region_test_logging_grid_record_r1_start_record(self):
 		"""Exit action for state 'start record'..
 		"""
 		#Exit action for state 'start record'.
-		self.timer_service.unset_timer(self, 6)
-		self.timer_service.unset_timer(self, 7)
+		self.timer_service.unset_timer(self, 9)
+		self.timer_service.unset_timer(self, 10)
 		
 	def __exit_action_main_region_test_logging_grid_check_status(self):
 		"""Exit action for state 'check status'..
 		"""
 		#Exit action for state 'check status'.
-		self.timer_service.unset_timer(self, 8)
+		self.timer_service.unset_timer(self, 11)
 		
 	def __enter_sequence_main_region_test_default(self):
 		"""'default' enter sequence for state test.
@@ -812,7 +850,7 @@ class Model:
 		"""
 		#'default' enter sequence for state Automatic mode
 		self.__enter_sequence_main_region_test_drive_main_r1_automatic_mode_automatic_algorithm_default()
-		self.__enter_sequence_main_region_test_drive_main_r1_automatic_mode_r2_default()
+		self.__enter_sequence_main_region_test_drive_main_r1_automatic_mode_panic__override_default()
 		
 	def __enter_sequence_main_region_test_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_default(self):
 		"""'default' enter sequence for state Follow left.
@@ -856,12 +894,12 @@ class Model:
 		self.__state_conf_vector_position = 0
 		self.__state_conf_vector_changed = True
 		
-	def __enter_sequence_main_region_test_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_forward_stop_default(self):
-		"""'default' enter sequence for state ForwardStop.
+	def __enter_sequence_main_region_test_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_stop_wall_default(self):
+		"""'default' enter sequence for state Stop wall.
 		"""
-		#'default' enter sequence for state ForwardStop
-		self.__entry_action_main_region_test_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_forward_stop()
-		self.__state_vector[0] = self.State.main_region_test_drive_main_r1automatic_mode_automatic_algorithm_follow_left_r1forward_stop
+		#'default' enter sequence for state Stop wall
+		self.__entry_action_main_region_test_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_stop_wall()
+		self.__state_vector[0] = self.State.main_region_test_drive_main_r1automatic_mode_automatic_algorithm_follow_left_r1stop_wall
 		self.__state_conf_vector_position = 0
 		self.__state_conf_vector_changed = True
 		
@@ -901,27 +939,38 @@ class Model:
 		self.__state_conf_vector_position = 0
 		self.__state_conf_vector_changed = True
 		
-	def __enter_sequence_main_region_test_drive_main_r1_automatic_mode_r2_overrides_default(self):
-		"""'default' enter sequence for state overrides.
+	def __enter_sequence_main_region_test_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_start_default(self):
+		"""'default' enter sequence for state start.
 		"""
-		#'default' enter sequence for state overrides
-		self.__enter_sequence_main_region_test_drive_main_r1_automatic_mode_r2_overrides_lidar_default()
-		self.__enter_sequence_main_region_test_drive_main_r1_automatic_mode_r2_overrides_pitch_default()
+		#'default' enter sequence for state start
+		self.__entry_action_main_region_test_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_start()
+		self.__state_vector[0] = self.State.main_region_test_drive_main_r1automatic_mode_automatic_algorithm_follow_left_r1start
+		self.__state_conf_vector_position = 0
+		self.__state_conf_vector_changed = True
 		
-	def __enter_sequence_main_region_test_drive_main_r1_automatic_mode_r2_overrides_lidar_idle_default(self):
-		"""'default' enter sequence for state idle.
+	def __enter_sequence_main_region_test_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_stop_left_corridor_default(self):
+		"""'default' enter sequence for state Stop Left corridor.
 		"""
-		#'default' enter sequence for state idle
-		self.__state_vector[1] = self.State.main_region_test_drive_main_r1automatic_mode_r2overrides_lidaridle
+		#'default' enter sequence for state Stop Left corridor
+		self.__entry_action_main_region_test_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_stop_left_corridor()
+		self.__state_vector[0] = self.State.main_region_test_drive_main_r1automatic_mode_automatic_algorithm_follow_left_r1stop_left_corridor
+		self.__state_conf_vector_position = 0
+		self.__state_conf_vector_changed = True
+		
+	def __enter_sequence_main_region_test_drive_main_r1_automatic_mode_panic__override_start_default(self):
+		"""'default' enter sequence for state start.
+		"""
+		#'default' enter sequence for state start
+		self.__state_vector[1] = self.State.main_region_test_drive_main_r1automatic_mode_panic__override_start
 		self.__state_conf_vector_position = 1
 		self.__state_conf_vector_changed = True
 		
-	def __enter_sequence_main_region_test_drive_main_r1_automatic_mode_r2_overrides_pitch_correct_default(self):
-		"""'default' enter sequence for state correct.
+	def __enter_sequence_main_region_test_drive_main_r1_automatic_mode_panic__override_monitoring_generally_default(self):
+		"""'default' enter sequence for state monitoring generally.
 		"""
-		#'default' enter sequence for state correct
-		self.__state_vector[2] = self.State.main_region_test_drive_main_r1automatic_mode_r2overrides_pitchcorrect
-		self.__state_conf_vector_position = 2
+		#'default' enter sequence for state monitoring generally
+		self.__state_vector[1] = self.State.main_region_test_drive_main_r1automatic_mode_panic__override_monitoring_generally
+		self.__state_conf_vector_position = 1
 		self.__state_conf_vector_changed = True
 		
 	def __enter_sequence_main_region_test_logging_grid_record_default(self):
@@ -935,8 +984,8 @@ class Model:
 		"""
 		#'default' enter sequence for state start record
 		self.__entry_action_main_region_test_logging_grid_record_r1_start_record()
-		self.__state_vector[3] = self.State.main_region_test_logging_grid_record_r1start_record
-		self.__state_conf_vector_position = 3
+		self.__state_vector[2] = self.State.main_region_test_logging_grid_record_r1start_record
+		self.__state_conf_vector_position = 2
 		self.__state_conf_vector_changed = True
 		
 	def __enter_sequence_main_region_test_logging_grid_record_r1__final__default(self):
@@ -944,8 +993,8 @@ class Model:
 		"""
 		#Default enter sequence for final state
 		self.__entry_action_main_region_test_logging_grid_record_r1__final_()
-		self.__state_vector[3] = self.State.main_region_test_logging_grid_record_r1_final_
-		self.__state_conf_vector_position = 3
+		self.__state_vector[2] = self.State.main_region_test_logging_grid_record_r1_final_
+		self.__state_conf_vector_position = 2
 		self.__state_conf_vector_changed = True
 		
 	def __enter_sequence_main_region_test_logging_grid_check_status_default(self):
@@ -953,16 +1002,16 @@ class Model:
 		"""
 		#'default' enter sequence for state check status
 		self.__entry_action_main_region_test_logging_grid_check_status()
-		self.__state_vector[3] = self.State.main_region_test_logging_grid_check_status
-		self.__state_conf_vector_position = 3
+		self.__state_vector[2] = self.State.main_region_test_logging_grid_check_status
+		self.__state_conf_vector_position = 2
 		self.__state_conf_vector_changed = True
 		
 	def __enter_sequence_main_region_test_logging_grid_start_default(self):
 		"""'default' enter sequence for state start.
 		"""
 		#'default' enter sequence for state start
-		self.__state_vector[3] = self.State.main_region_test_logging_grid_start
-		self.__state_conf_vector_position = 3
+		self.__state_vector[2] = self.State.main_region_test_logging_grid_start
+		self.__state_conf_vector_position = 2
 		self.__state_conf_vector_changed = True
 		
 	def __enter_sequence_main_region_default(self):
@@ -995,23 +1044,11 @@ class Model:
 		#'default' enter sequence for region r1
 		self.__react_main_region_test_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1__entry_default()
 		
-	def __enter_sequence_main_region_test_drive_main_r1_automatic_mode_r2_default(self):
-		"""'default' enter sequence for region r2.
+	def __enter_sequence_main_region_test_drive_main_r1_automatic_mode_panic__override_default(self):
+		"""'default' enter sequence for region Panic! Override.
 		"""
-		#'default' enter sequence for region r2
-		self.__react_main_region_test_drive_main_r1_automatic_mode_r2__entry_default()
-		
-	def __enter_sequence_main_region_test_drive_main_r1_automatic_mode_r2_overrides_lidar_default(self):
-		"""'default' enter sequence for region LIDAR.
-		"""
-		#'default' enter sequence for region LIDAR
-		self.__react_main_region_test_drive_main_r1_automatic_mode_r2_overrides_lidar__entry_default()
-		
-	def __enter_sequence_main_region_test_drive_main_r1_automatic_mode_r2_overrides_pitch_default(self):
-		"""'default' enter sequence for region PITCH.
-		"""
-		#'default' enter sequence for region PITCH
-		self.__react_main_region_test_drive_main_r1_automatic_mode_r2_overrides_pitch__entry_default()
+		#'default' enter sequence for region Panic! Override
+		self.__react_main_region_test_drive_main_r1_automatic_mode_panic__override__entry_default()
 		
 	def __enter_sequence_main_region_test_logging_grid_default(self):
 		"""'default' enter sequence for region logging grid.
@@ -1089,11 +1126,10 @@ class Model:
 		"""
 		#Default exit sequence for state Automatic mode
 		self.__exit_sequence_main_region_test_drive_main_r1_automatic_mode_automatic_algorithm()
-		self.__exit_sequence_main_region_test_drive_main_r1_automatic_mode_r2()
+		self.__exit_sequence_main_region_test_drive_main_r1_automatic_mode_panic__override()
 		self.__state_vector[0] = self.State.main_region_test_drive_main
 		self.__state_vector[1] = self.State.main_region_test_drive_main
-		self.__state_vector[2] = self.State.main_region_test_drive_main
-		self.__state_conf_vector_position = 2
+		self.__state_conf_vector_position = 1
 		
 	def __exit_sequence_main_region_test_drive_main_r1_automatic_mode_automatic_algorithm_follow_left(self):
 		"""Default exit sequence for state Follow left.
@@ -1117,6 +1153,7 @@ class Model:
 		#Default exit sequence for state finished calibration
 		self.__state_vector[0] = self.State.main_region_test_drive_main_r1automatic_mode_automatic_algorithm_follow_left
 		self.__state_conf_vector_position = 0
+		self.__exit_action_main_region_test_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_finished_calibration()
 		
 	def __exit_sequence_main_region_test_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_forward(self):
 		"""Default exit sequence for state Forward.
@@ -1124,6 +1161,7 @@ class Model:
 		#Default exit sequence for state Forward
 		self.__state_vector[0] = self.State.main_region_test_drive_main_r1automatic_mode_automatic_algorithm_follow_left
 		self.__state_conf_vector_position = 0
+		self.__exit_action_main_region_test_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_forward()
 		
 	def __exit_sequence_main_region_test_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_turn_right(self):
 		"""Default exit sequence for state Turn Right.
@@ -1133,12 +1171,13 @@ class Model:
 		self.__state_conf_vector_position = 0
 		self.__exit_action_main_region_test_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_turn_right()
 		
-	def __exit_sequence_main_region_test_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_forward_stop(self):
-		"""Default exit sequence for state ForwardStop.
+	def __exit_sequence_main_region_test_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_stop_wall(self):
+		"""Default exit sequence for state Stop wall.
 		"""
-		#Default exit sequence for state ForwardStop
+		#Default exit sequence for state Stop wall
 		self.__state_vector[0] = self.State.main_region_test_drive_main_r1automatic_mode_automatic_algorithm_follow_left
 		self.__state_conf_vector_position = 0
+		self.__exit_action_main_region_test_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_stop_wall()
 		
 	def __exit_sequence_main_region_test_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_turn_stop(self):
 		"""Default exit sequence for state TurnStop.
@@ -1171,57 +1210,72 @@ class Model:
 		self.__state_conf_vector_position = 0
 		self.__exit_action_main_region_test_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_turn_around()
 		
-	def __exit_sequence_main_region_test_drive_main_r1_automatic_mode_r2_overrides_lidar_idle(self):
-		"""Default exit sequence for state idle.
+	def __exit_sequence_main_region_test_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_start(self):
+		"""Default exit sequence for state start.
 		"""
-		#Default exit sequence for state idle
-		self.__state_vector[1] = self.State.main_region_test_drive_main_r1automatic_mode_r2overrides
+		#Default exit sequence for state start
+		self.__state_vector[0] = self.State.main_region_test_drive_main_r1automatic_mode_automatic_algorithm_follow_left
+		self.__state_conf_vector_position = 0
+		
+	def __exit_sequence_main_region_test_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_stop_left_corridor(self):
+		"""Default exit sequence for state Stop Left corridor.
+		"""
+		#Default exit sequence for state Stop Left corridor
+		self.__state_vector[0] = self.State.main_region_test_drive_main_r1automatic_mode_automatic_algorithm_follow_left
+		self.__state_conf_vector_position = 0
+		self.__exit_action_main_region_test_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_stop_left_corridor()
+		
+	def __exit_sequence_main_region_test_drive_main_r1_automatic_mode_panic__override_start(self):
+		"""Default exit sequence for state start.
+		"""
+		#Default exit sequence for state start
+		self.__state_vector[1] = self.State.main_region_test_drive_main_r1automatic_mode
 		self.__state_conf_vector_position = 1
 		
-	def __exit_sequence_main_region_test_drive_main_r1_automatic_mode_r2_overrides_pitch_correct(self):
-		"""Default exit sequence for state correct.
+	def __exit_sequence_main_region_test_drive_main_r1_automatic_mode_panic__override_monitoring_generally(self):
+		"""Default exit sequence for state monitoring generally.
 		"""
-		#Default exit sequence for state correct
-		self.__state_vector[2] = self.State.main_region_test_drive_main_r1automatic_mode_r2overrides
-		self.__state_conf_vector_position = 2
+		#Default exit sequence for state monitoring generally
+		self.__state_vector[1] = self.State.main_region_test_drive_main_r1automatic_mode
+		self.__state_conf_vector_position = 1
 		
 	def __exit_sequence_main_region_test_logging_grid_record(self):
 		"""Default exit sequence for state record.
 		"""
 		#Default exit sequence for state record
 		self.__exit_sequence_main_region_test_logging_grid_record_r1()
-		self.__state_vector[3] = self.State.main_region_test
-		self.__state_conf_vector_position = 3
+		self.__state_vector[2] = self.State.main_region_test
+		self.__state_conf_vector_position = 2
 		
 	def __exit_sequence_main_region_test_logging_grid_record_r1_start_record(self):
 		"""Default exit sequence for state start record.
 		"""
 		#Default exit sequence for state start record
-		self.__state_vector[3] = self.State.main_region_test_logging_grid_record
-		self.__state_conf_vector_position = 3
+		self.__state_vector[2] = self.State.main_region_test_logging_grid_record
+		self.__state_conf_vector_position = 2
 		self.__exit_action_main_region_test_logging_grid_record_r1_start_record()
 		
 	def __exit_sequence_main_region_test_logging_grid_record_r1__final_(self):
 		"""Default exit sequence for final state..
 		"""
 		#Default exit sequence for final state.
-		self.__state_vector[3] = self.State.main_region_test_logging_grid_record
-		self.__state_conf_vector_position = 3
+		self.__state_vector[2] = self.State.main_region_test_logging_grid_record
+		self.__state_conf_vector_position = 2
 		
 	def __exit_sequence_main_region_test_logging_grid_check_status(self):
 		"""Default exit sequence for state check status.
 		"""
 		#Default exit sequence for state check status
-		self.__state_vector[3] = self.State.main_region_test
-		self.__state_conf_vector_position = 3
+		self.__state_vector[2] = self.State.main_region_test
+		self.__state_conf_vector_position = 2
 		self.__exit_action_main_region_test_logging_grid_check_status()
 		
 	def __exit_sequence_main_region_test_logging_grid_start(self):
 		"""Default exit sequence for state start.
 		"""
 		#Default exit sequence for state start
-		self.__state_vector[3] = self.State.main_region_test
-		self.__state_conf_vector_position = 3
+		self.__state_vector[2] = self.State.main_region_test
+		self.__state_conf_vector_position = 2
 		
 	def __exit_sequence_main_region(self):
 		"""Default exit sequence for region main region.
@@ -1254,8 +1308,8 @@ class Model:
 			self.__exit_sequence_main_region_test_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_forward()
 		elif state == self.State.main_region_test_drive_main_r1automatic_mode_automatic_algorithm_follow_left_r1turn_right:
 			self.__exit_sequence_main_region_test_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_turn_right()
-		elif state == self.State.main_region_test_drive_main_r1automatic_mode_automatic_algorithm_follow_left_r1forward_stop:
-			self.__exit_sequence_main_region_test_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_forward_stop()
+		elif state == self.State.main_region_test_drive_main_r1automatic_mode_automatic_algorithm_follow_left_r1stop_wall:
+			self.__exit_sequence_main_region_test_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_stop_wall()
 		elif state == self.State.main_region_test_drive_main_r1automatic_mode_automatic_algorithm_follow_left_r1turn_stop:
 			self.__exit_sequence_main_region_test_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_turn_stop()
 		elif state == self.State.main_region_test_drive_main_r1automatic_mode_automatic_algorithm_follow_left_r1turning_to_target:
@@ -1264,13 +1318,16 @@ class Model:
 			self.__exit_sequence_main_region_test_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_turn_left()
 		elif state == self.State.main_region_test_drive_main_r1automatic_mode_automatic_algorithm_follow_left_r1turn_around:
 			self.__exit_sequence_main_region_test_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_turn_around()
+		elif state == self.State.main_region_test_drive_main_r1automatic_mode_automatic_algorithm_follow_left_r1start:
+			self.__exit_sequence_main_region_test_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_start()
+		elif state == self.State.main_region_test_drive_main_r1automatic_mode_automatic_algorithm_follow_left_r1stop_left_corridor:
+			self.__exit_sequence_main_region_test_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_stop_left_corridor()
 		state = self.__state_vector[1]
-		if state == self.State.main_region_test_drive_main_r1automatic_mode_r2overrides_lidaridle:
-			self.__exit_sequence_main_region_test_drive_main_r1_automatic_mode_r2_overrides_lidar_idle()
+		if state == self.State.main_region_test_drive_main_r1automatic_mode_panic__override_start:
+			self.__exit_sequence_main_region_test_drive_main_r1_automatic_mode_panic__override_start()
+		elif state == self.State.main_region_test_drive_main_r1automatic_mode_panic__override_monitoring_generally:
+			self.__exit_sequence_main_region_test_drive_main_r1_automatic_mode_panic__override_monitoring_generally()
 		state = self.__state_vector[2]
-		if state == self.State.main_region_test_drive_main_r1automatic_mode_r2overrides_pitchcorrect:
-			self.__exit_sequence_main_region_test_drive_main_r1_automatic_mode_r2_overrides_pitch_correct()
-		state = self.__state_vector[3]
 		if state == self.State.main_region_test_logging_grid_record:
 			self.__exit_sequence_main_region_test_logging_grid_record()
 		elif state == self.State.main_region_test_logging_grid_record_r1start_record:
@@ -1335,8 +1392,8 @@ class Model:
 			self.__exit_sequence_main_region_test_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_forward()
 		elif state == self.State.main_region_test_drive_main_r1automatic_mode_automatic_algorithm_follow_left_r1turn_right:
 			self.__exit_sequence_main_region_test_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_turn_right()
-		elif state == self.State.main_region_test_drive_main_r1automatic_mode_automatic_algorithm_follow_left_r1forward_stop:
-			self.__exit_sequence_main_region_test_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_forward_stop()
+		elif state == self.State.main_region_test_drive_main_r1automatic_mode_automatic_algorithm_follow_left_r1stop_wall:
+			self.__exit_sequence_main_region_test_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_stop_wall()
 		elif state == self.State.main_region_test_drive_main_r1automatic_mode_automatic_algorithm_follow_left_r1turn_stop:
 			self.__exit_sequence_main_region_test_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_turn_stop()
 		elif state == self.State.main_region_test_drive_main_r1automatic_mode_automatic_algorithm_follow_left_r1turning_to_target:
@@ -1345,6 +1402,10 @@ class Model:
 			self.__exit_sequence_main_region_test_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_turn_left()
 		elif state == self.State.main_region_test_drive_main_r1automatic_mode_automatic_algorithm_follow_left_r1turn_around:
 			self.__exit_sequence_main_region_test_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_turn_around()
+		elif state == self.State.main_region_test_drive_main_r1automatic_mode_automatic_algorithm_follow_left_r1start:
+			self.__exit_sequence_main_region_test_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_start()
+		elif state == self.State.main_region_test_drive_main_r1automatic_mode_automatic_algorithm_follow_left_r1stop_left_corridor:
+			self.__exit_sequence_main_region_test_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_stop_left_corridor()
 		
 	def __exit_sequence_main_region_test_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1(self):
 		"""Default exit sequence for region r1.
@@ -1359,8 +1420,8 @@ class Model:
 			self.__exit_sequence_main_region_test_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_forward()
 		elif state == self.State.main_region_test_drive_main_r1automatic_mode_automatic_algorithm_follow_left_r1turn_right:
 			self.__exit_sequence_main_region_test_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_turn_right()
-		elif state == self.State.main_region_test_drive_main_r1automatic_mode_automatic_algorithm_follow_left_r1forward_stop:
-			self.__exit_sequence_main_region_test_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_forward_stop()
+		elif state == self.State.main_region_test_drive_main_r1automatic_mode_automatic_algorithm_follow_left_r1stop_wall:
+			self.__exit_sequence_main_region_test_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_stop_wall()
 		elif state == self.State.main_region_test_drive_main_r1automatic_mode_automatic_algorithm_follow_left_r1turn_stop:
 			self.__exit_sequence_main_region_test_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_turn_stop()
 		elif state == self.State.main_region_test_drive_main_r1automatic_mode_automatic_algorithm_follow_left_r1turning_to_target:
@@ -1369,23 +1430,26 @@ class Model:
 			self.__exit_sequence_main_region_test_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_turn_left()
 		elif state == self.State.main_region_test_drive_main_r1automatic_mode_automatic_algorithm_follow_left_r1turn_around:
 			self.__exit_sequence_main_region_test_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_turn_around()
+		elif state == self.State.main_region_test_drive_main_r1automatic_mode_automatic_algorithm_follow_left_r1start:
+			self.__exit_sequence_main_region_test_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_start()
+		elif state == self.State.main_region_test_drive_main_r1automatic_mode_automatic_algorithm_follow_left_r1stop_left_corridor:
+			self.__exit_sequence_main_region_test_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_stop_left_corridor()
 		
-	def __exit_sequence_main_region_test_drive_main_r1_automatic_mode_r2(self):
-		"""Default exit sequence for region r2.
+	def __exit_sequence_main_region_test_drive_main_r1_automatic_mode_panic__override(self):
+		"""Default exit sequence for region Panic! Override.
 		"""
-		#Default exit sequence for region r2
+		#Default exit sequence for region Panic! Override
 		state = self.__state_vector[1]
-		if state == self.State.main_region_test_drive_main_r1automatic_mode_r2overrides_lidaridle:
-			self.__exit_sequence_main_region_test_drive_main_r1_automatic_mode_r2_overrides_lidar_idle()
-		state = self.__state_vector[2]
-		if state == self.State.main_region_test_drive_main_r1automatic_mode_r2overrides_pitchcorrect:
-			self.__exit_sequence_main_region_test_drive_main_r1_automatic_mode_r2_overrides_pitch_correct()
+		if state == self.State.main_region_test_drive_main_r1automatic_mode_panic__override_start:
+			self.__exit_sequence_main_region_test_drive_main_r1_automatic_mode_panic__override_start()
+		elif state == self.State.main_region_test_drive_main_r1automatic_mode_panic__override_monitoring_generally:
+			self.__exit_sequence_main_region_test_drive_main_r1_automatic_mode_panic__override_monitoring_generally()
 		
 	def __exit_sequence_main_region_test_logging_grid_record_r1(self):
 		"""Default exit sequence for region r1.
 		"""
 		#Default exit sequence for region r1
-		state = self.__state_vector[3]
+		state = self.__state_vector[2]
 		if state == self.State.main_region_test_logging_grid_record_r1start_record:
 			self.__exit_sequence_main_region_test_logging_grid_record_r1_start_record()
 		elif state == self.State.main_region_test_logging_grid_record_r1_final_:
@@ -1413,25 +1477,13 @@ class Model:
 		"""Default react sequence for initial entry .
 		"""
 		#Default react sequence for initial entry 
-		self.__enter_sequence_main_region_test_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_calibrate_default()
+		self.__enter_sequence_main_region_test_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_start_default()
 		
-	def __react_main_region_test_drive_main_r1_automatic_mode_r2__entry_default(self):
+	def __react_main_region_test_drive_main_r1_automatic_mode_panic__override__entry_default(self):
 		"""Default react sequence for initial entry .
 		"""
 		#Default react sequence for initial entry 
-		self.__enter_sequence_main_region_test_drive_main_r1_automatic_mode_r2_overrides_default()
-		
-	def __react_main_region_test_drive_main_r1_automatic_mode_r2_overrides_lidar__entry_default(self):
-		"""Default react sequence for initial entry .
-		"""
-		#Default react sequence for initial entry 
-		self.__enter_sequence_main_region_test_drive_main_r1_automatic_mode_r2_overrides_lidar_idle_default()
-		
-	def __react_main_region_test_drive_main_r1_automatic_mode_r2_overrides_pitch__entry_default(self):
-		"""Default react sequence for initial entry .
-		"""
-		#Default react sequence for initial entry 
-		self.__enter_sequence_main_region_test_drive_main_r1_automatic_mode_r2_overrides_pitch_correct_default()
+		self.__enter_sequence_main_region_test_drive_main_r1_automatic_mode_panic__override_start_default()
 		
 	def __react_main_region_test_drive__entry_default(self):
 		"""Default react sequence for initial entry .
@@ -1672,7 +1724,7 @@ class Model:
 					self.__exit_sequence_main_region_test_drive_main_r1_automatic_mode()
 					self.__enter_sequence_main_region_test_drive_main_r1_stopped_default()
 					self.__main_region_test_drive_main_react(0)
-					transitioned_after = 2
+					transitioned_after = 1
 			#If no transition was taken
 			if transitioned_after == transitioned_before:
 				#then execute local reactions.
@@ -1720,8 +1772,9 @@ class Model:
 		transitioned_after = transitioned_before
 		if not self.__do_completion:
 			if transitioned_after < 0:
-				if self.has_calibrated:
+				if self.__time_events[2]:
 					self.__exit_sequence_main_region_test_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_finished_calibration()
+					self.__time_events[2] = False
 					self.__enter_sequence_main_region_test_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_forward_default()
 					self.__main_region_test_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_react(0)
 					transitioned_after = 0
@@ -1739,14 +1792,22 @@ class Model:
 		transitioned_after = transitioned_before
 		if not self.__do_completion:
 			if transitioned_after < 0:
-				if self.laser_distance.dfront_mean <= self.user_var.min_wall_turn:
+				if self.grid.wall_left == 0:
 					self.__exit_sequence_main_region_test_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_forward()
-					self.__enter_sequence_main_region_test_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_forward_stop_default()
+					self.__enter_sequence_main_region_test_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_stop_left_corridor_default()
+					self.__main_region_test_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_react(0)
+					transitioned_after = 0
+				elif self.laser_distance.dfront_mean <= self.user_var.min_wall_turn:
+					self.__exit_sequence_main_region_test_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_forward()
+					self.__enter_sequence_main_region_test_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_stop_wall_default()
 					self.__main_region_test_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_react(0)
 					transitioned_after = 0
 			#If no transition was taken
 			if transitioned_after == transitioned_before:
 				#then execute local reactions.
+				if self.__time_events[3]:
+					self.internal_operation_callback.debug_real("Front mean", self.laser_distance.dfront_mean)
+					self.grid.wall_left = self.internal_operation_callback.direction_has_wall(self.laser_distance.d90)
 				transitioned_after = self.__main_region_test_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_react(transitioned_before)
 		return transitioned_after
 	
@@ -1758,9 +1819,9 @@ class Model:
 		transitioned_after = transitioned_before
 		if not self.__do_completion:
 			if transitioned_after < 0:
-				if self.__time_events[2]:
+				if self.__time_events[4]:
 					self.__exit_sequence_main_region_test_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_turn_right()
-					self.__time_events[2] = False
+					self.__time_events[4] = False
 					self.__enter_sequence_main_region_test_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_turning_to_target_default()
 					self.__main_region_test_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_react(0)
 					transitioned_after = 0
@@ -1771,25 +1832,25 @@ class Model:
 		return transitioned_after
 	
 	
-	def __main_region_test_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_forward_stop_react(self, transitioned_before):
-		"""Implementation of __main_region_test_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_forward_stop_react function.
+	def __main_region_test_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_stop_wall_react(self, transitioned_before):
+		"""Implementation of __main_region_test_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_stop_wall_react function.
 		"""
-		#The reactions of state ForwardStop.
+		#The reactions of state Stop wall.
 		transitioned_after = transitioned_before
 		if not self.__do_completion:
 			if transitioned_after < 0:
 				if self.grid.wall_left == 1 and self.grid.wall_right != 1:
-					self.__exit_sequence_main_region_test_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_forward_stop()
+					self.__exit_sequence_main_region_test_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_stop_wall()
 					self.__enter_sequence_main_region_test_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_turn_right_default()
 					self.__main_region_test_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_react(0)
 					transitioned_after = 0
 				elif self.grid.wall_left != 1:
-					self.__exit_sequence_main_region_test_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_forward_stop()
+					self.__exit_sequence_main_region_test_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_stop_wall()
 					self.__enter_sequence_main_region_test_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_turn_left_default()
 					self.__main_region_test_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_react(0)
 					transitioned_after = 0
 				elif self.grid.wall_left == 1 and self.grid.wall_right == 1:
-					self.__exit_sequence_main_region_test_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_forward_stop()
+					self.__exit_sequence_main_region_test_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_stop_wall()
 					self.__enter_sequence_main_region_test_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_turn_around_default()
 					self.__main_region_test_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_react(0)
 					transitioned_after = 0
@@ -1828,18 +1889,18 @@ class Model:
 			if transitioned_after < 0:
 				if self.user_var.yaw_to_go < self.user_var.yaw_error:
 					self.__exit_sequence_main_region_test_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_turning_to_target()
-					self.internal_operation_callback.debug_real("Yaw to go", self.user_var.yaw_to_go)
 					self.__enter_sequence_main_region_test_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_turn_stop_default()
 					self.__main_region_test_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_react(0)
 					transitioned_after = 0
 			#If no transition was taken
 			if transitioned_after == transitioned_before:
 				#then execute local reactions.
-				if self.__time_events[3]:
-					self.__calibrated_yaw = (self.imu.yaw - self.start_pos.zero_south_degree)
-					self.user_var.yaw_to_go = self.internal_operation_callback.abs_real((self.__calibrated_yaw - self.user_var.target_yaw))
-					self.output.rotation = (((self.user_var.rotation_direction * self.user_var.base_rotation) * 3) * ((self.user_var.yaw_to_go / 100)))
+				if self.__time_events[5]:
+					self.__calibrated_yaw = self.internal_operation_callback.relative_yaw(self.imu.yaw)
+					self.user_var.yaw_to_go = self.internal_operation_callback.abs_real(self.internal_operation_callback.calc_yaw_rotation(self.__calibrated_yaw, self.user_var.target_yaw))
+					self.output.rotation = ((self.user_var.rotation_direction * self.user_var.max_rotation) * self.internal_operation_callback.ease_out_exp(self.user_var.yaw_to_go, self.user_var.total_yaw_to_go, 3))
 					self.internal_operation_callback.debug_real("Yaw we have to still rotate", self.user_var.yaw_to_go)
+					self.internal_operation_callback.debug_real("Rotation speed", self.output.rotation)
 				transitioned_after = self.__main_region_test_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_react(transitioned_before)
 		return transitioned_after
 	
@@ -1851,9 +1912,9 @@ class Model:
 		transitioned_after = transitioned_before
 		if not self.__do_completion:
 			if transitioned_after < 0:
-				if self.__time_events[4]:
+				if self.__time_events[6]:
 					self.__exit_sequence_main_region_test_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_turn_left()
-					self.__time_events[4] = False
+					self.__time_events[6] = False
 					self.__enter_sequence_main_region_test_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_turning_to_target_default()
 					self.__main_region_test_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_react(0)
 					transitioned_after = 0
@@ -1871,9 +1932,9 @@ class Model:
 		transitioned_after = transitioned_before
 		if not self.__do_completion:
 			if transitioned_after < 0:
-				if self.__time_events[5]:
+				if self.__time_events[7]:
 					self.__exit_sequence_main_region_test_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_turn_around()
-					self.__time_events[5] = False
+					self.__time_events[7] = False
 					self.__enter_sequence_main_region_test_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_turning_to_target_default()
 					self.__main_region_test_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_react(0)
 					transitioned_after = 0
@@ -1884,10 +1945,74 @@ class Model:
 		return transitioned_after
 	
 	
-	def __main_region_test_drive_main_r1_automatic_mode_r2_overrides_react(self, transitioned_before):
-		"""Implementation of __main_region_test_drive_main_r1_automatic_mode_r2_overrides_react function.
+	def __main_region_test_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_start_react(self, transitioned_before):
+		"""Implementation of __main_region_test_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_start_react function.
 		"""
-		#The reactions of state overrides.
+		#The reactions of state start.
+		transitioned_after = transitioned_before
+		if self.__do_completion:
+			#Default exit sequence for state start
+			self.__state_vector[0] = self.State.main_region_test_drive_main_r1automatic_mode_automatic_algorithm_follow_left
+			self.__state_conf_vector_position = 0
+			#The reactions of state null.
+			if self.user_var.has_calibrated:
+				self.__enter_sequence_main_region_test_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_forward_default()
+			else:
+				self.__enter_sequence_main_region_test_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_calibrate_default()
+		else:
+			#If no transition was taken
+			if transitioned_after == transitioned_before:
+				#then execute local reactions.
+				transitioned_after = self.__main_region_test_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_react(transitioned_before)
+		return transitioned_after
+	
+	
+	def __main_region_test_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_stop_left_corridor_react(self, transitioned_before):
+		"""Implementation of __main_region_test_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_stop_left_corridor_react function.
+		"""
+		#The reactions of state Stop Left corridor.
+		transitioned_after = transitioned_before
+		if not self.__do_completion:
+			if transitioned_after < 0:
+				if self.user_var.distance_to_go < 0.1 or self.laser_distance.dfront_mean <= self.user_var.min_wall_turn:
+					self.__exit_sequence_main_region_test_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_stop_left_corridor()
+					self.__enter_sequence_main_region_test_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_stop_wall_default()
+					self.__main_region_test_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_react(0)
+					transitioned_after = 0
+			#If no transition was taken
+			if transitioned_after == transitioned_before:
+				#then execute local reactions.
+				if self.__time_events[8]:
+					self.user_var.distance_to_go = self.internal_operation_callback.abs_real(self.internal_operation_callback.distance_to_grid_center(self.odom.x, self.odom.y))
+					self.internal_operation_callback.debug_real("Distance To Go (Center gridbox)", self.user_var.distance_to_go)
+					self.output.speed = (self.user_var.base_speed * self.internal_operation_callback.ease_out_exp(self.user_var.distance_to_go, self.user_var.total_distance_to_go, 3))
+				transitioned_after = self.__main_region_test_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_react(transitioned_before)
+		return transitioned_after
+	
+	
+	def __main_region_test_drive_main_r1_automatic_mode_panic__override_start_react(self, transitioned_before):
+		"""Implementation of __main_region_test_drive_main_r1_automatic_mode_panic__override_start_react function.
+		"""
+		#The reactions of state start.
+		transitioned_after = transitioned_before
+		if not self.__do_completion:
+			if transitioned_after < 1:
+				if self.user_var.panic_mode_enable:
+					self.__exit_sequence_main_region_test_drive_main_r1_automatic_mode_panic__override_start()
+					self.__enter_sequence_main_region_test_drive_main_r1_automatic_mode_panic__override_monitoring_generally_default()
+					self.__main_region_test_drive_main_r1_automatic_mode_react(0)
+					transitioned_after = 1
+			#If no transition was taken
+			if transitioned_after == transitioned_before:
+				#then execute local reactions.
+				transitioned_after = self.__main_region_test_drive_main_r1_automatic_mode_react(transitioned_before)
+		return transitioned_after
+	
+	
+	def __main_region_test_drive_main_r1_automatic_mode_panic__override_monitoring_generally_react(self, transitioned_before):
+		"""Implementation of __main_region_test_drive_main_r1_automatic_mode_panic__override_monitoring_generally_react function.
+		"""
+		#The reactions of state monitoring generally.
 		transitioned_after = transitioned_before
 		if not self.__do_completion:
 			#If no transition was taken
@@ -1897,40 +2022,20 @@ class Model:
 		return transitioned_after
 	
 	
-	def __main_region_test_drive_main_r1_automatic_mode_r2_overrides_lidar_idle_react(self, transitioned_before):
-		"""Implementation of __main_region_test_drive_main_r1_automatic_mode_r2_overrides_lidar_idle_react function.
-		"""
-		#The reactions of state idle.
-		return transitioned_before
-	
-	
-	def __main_region_test_drive_main_r1_automatic_mode_r2_overrides_pitch_correct_react(self, transitioned_before):
-		"""Implementation of __main_region_test_drive_main_r1_automatic_mode_r2_overrides_pitch_correct_react function.
-		"""
-		#The reactions of state correct.
-		transitioned_after = transitioned_before
-		if not self.__do_completion:
-			#If no transition was taken
-			if transitioned_after == transitioned_before:
-				#then execute local reactions.
-				transitioned_after = self.__main_region_test_drive_main_r1_automatic_mode_r2_overrides_react(transitioned_before)
-		return transitioned_after
-	
-	
 	def __main_region_test_logging_grid_record_react(self, transitioned_before):
 		"""Implementation of __main_region_test_logging_grid_record_react function.
 		"""
 		#The reactions of state record.
 		transitioned_after = transitioned_before
-		if (self.__state_vector[3] == self.State.main_region_test_logging_grid_record_r1_final_) and self.__do_completion:
+		if (self.__state_vector[2] == self.State.main_region_test_logging_grid_record_r1_final_) and self.__do_completion:
 			#Default exit sequence for state record
 			self.__exit_sequence_main_region_test_logging_grid_record_r1()
-			self.__state_vector[3] = self.State.main_region_test
-			self.__state_conf_vector_position = 3
+			self.__state_vector[2] = self.State.main_region_test
+			self.__state_conf_vector_position = 2
 			#'default' enter sequence for state check status
 			self.__entry_action_main_region_test_logging_grid_check_status()
-			self.__state_vector[3] = self.State.main_region_test_logging_grid_check_status
-			self.__state_conf_vector_position = 3
+			self.__state_vector[2] = self.State.main_region_test_logging_grid_check_status
+			self.__state_conf_vector_position = 2
 			self.__state_conf_vector_changed = True
 			self.__main_region_test_react(0)
 		else:
@@ -1945,18 +2050,18 @@ class Model:
 		#The reactions of state start record.
 		transitioned_after = transitioned_before
 		if not self.__do_completion:
-			if transitioned_after < 3:
-				if (self.__time_events[6]) and (not self.grid.update):
+			if transitioned_after < 2:
+				if (self.__time_events[9]) and (not self.grid.update):
 					self.__exit_sequence_main_region_test_logging_grid_record_r1_start_record()
-					self.__time_events[6] = False
+					self.__time_events[9] = False
 					self.__enter_sequence_main_region_test_logging_grid_record_r1__final__default()
-					transitioned_after = 3
-				elif self.__time_events[7]:
+					transitioned_after = 2
+				elif self.__time_events[10]:
 					self.__exit_sequence_main_region_test_logging_grid_record_r1_start_record()
-					self.__time_events[7] = False
+					self.__time_events[10] = False
 					self.__enter_sequence_main_region_test_logging_grid_record_r1_start_record_default()
-					self.__main_region_test_logging_grid_record_react(3)
-					transitioned_after = 3
+					self.__main_region_test_logging_grid_record_react(2)
+					transitioned_after = 2
 			#If no transition was taken
 			if transitioned_after == transitioned_before:
 				#then execute local reactions.
@@ -1977,16 +2082,16 @@ class Model:
 		#The reactions of state check status.
 		transitioned_after = transitioned_before
 		if not self.__do_completion:
-			if transitioned_after < 3:
+			if transitioned_after < 2:
 				if not self.grid.visited:
 					self.__exit_sequence_main_region_test_logging_grid_check_status()
 					self.__enter_sequence_main_region_test_logging_grid_record_default()
 					self.__main_region_test_react(0)
-					transitioned_after = 3
+					transitioned_after = 2
 			#If no transition was taken
 			if transitioned_after == transitioned_before:
 				#then execute local reactions.
-				if self.__time_events[8]:
+				if self.__time_events[11]:
 					self.grid.column = self.internal_operation_callback.grid_position_column(self.odom.x)
 					self.grid.row = self.internal_operation_callback.grid_position_row(self.odom.y)
 					self.grid.receive = True
@@ -2003,12 +2108,12 @@ class Model:
 		#The reactions of state start.
 		transitioned_after = transitioned_before
 		if not self.__do_completion:
-			if transitioned_after < 3:
-				if (self.has_calibrated) and (False):
+			if transitioned_after < 2:
+				if self.user_var.has_calibrated and self.user_var.mapping_mode_enabled:
 					self.__exit_sequence_main_region_test_logging_grid_start()
 					self.__enter_sequence_main_region_test_logging_grid_check_status_default()
 					self.__main_region_test_react(0)
-					transitioned_after = 3
+					transitioned_after = 2
 			#If no transition was taken
 			if transitioned_after == transitioned_before:
 				#then execute local reactions.
@@ -2034,12 +2139,9 @@ class Model:
 		self.__time_events[6] = False
 		self.__time_events[7] = False
 		self.__time_events[8] = False
-	
-	
-	def __clear_internal_events(self):
-		"""Implementation of __clear_internal_events function.
-		"""
-		self.has_calibrated = False
+		self.__time_events[9] = False
+		self.__time_events[10] = False
+		self.__time_events[11] = False
 	
 	
 	def __micro_step(self):
@@ -2066,8 +2168,8 @@ class Model:
 			transitioned = self.__main_region_test_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_forward_react(transitioned)
 		elif state == self.State.main_region_test_drive_main_r1automatic_mode_automatic_algorithm_follow_left_r1turn_right:
 			transitioned = self.__main_region_test_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_turn_right_react(transitioned)
-		elif state == self.State.main_region_test_drive_main_r1automatic_mode_automatic_algorithm_follow_left_r1forward_stop:
-			transitioned = self.__main_region_test_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_forward_stop_react(transitioned)
+		elif state == self.State.main_region_test_drive_main_r1automatic_mode_automatic_algorithm_follow_left_r1stop_wall:
+			transitioned = self.__main_region_test_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_stop_wall_react(transitioned)
 		elif state == self.State.main_region_test_drive_main_r1automatic_mode_automatic_algorithm_follow_left_r1turn_stop:
 			transitioned = self.__main_region_test_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_turn_stop_react(transitioned)
 		elif state == self.State.main_region_test_drive_main_r1automatic_mode_automatic_algorithm_follow_left_r1turning_to_target:
@@ -2076,16 +2178,18 @@ class Model:
 			transitioned = self.__main_region_test_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_turn_left_react(transitioned)
 		elif state == self.State.main_region_test_drive_main_r1automatic_mode_automatic_algorithm_follow_left_r1turn_around:
 			transitioned = self.__main_region_test_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_turn_around_react(transitioned)
+		elif state == self.State.main_region_test_drive_main_r1automatic_mode_automatic_algorithm_follow_left_r1start:
+			transitioned = self.__main_region_test_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_start_react(transitioned)
+		elif state == self.State.main_region_test_drive_main_r1automatic_mode_automatic_algorithm_follow_left_r1stop_left_corridor:
+			transitioned = self.__main_region_test_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_stop_left_corridor_react(transitioned)
 		if self.__state_conf_vector_position < 1:
 			state = self.__state_vector[1]
-			if state == self.State.main_region_test_drive_main_r1automatic_mode_r2overrides_lidaridle:
-				transitioned = self.__main_region_test_drive_main_r1_automatic_mode_r2_overrides_lidar_idle_react(transitioned)
+			if state == self.State.main_region_test_drive_main_r1automatic_mode_panic__override_start:
+				transitioned = self.__main_region_test_drive_main_r1_automatic_mode_panic__override_start_react(transitioned)
+			elif state == self.State.main_region_test_drive_main_r1automatic_mode_panic__override_monitoring_generally:
+				transitioned = self.__main_region_test_drive_main_r1_automatic_mode_panic__override_monitoring_generally_react(transitioned)
 		if self.__state_conf_vector_position < 2:
 			state = self.__state_vector[2]
-			if state == self.State.main_region_test_drive_main_r1automatic_mode_r2overrides_pitchcorrect:
-				transitioned = self.__main_region_test_drive_main_r1_automatic_mode_r2_overrides_pitch_correct_react(transitioned)
-		if self.__state_conf_vector_position < 3:
-			state = self.__state_vector[3]
 			if state == self.State.main_region_test_logging_grid_record_r1start_record:
 				self.__main_region_test_logging_grid_record_r1_start_record_react(transitioned)
 			elif state == self.State.main_region_test_logging_grid_record_r1_final_:
@@ -2124,7 +2228,6 @@ class Model:
 				self.__do_completion = False
 				condition_1 = self.__completed
 			self.__clear_in_events()
-			self.__clear_internal_events()
 			condition_0 = False
 			next_event = self.__get_next_event()
 			if next_event is not None:
@@ -2172,8 +2275,7 @@ class Model:
 		self.__state_vector[0] = self.State.null_state
 		self.__state_vector[1] = self.State.null_state
 		self.__state_vector[2] = self.State.null_state
-		self.__state_vector[3] = self.State.null_state
-		self.__state_conf_vector_position = 3
+		self.__state_conf_vector_position = 2
 		self.__is_executing = False
 	
 	
