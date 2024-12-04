@@ -1,0 +1,39 @@
+
+
+// Another example showing the power of RLE format parsing (with multiple patterns)
+
+// Active keyword means this is the file that will be put into src (so run in the simulation)
+active
+
+
+GridSize = [130 x 100]
+
+Initial:
+	// Initial board with RLE Patterns
+	Coordinates = [130, 30]
+	Patterns: // random patterns from https://copy.sh/life/
+		[ 10, 10 ] "6bo$4bob2o$4bobo$4bo$2bo$obo!"
+		
+		[ 30, 30 ] "29b2o7b2o$29b2o7b2o$3b2o7b2o$3b2o7b2o$$28bo11bo$28b2o9b2o$6bo3bo16bo2b
+o2bobo2bo2bo$b3o2bo3bo2b3o10bo2b4o3b4o2bo$2b2o3bobo3b2o11bo2bo2b2ob2o
+2bo2bo$o2bo9bo2bo$o3b3o3b3o3bo3b3o3b3o11b3o$bob3o5b3obo10b3o11b3o$2b3o
+7b3o$2b3o7b3o11bo2bo2b2ob2o2bo2bo$bob3o5b3obo4b3o3bo2b4o3b4o2bo$o3b3o
+3b3o3bo10bo2bo2bobo2bo2bo$o2bo9bo2bo11b2o9b2o$2b2o3bobo3b2o13bo11bo$b
+3o2bo3bo2b3o$6bo3bo$$29b2o7b2o$29b2o7b2o$3b2o7b2o$3b2o7b2o!"
+
+		[90, 20 ] "4bo6bo$3bobob2obobo$3b2o2b2o2b2o$7b2o$$5b2o2b2o$5b2o2b2o$6b4o$6bo2bo$
+5bo4bo$5bo4bo$5bob2obo$6bo2bo$6bo2bo$$o14bo$2o4bo2bo4b2o$o5b4o5bo$b2o
+4b2o4b2o$2bo10bo$obo10bobo$b5o4b5o$3bo2b4o2bo$2bo4b2o4bo$6bo2bo$7b2o$
+4b2ob2ob2o$$3bo8bo$2b3o6b3o$2bo2bo4bo2bo$b2o10b2o!"
+
+
+//Rules (Standard rules)
+Rules:
+	default: die
+
+	die if [ < 2 ] companions
+	survive if [ = 2 ] companions
+	survive if [ = 3 ] companions
+	die if [ > 4 ] companions
+	be born if [ = 3 ] companions
+

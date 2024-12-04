@@ -1,0 +1,150 @@
+grammar persons.tasks.TaskDSL with org.eclipse.xtext.common.Terminals
+
+generate taskDSL "http://www.tasks.persons/TaskDSL"
+
+// next needed because of Ecore type EBoolean used
+import "http://www.eclipse.org/emf/2002/Ecore" as ecore
+
+Planning: 'Planning' name = ID
+	(anonymous ?= 'anonymous')?
+	(persons += Person | tasks += Task)*
+;
+Person: 'Person:' name=ID
+;
+
+Task: 'Task:' name = ID action = Action // added name
+	'persons:' persons += [Person] +
+	'priority:' prio = INT
+	('duration:' duration = Duration)?
+	'defineProjects:' (projects += Project)*
+	'useProjects:' (use += ProjectUse)*
+	("extends" extends=[Task|ID])?
+;
+
+Project: name = ID
+;
+
+ProjectUse: project = [Project]
+;
+
+Duration:
+	dl = INT
+	unit = TimeUnit
+;
+
+Action: LunchAction | MeetingAction | PaperAction | PaymentAction
+;
+LunchAction: 'Lunch' location = ID
+;
+MeetingAction: 'Meeting' topic = STRING
+;
+PaperAction: 'Report' report = ID
+;
+PaymentAction: ('If' condition = BooleanExpression)?
+	'Pay' amount = IntExpression 'euro'
+;
+
+enum TimeUnit:
+MINUTE = 'min' |
+HOUR = 'hour' |
+DAY = 'day' |
+WEEK = 'week'
+;
+
+
+IntExpression: ExpressionLevel1
+;
+ExpressionLevel1 returns IntExpression: // Left associativity
+ExpressionLevel2
+( ({ExpressionAddition.left =current} "+" right=ExpressionLevel2)
+| ({ExpressionSubtraction.left=current} "-" right=ExpressionLevel2)
+)*
+;
+ExpressionLevel2 returns IntExpression: // Left associativity
+ExpressionLevel3
+( ({ExpressionMultiply.left=current} "*" right=ExpressionLevel3)
+| ({ExpressionDivision.left=current} "/" right=ExpressionLevel3)
+| ({ExpressionMaximum.left =current} "max" right=ExpressionLevel3)
+| ({ExpressionMinimum.left =current} "min" right=ExpressionLevel3)
+| ({ExpressionModulo.left =current} "mod" right=ExpressionLevel3)
+)*
+;
+ExpressionLevel3 returns IntExpression: // Right associativity
+ExpressionLevel4
+( ({ExpressionPower.left=current} "^"
+right=ExpressionLevel3)
+)?
+;
+ExpressionLevel4 returns IntExpression:
+ExpressionMinus | ExpressionPlus | ExpressionLevel5
+;
+ExpressionMinus:
+"-" sub=ExpressionLevel5
+;
+ExpressionPlus:
+"+" sub=ExpressionLevel5
+;
+ExpressionLevel5 returns IntExpression:
+ExpressionBracket |
+ExpressionConstantInt |
+ExpressionBalance
+;
+ExpressionBracket:
+"(" sub=IntExpression ")"
+;
+ExpressionConstantInt:
+value=INT
+;
+ExpressionBalance:
+value=Balance
+;
+enum Balance:
+BALANCE = 'balance'
+;
+
+
+// Boolean expression
+
+BooleanExpression: BooleanExpressionLevel1
+;
+BooleanExpressionLevel1 returns BooleanExpression: // Left associativity
+BooleanExpressionLevel2
+( {ExpressionBinOp.left=current} bop = BinaryBooleanOperator
+right=BooleanExpressionLevel2
+)*
+;
+enum BinaryBooleanOperator:
+AND = 'AND' |
+OR = 'OR'
+;
+BooleanExpressionLevel2 returns BooleanExpression:
+NotExpression |
+BooleanExpressionLevel3
+;
+NotExpression:
+"NOT" sub = BooleanExpressionLevel3
+;
+BooleanExpressionLevel3 returns BooleanExpression:
+(=> ComparisonExpression) |
+BooleanExpressionBracket |
+BooleanExpressionConstant
+;
+ComparisonExpression returns BooleanExpression: {ExpressionCompOp}
+left=IntExpression op = CompareOperator right = IntExpression
+;
+enum CompareOperator:
+EQ = '==' |
+NEQ = '!=' |
+GEQ = '>=' |
+G = '>' |
+LEQ = '<=' |
+L = '<'
+;
+BooleanExpressionBracket:
+"(" sub=BooleanExpression ")"
+;
+BooleanExpressionConstant:
+value=BOOL_LITERAL
+;
+terminal BOOL_LITERAL returns ecore::EBoolean: 'true' | 'false' | 'TRUE' | 'FALSE'
+;

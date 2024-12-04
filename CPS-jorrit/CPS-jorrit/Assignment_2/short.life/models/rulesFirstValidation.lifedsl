@@ -1,0 +1,29 @@
+
+
+// This shows the error when the neighbor condition is too large
+// The error when the rule has the same neighbor amount
+// The warning when the default consequence is the same as the one specified 
+// The error when you have overlapping values 
+
+//active
+
+GridSize = [100 x 60]
+
+Initial:
+	Coordinates =
+		[5, 1] [1, 2] [5, 9]  [15, 20]
+		[53, 30] [50, 31] [52, 32] [51, 33] [50, 33] [49, 33]
+		[49, 32] [49, 31] 
+
+
+
+//Rules
+Rules:
+	default: die
+	survive if [ = 9 ] companions
+	survive if [ = 2 ] companions
+	survive if [ = 2 ] companions
+	die if [ < 2 ] companions
+	die if [ < 1 ] companions
+	be born if [ = 3 ] companions
+	be born if [ = 6 ] companions

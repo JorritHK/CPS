@@ -1,0 +1,4 @@
+testsuite HomeAutomation {
+	default_tests,
+	additional_tests_jorrit
+}

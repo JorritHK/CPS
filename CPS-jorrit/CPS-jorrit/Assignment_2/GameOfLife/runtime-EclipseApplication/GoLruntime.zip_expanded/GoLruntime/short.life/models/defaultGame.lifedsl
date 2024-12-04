@@ -1,0 +1,30 @@
+
+// The default Game of Life version with some known structures to show it works well
+
+
+
+ // uncommenting 'active' will mean RulesOfLife.java will be generated in src using this .lifedsl file (if no other file is active)
+
+//active
+
+
+GridSize = [100 x 60]
+
+Initial:
+	// Initial board
+	Coordinates =  [10,25] [10,26] [11,25] [11,26] //block
+		[1, 5] [2,5] [3,5] // blinker
+		[30, 50] [30, 51] [30, 52] [29, 52] [28, 51] //glider
+		[40, 50] [40, 51] [40, 52] [39, 52] [38, 51] //glider
+		[50, 50] [50, 51] [50, 52] [49, 52] [48, 51] //glider
+
+
+//Rules
+Rules:
+	default: die
+
+	die if [ < 2 ] companions
+	survive if [ = 2 ] companions
+	survive if [ = 3 ] companions
+	die if [ > 4 ] companions
+	be born if [ = 3 ] companions

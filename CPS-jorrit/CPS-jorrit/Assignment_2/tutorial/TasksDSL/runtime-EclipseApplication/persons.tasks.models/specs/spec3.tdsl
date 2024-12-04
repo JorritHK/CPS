@@ -1,0 +1,16 @@
+Planning DepartmentABC
+Task: Report Strategy persons: Alice Carol priority: 5
+Task: Pay 5000 euro persons: Bob priority: 2
+Person: Alice Person: Fred
+Person: Jorrit
+Person: Sterre
+Task: Lunch Canteen persons: Fred priority: 1 duration: 2 hour
+Task: Meeting "Demo" persons: Alice priority: 4 duration: 100 min
+Person: Bob
+// This is a comment
+Task: Meeting "Training" persons: Carol priority: 7 duration: 3 day
+Task: Report Overview persons: Dave priority: 2 duration: 9 week
+Task: Pay 200 + 50 / 100 max 30 euro persons: Bob priority: 3
+Person: Carol
+Person: Dave
+Task: If (TRUE OR (FALSE AND TRUE)) Pay 1000000 euro persons: Jorrit Bob priority: 1
