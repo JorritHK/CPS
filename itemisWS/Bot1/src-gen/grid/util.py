@@ -36,6 +36,10 @@ class Calibration:
         self.laser_deg_offset = laser_deg_offset
 
 
+def coord_abs(coord: Coord):
+    return Coord(abs(coord.x), abs(coord.y))
+
+
 class Orientation(Enum):
     NORTH = 0
     EAST = 1
@@ -168,15 +172,22 @@ class Callback:
     def distance_to_grid_center(self, current_x: float, current_y: float):
 
         current = Coord(current_x, current_y)
+        after_calibration = self.calibration.coord - current
+        # print("Current", current, "After calibration", after_calibration)
         grid_x, grid_y = self.grid_position(current, debug=False)
-        distance: Coord = current - Coord(
-            grid_x * self.grid_size, grid_y * self.grid_size * -1
+        # print(
+        #     f"Grid position {grid_x}, {grid_y} = {grid_x * self.grid_size} / {grid_y * self.grid_size}"
+        # )
+        distance: Coord = coord_abs(after_calibration) - Coord(
+            grid_x * self.grid_size, grid_y * self.grid_size
         )
 
         return math.sqrt(distance.x**2 + distance.y**2)
 
     # == Orientation ==#
-    def calc_orientation(self, yaw: float, south_degree: float = None) -> int:
+    def calc_orientation(
+        self, yaw: float, south_degree: float = None, debug=False
+    ) -> int:
         """Finds the current orientation of the robot, with the meaning:
         - north = 0, east = 1, south = 2, west = 3
         - normalized_yaw: north=180, east=90, west=-90, south=0
@@ -192,11 +203,12 @@ class Callback:
         # Convert
         orientation: int = int(round((-yaw_from_south + 180) / 90) % 4)
 
-        self.debug(
-            f"GRID: Robot facing {Orientation(orientation).name} "
-            f"({orientation}) for yaw = {yaw}"
-        )
-        self.debug(f"GRID: Off orientation by: {yaw_from_south % 90}")
+        if debug:
+            self.debug(
+                f"GRID: Robot facing {Orientation(orientation).name} "
+                f"({orientation}) for yaw = {yaw}"
+            )
+            self.debug(f"GRID: Off orientation by: {yaw_from_south % 90}")
 
         return int(orientation)
 
@@ -231,10 +243,10 @@ class Callback:
 
         expected_distance = grid_size / 2
 
-        self.debug(
-            "GRID: Assessing if there is a wall with distance: "
-            f"{distance}, margin: {margin}, expected: {expected_distance}"
-        )
+        # self.debug(
+        #     "GRID: Assessing if there is a wall with distance: "
+        #     f"{distance}, margin: {margin}, expected: {expected_distance}"
+        # )
 
         if distance < (expected_distance + margin):
             return 1

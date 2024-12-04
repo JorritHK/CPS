@@ -3,7 +3,7 @@
 // Another example showing the power of RLE format parsing (with multiple patterns)
 
 // Active keyword means this is the file that will be put into src (so run in the simulation)
-//active
+active
 
 
 GridSize = [130 x 100]

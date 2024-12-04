@@ -20,3 +20,5 @@ INFO:debug:GRID: Robot facing SOUTH (2) for yaw = 4
 INFO:debug:GRID: Off orientation by: 4
 INFO:debug:GRID: Robot facing NORTH (0) for yaw = -180
 INFO:debug:GRID: Off orientation by: 0
+WARNING:debug:Calibrating again even though this has already been done. Previous values will be overwritten
+WARNING:debug:Calibrating again even though this has already been done. Previous values will be overwritten

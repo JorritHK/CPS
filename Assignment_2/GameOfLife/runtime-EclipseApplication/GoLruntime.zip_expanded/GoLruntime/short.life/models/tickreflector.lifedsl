@@ -1,0 +1,38 @@
+//active
+
+
+GridSize = [330 x 220]
+
+Initial:
+	// Initial board with RLE Patterns
+	Patterns: // random patterns from https://copy.sh/life/
+		
+		[ 0, 0 ] "201b2o$201b2o$$$199b2o$199b2o$186b2o$187bo102b2o$187bobo100b2o5b2o$
+188b2o107b2o$259b2o$259bobo$261bo14b2o17b2o$177b2o82b2o14bo17b2o$178bo
+98bobo21b2o$178bobo97b2o21b2o$179b2o$$197b2o37b2o$197b2o37b2o26b2o$
+264b2o$208b2o$207bo2bo$207bobo$208bo$$$274b2o$275bo28b2o$259b2o11b3o
+29bo$190b2o67b2o11bo29bobo$190b2o110b2o$$245b2o23b2o$246bo23bo$214bo
+28b3o22bobo$214b3o26bo24b2o$217bo37b2o$216b2o37bo$256b3o$258bo$$$301b
+2o$285b2o14b2o$226b2o58bo22b2o$219b2o5bobo54b3o23bo$219b2o7bo54bo23bob
+o$228b2o77b2o$$280bo$278b3o$277bo11bo$277b2o10b3o$292bo$291b2o$231b2o
+53bo$214b2o8bo6bo54b3o$213bobo7bobo3bobo57bo$213bo9b2o4b2o57b2o$212b2o
+$$$215b2o$214bobo$214bo70b2o$213b2o70b2o17b2o$304b2o$$242b2o16bo$222b
+2o18bo17b2o43b2o$222b2o16bobo16bobo43bo$240b2o50b2o12b3o$236b2o37b2o
+16bo14bo$235b2o38bo14b3o$237bo38b3o11bo$231bo46bo$230bobo$231bo$274b2o
+$235b2o22b2o13bobo$237bo21b2o3b2o10bo$235b2o27b2o10b2o$$230b2o$230b2o
+33b2o$259b2o4bo$259b2o5b3o$268bo$$248b2o$248bobo$250bo$236b2o12b2o$
+236b2o$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$2bo$2o$b2o!"
+
+
+//Rules (Standard rules)
+Rules:
+	default: die
+
+	die if [ < 2 ] companions
+	survive if [ = 2 ] companions
+	survive if [ = 3 ] companions
+	die if [ > 4 ] companions
+	be born if [ = 3 ] companions
+
+
