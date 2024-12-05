@@ -26,16 +26,16 @@ class Model:
 			main_region_robot_drive_main_r1manual_r1rotations_r1incr__rot__speed_left,
 			main_region_robot_drive_main_r1automatic_mode,
 			main_region_robot_drive_main_r1automatic_mode_automatic_algorithm_follow_left,
-			main_region_robot_drive_main_r1automatic_mode_automatic_algorithm_follow_left_r1calibrate,
-			main_region_robot_drive_main_r1automatic_mode_automatic_algorithm_follow_left_r1finished_calibration,
-			main_region_robot_drive_main_r1automatic_mode_automatic_algorithm_follow_left_r1forward,
-			main_region_robot_drive_main_r1automatic_mode_automatic_algorithm_follow_left_r1turn_right,
-			main_region_robot_drive_main_r1automatic_mode_automatic_algorithm_follow_left_r1stop_robot,
-			main_region_robot_drive_main_r1automatic_mode_automatic_algorithm_follow_left_r1turn_stop,
-			main_region_robot_drive_main_r1automatic_mode_automatic_algorithm_follow_left_r1turning_to_target,
-			main_region_robot_drive_main_r1automatic_mode_automatic_algorithm_follow_left_r1turn_left,
-			main_region_robot_drive_main_r1automatic_mode_automatic_algorithm_follow_left_r1turn_around,
-			main_region_robot_drive_main_r1automatic_mode_automatic_algorithm_follow_left_r1start,
+			main_region_robot_drive_main_r1automatic_mode_automatic_algorithm_follow_left_zcalibrate,
+			main_region_robot_drive_main_r1automatic_mode_automatic_algorithm_follow_left_zfinished_calibration,
+			main_region_robot_drive_main_r1automatic_mode_automatic_algorithm_follow_left_zforward,
+			main_region_robot_drive_main_r1automatic_mode_automatic_algorithm_follow_left_zturn_right,
+			main_region_robot_drive_main_r1automatic_mode_automatic_algorithm_follow_left_zstop_robot,
+			main_region_robot_drive_main_r1automatic_mode_automatic_algorithm_follow_left_zturn_stop,
+			main_region_robot_drive_main_r1automatic_mode_automatic_algorithm_follow_left_zturning_to_target,
+			main_region_robot_drive_main_r1automatic_mode_automatic_algorithm_follow_left_zturn_left,
+			main_region_robot_drive_main_r1automatic_mode_automatic_algorithm_follow_left_zturn_around,
+			main_region_robot_drive_main_r1automatic_mode_automatic_algorithm_follow_left_zstart,
 			main_region_robot_drive_main_r1automatic_mode_panic__override_start,
 			main_region_robot_drive_main_r1automatic_mode_panic__override_monitoring_generally,
 			main_region_robot_logging_grid_record,
@@ -369,11 +369,11 @@ class Model:
 		self.user_var.target_yaw = 0.0
 		self.user_var.yaw_to_go = 0.0
 		self.user_var.total_yaw_to_go = 0.0
-		self.user_var.yaw_error = 0.5
+		self.user_var.yaw_error = 0.2
 		self.user_var.rotation_direction = 1
 		self.user_var.total_distance_to_go = 0.0
 		self.user_var.distance_to_go = 0.0
-		self.user_var.center_distance_error = 0.04
+		self.user_var.center_distance_error = 0.02
 		self.user_var.last_distance = 0.0
 		self.user_var.last_yaw_to_go = 0.0
 		self.user_var.panic_mode_enable = False
@@ -515,27 +515,27 @@ class Model:
 				and (self.__state_vector[0] <= self.__State.main_region_robot_drive_main_r1automatic_mode_panic__override_monitoring_generally)
 		if s == self.__State.main_region_robot_drive_main_r1automatic_mode_automatic_algorithm_follow_left:
 			return (self.__state_vector[0] >= self.__State.main_region_robot_drive_main_r1automatic_mode_automatic_algorithm_follow_left)\
-				and (self.__state_vector[0] <= self.__State.main_region_robot_drive_main_r1automatic_mode_automatic_algorithm_follow_left_r1start)
-		if s == self.__State.main_region_robot_drive_main_r1automatic_mode_automatic_algorithm_follow_left_r1calibrate:
-			return self.__state_vector[0] == self.__State.main_region_robot_drive_main_r1automatic_mode_automatic_algorithm_follow_left_r1calibrate
-		if s == self.__State.main_region_robot_drive_main_r1automatic_mode_automatic_algorithm_follow_left_r1finished_calibration:
-			return self.__state_vector[0] == self.__State.main_region_robot_drive_main_r1automatic_mode_automatic_algorithm_follow_left_r1finished_calibration
-		if s == self.__State.main_region_robot_drive_main_r1automatic_mode_automatic_algorithm_follow_left_r1forward:
-			return self.__state_vector[0] == self.__State.main_region_robot_drive_main_r1automatic_mode_automatic_algorithm_follow_left_r1forward
-		if s == self.__State.main_region_robot_drive_main_r1automatic_mode_automatic_algorithm_follow_left_r1turn_right:
-			return self.__state_vector[0] == self.__State.main_region_robot_drive_main_r1automatic_mode_automatic_algorithm_follow_left_r1turn_right
-		if s == self.__State.main_region_robot_drive_main_r1automatic_mode_automatic_algorithm_follow_left_r1stop_robot:
-			return self.__state_vector[0] == self.__State.main_region_robot_drive_main_r1automatic_mode_automatic_algorithm_follow_left_r1stop_robot
-		if s == self.__State.main_region_robot_drive_main_r1automatic_mode_automatic_algorithm_follow_left_r1turn_stop:
-			return self.__state_vector[0] == self.__State.main_region_robot_drive_main_r1automatic_mode_automatic_algorithm_follow_left_r1turn_stop
-		if s == self.__State.main_region_robot_drive_main_r1automatic_mode_automatic_algorithm_follow_left_r1turning_to_target:
-			return self.__state_vector[0] == self.__State.main_region_robot_drive_main_r1automatic_mode_automatic_algorithm_follow_left_r1turning_to_target
-		if s == self.__State.main_region_robot_drive_main_r1automatic_mode_automatic_algorithm_follow_left_r1turn_left:
-			return self.__state_vector[0] == self.__State.main_region_robot_drive_main_r1automatic_mode_automatic_algorithm_follow_left_r1turn_left
-		if s == self.__State.main_region_robot_drive_main_r1automatic_mode_automatic_algorithm_follow_left_r1turn_around:
-			return self.__state_vector[0] == self.__State.main_region_robot_drive_main_r1automatic_mode_automatic_algorithm_follow_left_r1turn_around
-		if s == self.__State.main_region_robot_drive_main_r1automatic_mode_automatic_algorithm_follow_left_r1start:
-			return self.__state_vector[0] == self.__State.main_region_robot_drive_main_r1automatic_mode_automatic_algorithm_follow_left_r1start
+				and (self.__state_vector[0] <= self.__State.main_region_robot_drive_main_r1automatic_mode_automatic_algorithm_follow_left_zstart)
+		if s == self.__State.main_region_robot_drive_main_r1automatic_mode_automatic_algorithm_follow_left_zcalibrate:
+			return self.__state_vector[0] == self.__State.main_region_robot_drive_main_r1automatic_mode_automatic_algorithm_follow_left_zcalibrate
+		if s == self.__State.main_region_robot_drive_main_r1automatic_mode_automatic_algorithm_follow_left_zfinished_calibration:
+			return self.__state_vector[0] == self.__State.main_region_robot_drive_main_r1automatic_mode_automatic_algorithm_follow_left_zfinished_calibration
+		if s == self.__State.main_region_robot_drive_main_r1automatic_mode_automatic_algorithm_follow_left_zforward:
+			return self.__state_vector[0] == self.__State.main_region_robot_drive_main_r1automatic_mode_automatic_algorithm_follow_left_zforward
+		if s == self.__State.main_region_robot_drive_main_r1automatic_mode_automatic_algorithm_follow_left_zturn_right:
+			return self.__state_vector[0] == self.__State.main_region_robot_drive_main_r1automatic_mode_automatic_algorithm_follow_left_zturn_right
+		if s == self.__State.main_region_robot_drive_main_r1automatic_mode_automatic_algorithm_follow_left_zstop_robot:
+			return self.__state_vector[0] == self.__State.main_region_robot_drive_main_r1automatic_mode_automatic_algorithm_follow_left_zstop_robot
+		if s == self.__State.main_region_robot_drive_main_r1automatic_mode_automatic_algorithm_follow_left_zturn_stop:
+			return self.__state_vector[0] == self.__State.main_region_robot_drive_main_r1automatic_mode_automatic_algorithm_follow_left_zturn_stop
+		if s == self.__State.main_region_robot_drive_main_r1automatic_mode_automatic_algorithm_follow_left_zturning_to_target:
+			return self.__state_vector[0] == self.__State.main_region_robot_drive_main_r1automatic_mode_automatic_algorithm_follow_left_zturning_to_target
+		if s == self.__State.main_region_robot_drive_main_r1automatic_mode_automatic_algorithm_follow_left_zturn_left:
+			return self.__state_vector[0] == self.__State.main_region_robot_drive_main_r1automatic_mode_automatic_algorithm_follow_left_zturn_left
+		if s == self.__State.main_region_robot_drive_main_r1automatic_mode_automatic_algorithm_follow_left_zturn_around:
+			return self.__state_vector[0] == self.__State.main_region_robot_drive_main_r1automatic_mode_automatic_algorithm_follow_left_zturn_around
+		if s == self.__State.main_region_robot_drive_main_r1automatic_mode_automatic_algorithm_follow_left_zstart:
+			return self.__state_vector[0] == self.__State.main_region_robot_drive_main_r1automatic_mode_automatic_algorithm_follow_left_zstart
 		if s == self.__State.main_region_robot_drive_main_r1automatic_mode_panic__override_start:
 			return self.__state_vector[1] == self.__State.main_region_robot_drive_main_r1automatic_mode_panic__override_start
 		if s == self.__State.main_region_robot_drive_main_r1automatic_mode_panic__override_monitoring_generally:
@@ -621,7 +621,7 @@ class Model:
 		#Entry action for state 'Incr. rot. speed left'.
 		self.output.rotation = (self.output.rotation + self.user_var.base_rotation)
 		
-	def __entry_action_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_calibrate(self):
+	def __entry_action_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_z_calibrate(self):
 		"""Entry action for state 'calibrate'..
 		"""
 		#Entry action for state 'calibrate'.
@@ -630,7 +630,7 @@ class Model:
 		self.start_pos.set_zero = True
 		self.internal_operation_callback.debug("Calibrating...")
 		
-	def __entry_action_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_finished_calibration(self):
+	def __entry_action_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_z_finished_calibration(self):
 		"""Entry action for state 'finished calibration'..
 		"""
 		#Entry action for state 'finished calibration'.
@@ -639,14 +639,14 @@ class Model:
 		self.user_var.has_calibrated = True
 		self.internal_operation_callback.debug("Has Calibrated")
 		
-	def __entry_action_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_forward(self):
+	def __entry_action_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_z_forward(self):
 		"""Entry action for state 'Forward'..
 		"""
 		#Entry action for state 'Forward'.
-		self.output.speed = (self.user_var.base_speed * 3)
-		self.internal_operation_callback.debug("STRAIGHT AHEAD!")
+		self.output.speed = self.user_var.base_speed
+		self.internal_operation_callback.debug("STRAIGHT AHEAD NOW!")
 		
-	def __entry_action_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_turn_right(self):
+	def __entry_action_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_z_turn_right(self):
 		"""Entry action for state 'Turn Right'..
 		"""
 		#Entry action for state 'Turn Right'.
@@ -658,7 +658,7 @@ class Model:
 		self.internal_operation_callback.debug_real("Current yaw", self.internal_operation_callback.relative_yaw(self.imu.yaw))
 		self.internal_operation_callback.debug_real("Target yaw is going to be", self.user_var.target_yaw)
 		
-	def __entry_action_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_stop_robot(self):
+	def __entry_action_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_z_stop_robot(self):
 		"""Entry action for state 'Stop robot'..
 		"""
 		#Entry action for state 'Stop robot'.
@@ -675,7 +675,7 @@ class Model:
 		self.internal_operation_callback.debug_real("wallBack", self.user_var.wall_back)
 		self.internal_operation_callback.debug_real("wallLeft", self.user_var.wall_left)
 		
-	def __entry_action_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_turn_stop(self):
+	def __entry_action_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_z_turn_stop(self):
 		"""Entry action for state 'TurnStop'..
 		"""
 		#Entry action for state 'TurnStop'.
@@ -683,14 +683,14 @@ class Model:
 		self.output.rotation = 0.0
 		self.internal_operation_callback.debug("Stop turning")
 		
-	def __entry_action_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_turning_to_target(self):
+	def __entry_action_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_z_turning_to_target(self):
 		"""Entry action for state 'turning to target'..
 		"""
 		#Entry action for state 'turning to target'.
 		self.timer_service.set_timer(self, 5, 200, True)
 		self.user_var.total_yaw_to_go = self.user_var.yaw_to_go
 		
-	def __entry_action_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_turn_left(self):
+	def __entry_action_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_z_turn_left(self):
 		"""Entry action for state 'Turn Left'..
 		"""
 		#Entry action for state 'Turn Left'.
@@ -702,7 +702,7 @@ class Model:
 		self.internal_operation_callback.debug_real("Current yaw (relative)", self.internal_operation_callback.relative_yaw(self.imu.yaw))
 		self.internal_operation_callback.debug_real("Target yaw (relative)", self.user_var.target_yaw)
 		
-	def __entry_action_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_turn_around(self):
+	def __entry_action_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_z_turn_around(self):
 		"""Entry action for state 'Turn around'..
 		"""
 		#Entry action for state 'Turn around'.
@@ -715,7 +715,7 @@ class Model:
 		self.internal_operation_callback.debug_real("Current yaw", self.internal_operation_callback.relative_yaw(self.imu.yaw))
 		self.internal_operation_callback.debug_real("Target yaw", self.user_var.target_yaw)
 		
-	def __entry_action_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_start(self):
+	def __entry_action_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_z_start(self):
 		""".
 		"""
 		#Entry action for state 'start'.
@@ -733,7 +733,7 @@ class Model:
 		self.grid.wall_back = self.internal_operation_callback.direction_has_wall(self.laser_distance.d180)
 		self.grid.wall_right = self.internal_operation_callback.direction_has_wall(self.laser_distance.dm90)
 		self.grid.orientation = self.internal_operation_callback.calc_orientation(self.imu.yaw)
-		self.internal_operation_callback.debug("Recorded walls:")
+		self.internal_operation_callback.debug("VISUAL: Recorded walls:")
 		self.internal_operation_callback.debug_real("grid column", self.grid.column)
 		self.internal_operation_callback.debug_real("grid row", self.grid.row)
 		self.internal_operation_callback.debug_real("wallFront", self.grid.wall_front)
@@ -774,47 +774,46 @@ class Model:
 		self.grid.row = self.user_var.grid_new_y
 		self.grid.receive = True
 		self.output.speed = 0.0
-		self.raise_new_grid_box()
 		
-	def __exit_action_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_calibrate(self):
+	def __exit_action_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_z_calibrate(self):
 		"""Exit action for state 'calibrate'..
 		"""
 		#Exit action for state 'calibrate'.
 		self.timer_service.unset_timer(self, 0)
 		self.timer_service.unset_timer(self, 1)
 		
-	def __exit_action_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_finished_calibration(self):
+	def __exit_action_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_z_finished_calibration(self):
 		"""Exit action for state 'finished calibration'..
 		"""
 		#Exit action for state 'finished calibration'.
 		self.timer_service.unset_timer(self, 2)
 		
-	def __exit_action_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_turn_right(self):
+	def __exit_action_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_z_turn_right(self):
 		"""Exit action for state 'Turn Right'..
 		"""
 		#Exit action for state 'Turn Right'.
 		self.timer_service.unset_timer(self, 3)
 		
-	def __exit_action_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_stop_robot(self):
+	def __exit_action_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_z_stop_robot(self):
 		"""Exit action for state 'Stop robot'..
 		"""
 		#Exit action for state 'Stop robot'.
 		self.timer_service.unset_timer(self, 4)
 		self.grid.orientation = self.internal_operation_callback.calc_orientation(self.imu.yaw)
 		
-	def __exit_action_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_turning_to_target(self):
+	def __exit_action_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_z_turning_to_target(self):
 		"""Exit action for state 'turning to target'..
 		"""
 		#Exit action for state 'turning to target'.
 		self.timer_service.unset_timer(self, 5)
 		
-	def __exit_action_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_turn_left(self):
+	def __exit_action_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_z_turn_left(self):
 		"""Exit action for state 'Turn Left'..
 		"""
 		#Exit action for state 'Turn Left'.
 		self.timer_service.unset_timer(self, 6)
 		
-	def __exit_action_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_turn_around(self):
+	def __exit_action_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_z_turn_around(self):
 		"""Exit action for state 'Turn around'..
 		"""
 		#Exit action for state 'Turn around'.
@@ -917,95 +916,95 @@ class Model:
 		"""'default' enter sequence for state Follow left.
 		"""
 		#'default' enter sequence for state Follow left
-		self.__enter_sequence_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_default()
+		self.__enter_sequence_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_z_default()
 		
-	def __enter_sequence_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_calibrate_default(self):
+	def __enter_sequence_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_z_calibrate_default(self):
 		"""'default' enter sequence for state calibrate.
 		"""
 		#'default' enter sequence for state calibrate
-		self.__entry_action_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_calibrate()
-		self.__state_vector[0] = self.State.main_region_robot_drive_main_r1automatic_mode_automatic_algorithm_follow_left_r1calibrate
+		self.__entry_action_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_z_calibrate()
+		self.__state_vector[0] = self.State.main_region_robot_drive_main_r1automatic_mode_automatic_algorithm_follow_left_zcalibrate
 		self.__state_conf_vector_position = 0
 		self.__state_conf_vector_changed = True
 		
-	def __enter_sequence_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_finished_calibration_default(self):
+	def __enter_sequence_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_z_finished_calibration_default(self):
 		"""'default' enter sequence for state finished calibration.
 		"""
 		#'default' enter sequence for state finished calibration
-		self.__entry_action_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_finished_calibration()
-		self.__state_vector[0] = self.State.main_region_robot_drive_main_r1automatic_mode_automatic_algorithm_follow_left_r1finished_calibration
+		self.__entry_action_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_z_finished_calibration()
+		self.__state_vector[0] = self.State.main_region_robot_drive_main_r1automatic_mode_automatic_algorithm_follow_left_zfinished_calibration
 		self.__state_conf_vector_position = 0
 		self.__state_conf_vector_changed = True
 		
-	def __enter_sequence_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_forward_default(self):
+	def __enter_sequence_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_z_forward_default(self):
 		"""'default' enter sequence for state Forward.
 		"""
 		#'default' enter sequence for state Forward
-		self.__entry_action_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_forward()
-		self.__state_vector[0] = self.State.main_region_robot_drive_main_r1automatic_mode_automatic_algorithm_follow_left_r1forward
+		self.__entry_action_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_z_forward()
+		self.__state_vector[0] = self.State.main_region_robot_drive_main_r1automatic_mode_automatic_algorithm_follow_left_zforward
 		self.__state_conf_vector_position = 0
 		self.__state_conf_vector_changed = True
 		
-	def __enter_sequence_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_turn_right_default(self):
+	def __enter_sequence_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_z_turn_right_default(self):
 		"""'default' enter sequence for state Turn Right.
 		"""
 		#'default' enter sequence for state Turn Right
-		self.__entry_action_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_turn_right()
-		self.__state_vector[0] = self.State.main_region_robot_drive_main_r1automatic_mode_automatic_algorithm_follow_left_r1turn_right
+		self.__entry_action_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_z_turn_right()
+		self.__state_vector[0] = self.State.main_region_robot_drive_main_r1automatic_mode_automatic_algorithm_follow_left_zturn_right
 		self.__state_conf_vector_position = 0
 		self.__state_conf_vector_changed = True
 		
-	def __enter_sequence_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_stop_robot_default(self):
+	def __enter_sequence_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_z_stop_robot_default(self):
 		"""'default' enter sequence for state Stop robot.
 		"""
 		#'default' enter sequence for state Stop robot
-		self.__entry_action_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_stop_robot()
-		self.__state_vector[0] = self.State.main_region_robot_drive_main_r1automatic_mode_automatic_algorithm_follow_left_r1stop_robot
+		self.__entry_action_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_z_stop_robot()
+		self.__state_vector[0] = self.State.main_region_robot_drive_main_r1automatic_mode_automatic_algorithm_follow_left_zstop_robot
 		self.__state_conf_vector_position = 0
 		self.__state_conf_vector_changed = True
 		
-	def __enter_sequence_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_turn_stop_default(self):
+	def __enter_sequence_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_z_turn_stop_default(self):
 		"""'default' enter sequence for state TurnStop.
 		"""
 		#'default' enter sequence for state TurnStop
-		self.__entry_action_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_turn_stop()
-		self.__state_vector[0] = self.State.main_region_robot_drive_main_r1automatic_mode_automatic_algorithm_follow_left_r1turn_stop
+		self.__entry_action_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_z_turn_stop()
+		self.__state_vector[0] = self.State.main_region_robot_drive_main_r1automatic_mode_automatic_algorithm_follow_left_zturn_stop
 		self.__state_conf_vector_position = 0
 		self.__state_conf_vector_changed = True
 		
-	def __enter_sequence_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_turning_to_target_default(self):
+	def __enter_sequence_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_z_turning_to_target_default(self):
 		"""'default' enter sequence for state turning to target.
 		"""
 		#'default' enter sequence for state turning to target
-		self.__entry_action_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_turning_to_target()
-		self.__state_vector[0] = self.State.main_region_robot_drive_main_r1automatic_mode_automatic_algorithm_follow_left_r1turning_to_target
+		self.__entry_action_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_z_turning_to_target()
+		self.__state_vector[0] = self.State.main_region_robot_drive_main_r1automatic_mode_automatic_algorithm_follow_left_zturning_to_target
 		self.__state_conf_vector_position = 0
 		self.__state_conf_vector_changed = True
 		
-	def __enter_sequence_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_turn_left_default(self):
+	def __enter_sequence_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_z_turn_left_default(self):
 		"""'default' enter sequence for state Turn Left.
 		"""
 		#'default' enter sequence for state Turn Left
-		self.__entry_action_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_turn_left()
-		self.__state_vector[0] = self.State.main_region_robot_drive_main_r1automatic_mode_automatic_algorithm_follow_left_r1turn_left
+		self.__entry_action_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_z_turn_left()
+		self.__state_vector[0] = self.State.main_region_robot_drive_main_r1automatic_mode_automatic_algorithm_follow_left_zturn_left
 		self.__state_conf_vector_position = 0
 		self.__state_conf_vector_changed = True
 		
-	def __enter_sequence_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_turn_around_default(self):
+	def __enter_sequence_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_z_turn_around_default(self):
 		"""'default' enter sequence for state Turn around.
 		"""
 		#'default' enter sequence for state Turn around
-		self.__entry_action_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_turn_around()
-		self.__state_vector[0] = self.State.main_region_robot_drive_main_r1automatic_mode_automatic_algorithm_follow_left_r1turn_around
+		self.__entry_action_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_z_turn_around()
+		self.__state_vector[0] = self.State.main_region_robot_drive_main_r1automatic_mode_automatic_algorithm_follow_left_zturn_around
 		self.__state_conf_vector_position = 0
 		self.__state_conf_vector_changed = True
 		
-	def __enter_sequence_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_start_default(self):
+	def __enter_sequence_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_z_start_default(self):
 		"""'default' enter sequence for state start.
 		"""
 		#'default' enter sequence for state start
-		self.__entry_action_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_start()
-		self.__state_vector[0] = self.State.main_region_robot_drive_main_r1automatic_mode_automatic_algorithm_follow_left_r1start
+		self.__entry_action_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_z_start()
+		self.__state_vector[0] = self.State.main_region_robot_drive_main_r1automatic_mode_automatic_algorithm_follow_left_zstart
 		self.__state_conf_vector_position = 0
 		self.__state_conf_vector_changed = True
 		
@@ -1108,11 +1107,11 @@ class Model:
 		#'default' enter sequence for region Automatic algorithm
 		self.__react_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm__entry_default()
 		
-	def __enter_sequence_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_default(self):
-		"""'default' enter sequence for region r1.
+	def __enter_sequence_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_z_default(self):
+		"""'default' enter sequence for region z.
 		"""
-		#'default' enter sequence for region r1
-		self.__react_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1__entry_default()
+		#'default' enter sequence for region z
+		self.__react_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_z__entry_default()
 		
 	def __enter_sequence_main_region_robot_drive_main_r1_automatic_mode_panic__override_default(self):
 		"""'default' enter sequence for region Panic! Override.
@@ -1205,81 +1204,81 @@ class Model:
 		"""Default exit sequence for state Follow left.
 		"""
 		#Default exit sequence for state Follow left
-		self.__exit_sequence_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1()
+		self.__exit_sequence_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_z()
 		self.__state_vector[0] = self.State.main_region_robot_drive_main_r1automatic_mode
 		self.__state_conf_vector_position = 0
 		
-	def __exit_sequence_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_calibrate(self):
+	def __exit_sequence_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_z_calibrate(self):
 		"""Default exit sequence for state calibrate.
 		"""
 		#Default exit sequence for state calibrate
 		self.__state_vector[0] = self.State.main_region_robot_drive_main_r1automatic_mode_automatic_algorithm_follow_left
 		self.__state_conf_vector_position = 0
-		self.__exit_action_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_calibrate()
+		self.__exit_action_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_z_calibrate()
 		
-	def __exit_sequence_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_finished_calibration(self):
+	def __exit_sequence_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_z_finished_calibration(self):
 		"""Default exit sequence for state finished calibration.
 		"""
 		#Default exit sequence for state finished calibration
 		self.__state_vector[0] = self.State.main_region_robot_drive_main_r1automatic_mode_automatic_algorithm_follow_left
 		self.__state_conf_vector_position = 0
-		self.__exit_action_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_finished_calibration()
+		self.__exit_action_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_z_finished_calibration()
 		
-	def __exit_sequence_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_forward(self):
+	def __exit_sequence_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_z_forward(self):
 		"""Default exit sequence for state Forward.
 		"""
 		#Default exit sequence for state Forward
 		self.__state_vector[0] = self.State.main_region_robot_drive_main_r1automatic_mode_automatic_algorithm_follow_left
 		self.__state_conf_vector_position = 0
 		
-	def __exit_sequence_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_turn_right(self):
+	def __exit_sequence_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_z_turn_right(self):
 		"""Default exit sequence for state Turn Right.
 		"""
 		#Default exit sequence for state Turn Right
 		self.__state_vector[0] = self.State.main_region_robot_drive_main_r1automatic_mode_automatic_algorithm_follow_left
 		self.__state_conf_vector_position = 0
-		self.__exit_action_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_turn_right()
+		self.__exit_action_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_z_turn_right()
 		
-	def __exit_sequence_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_stop_robot(self):
+	def __exit_sequence_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_z_stop_robot(self):
 		"""Default exit sequence for state Stop robot.
 		"""
 		#Default exit sequence for state Stop robot
 		self.__state_vector[0] = self.State.main_region_robot_drive_main_r1automatic_mode_automatic_algorithm_follow_left
 		self.__state_conf_vector_position = 0
-		self.__exit_action_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_stop_robot()
+		self.__exit_action_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_z_stop_robot()
 		
-	def __exit_sequence_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_turn_stop(self):
+	def __exit_sequence_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_z_turn_stop(self):
 		"""Default exit sequence for state TurnStop.
 		"""
 		#Default exit sequence for state TurnStop
 		self.__state_vector[0] = self.State.main_region_robot_drive_main_r1automatic_mode_automatic_algorithm_follow_left
 		self.__state_conf_vector_position = 0
 		
-	def __exit_sequence_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_turning_to_target(self):
+	def __exit_sequence_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_z_turning_to_target(self):
 		"""Default exit sequence for state turning to target.
 		"""
 		#Default exit sequence for state turning to target
 		self.__state_vector[0] = self.State.main_region_robot_drive_main_r1automatic_mode_automatic_algorithm_follow_left
 		self.__state_conf_vector_position = 0
-		self.__exit_action_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_turning_to_target()
+		self.__exit_action_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_z_turning_to_target()
 		
-	def __exit_sequence_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_turn_left(self):
+	def __exit_sequence_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_z_turn_left(self):
 		"""Default exit sequence for state Turn Left.
 		"""
 		#Default exit sequence for state Turn Left
 		self.__state_vector[0] = self.State.main_region_robot_drive_main_r1automatic_mode_automatic_algorithm_follow_left
 		self.__state_conf_vector_position = 0
-		self.__exit_action_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_turn_left()
+		self.__exit_action_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_z_turn_left()
 		
-	def __exit_sequence_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_turn_around(self):
+	def __exit_sequence_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_z_turn_around(self):
 		"""Default exit sequence for state Turn around.
 		"""
 		#Default exit sequence for state Turn around
 		self.__state_vector[0] = self.State.main_region_robot_drive_main_r1automatic_mode_automatic_algorithm_follow_left
 		self.__state_conf_vector_position = 0
-		self.__exit_action_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_turn_around()
+		self.__exit_action_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_z_turn_around()
 		
-	def __exit_sequence_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_start(self):
+	def __exit_sequence_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_z_start(self):
 		"""Default exit sequence for state start.
 		"""
 		#Default exit sequence for state start
@@ -1377,26 +1376,26 @@ class Model:
 			self.__exit_sequence_main_region_robot_drive_main_r1_manual_r1_rotations_r1_incr__rot__speed_left()
 		elif state == self.State.main_region_robot_drive_main_r1automatic_mode_automatic_algorithm_follow_left:
 			self.__exit_sequence_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left()
-		elif state == self.State.main_region_robot_drive_main_r1automatic_mode_automatic_algorithm_follow_left_r1calibrate:
-			self.__exit_sequence_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_calibrate()
-		elif state == self.State.main_region_robot_drive_main_r1automatic_mode_automatic_algorithm_follow_left_r1finished_calibration:
-			self.__exit_sequence_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_finished_calibration()
-		elif state == self.State.main_region_robot_drive_main_r1automatic_mode_automatic_algorithm_follow_left_r1forward:
-			self.__exit_sequence_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_forward()
-		elif state == self.State.main_region_robot_drive_main_r1automatic_mode_automatic_algorithm_follow_left_r1turn_right:
-			self.__exit_sequence_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_turn_right()
-		elif state == self.State.main_region_robot_drive_main_r1automatic_mode_automatic_algorithm_follow_left_r1stop_robot:
-			self.__exit_sequence_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_stop_robot()
-		elif state == self.State.main_region_robot_drive_main_r1automatic_mode_automatic_algorithm_follow_left_r1turn_stop:
-			self.__exit_sequence_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_turn_stop()
-		elif state == self.State.main_region_robot_drive_main_r1automatic_mode_automatic_algorithm_follow_left_r1turning_to_target:
-			self.__exit_sequence_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_turning_to_target()
-		elif state == self.State.main_region_robot_drive_main_r1automatic_mode_automatic_algorithm_follow_left_r1turn_left:
-			self.__exit_sequence_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_turn_left()
-		elif state == self.State.main_region_robot_drive_main_r1automatic_mode_automatic_algorithm_follow_left_r1turn_around:
-			self.__exit_sequence_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_turn_around()
-		elif state == self.State.main_region_robot_drive_main_r1automatic_mode_automatic_algorithm_follow_left_r1start:
-			self.__exit_sequence_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_start()
+		elif state == self.State.main_region_robot_drive_main_r1automatic_mode_automatic_algorithm_follow_left_zcalibrate:
+			self.__exit_sequence_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_z_calibrate()
+		elif state == self.State.main_region_robot_drive_main_r1automatic_mode_automatic_algorithm_follow_left_zfinished_calibration:
+			self.__exit_sequence_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_z_finished_calibration()
+		elif state == self.State.main_region_robot_drive_main_r1automatic_mode_automatic_algorithm_follow_left_zforward:
+			self.__exit_sequence_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_z_forward()
+		elif state == self.State.main_region_robot_drive_main_r1automatic_mode_automatic_algorithm_follow_left_zturn_right:
+			self.__exit_sequence_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_z_turn_right()
+		elif state == self.State.main_region_robot_drive_main_r1automatic_mode_automatic_algorithm_follow_left_zstop_robot:
+			self.__exit_sequence_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_z_stop_robot()
+		elif state == self.State.main_region_robot_drive_main_r1automatic_mode_automatic_algorithm_follow_left_zturn_stop:
+			self.__exit_sequence_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_z_turn_stop()
+		elif state == self.State.main_region_robot_drive_main_r1automatic_mode_automatic_algorithm_follow_left_zturning_to_target:
+			self.__exit_sequence_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_z_turning_to_target()
+		elif state == self.State.main_region_robot_drive_main_r1automatic_mode_automatic_algorithm_follow_left_zturn_left:
+			self.__exit_sequence_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_z_turn_left()
+		elif state == self.State.main_region_robot_drive_main_r1automatic_mode_automatic_algorithm_follow_left_zturn_around:
+			self.__exit_sequence_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_z_turn_around()
+		elif state == self.State.main_region_robot_drive_main_r1automatic_mode_automatic_algorithm_follow_left_zstart:
+			self.__exit_sequence_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_z_start()
 		state = self.__state_vector[1]
 		if state == self.State.main_region_robot_drive_main_r1automatic_mode_panic__override_start:
 			self.__exit_sequence_main_region_robot_drive_main_r1_automatic_mode_panic__override_start()
@@ -1463,52 +1462,52 @@ class Model:
 		state = self.__state_vector[0]
 		if state == self.State.main_region_robot_drive_main_r1automatic_mode_automatic_algorithm_follow_left:
 			self.__exit_sequence_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left()
-		elif state == self.State.main_region_robot_drive_main_r1automatic_mode_automatic_algorithm_follow_left_r1calibrate:
-			self.__exit_sequence_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_calibrate()
-		elif state == self.State.main_region_robot_drive_main_r1automatic_mode_automatic_algorithm_follow_left_r1finished_calibration:
-			self.__exit_sequence_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_finished_calibration()
-		elif state == self.State.main_region_robot_drive_main_r1automatic_mode_automatic_algorithm_follow_left_r1forward:
-			self.__exit_sequence_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_forward()
-		elif state == self.State.main_region_robot_drive_main_r1automatic_mode_automatic_algorithm_follow_left_r1turn_right:
-			self.__exit_sequence_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_turn_right()
-		elif state == self.State.main_region_robot_drive_main_r1automatic_mode_automatic_algorithm_follow_left_r1stop_robot:
-			self.__exit_sequence_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_stop_robot()
-		elif state == self.State.main_region_robot_drive_main_r1automatic_mode_automatic_algorithm_follow_left_r1turn_stop:
-			self.__exit_sequence_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_turn_stop()
-		elif state == self.State.main_region_robot_drive_main_r1automatic_mode_automatic_algorithm_follow_left_r1turning_to_target:
-			self.__exit_sequence_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_turning_to_target()
-		elif state == self.State.main_region_robot_drive_main_r1automatic_mode_automatic_algorithm_follow_left_r1turn_left:
-			self.__exit_sequence_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_turn_left()
-		elif state == self.State.main_region_robot_drive_main_r1automatic_mode_automatic_algorithm_follow_left_r1turn_around:
-			self.__exit_sequence_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_turn_around()
-		elif state == self.State.main_region_robot_drive_main_r1automatic_mode_automatic_algorithm_follow_left_r1start:
-			self.__exit_sequence_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_start()
+		elif state == self.State.main_region_robot_drive_main_r1automatic_mode_automatic_algorithm_follow_left_zcalibrate:
+			self.__exit_sequence_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_z_calibrate()
+		elif state == self.State.main_region_robot_drive_main_r1automatic_mode_automatic_algorithm_follow_left_zfinished_calibration:
+			self.__exit_sequence_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_z_finished_calibration()
+		elif state == self.State.main_region_robot_drive_main_r1automatic_mode_automatic_algorithm_follow_left_zforward:
+			self.__exit_sequence_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_z_forward()
+		elif state == self.State.main_region_robot_drive_main_r1automatic_mode_automatic_algorithm_follow_left_zturn_right:
+			self.__exit_sequence_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_z_turn_right()
+		elif state == self.State.main_region_robot_drive_main_r1automatic_mode_automatic_algorithm_follow_left_zstop_robot:
+			self.__exit_sequence_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_z_stop_robot()
+		elif state == self.State.main_region_robot_drive_main_r1automatic_mode_automatic_algorithm_follow_left_zturn_stop:
+			self.__exit_sequence_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_z_turn_stop()
+		elif state == self.State.main_region_robot_drive_main_r1automatic_mode_automatic_algorithm_follow_left_zturning_to_target:
+			self.__exit_sequence_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_z_turning_to_target()
+		elif state == self.State.main_region_robot_drive_main_r1automatic_mode_automatic_algorithm_follow_left_zturn_left:
+			self.__exit_sequence_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_z_turn_left()
+		elif state == self.State.main_region_robot_drive_main_r1automatic_mode_automatic_algorithm_follow_left_zturn_around:
+			self.__exit_sequence_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_z_turn_around()
+		elif state == self.State.main_region_robot_drive_main_r1automatic_mode_automatic_algorithm_follow_left_zstart:
+			self.__exit_sequence_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_z_start()
 		
-	def __exit_sequence_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1(self):
-		"""Default exit sequence for region r1.
+	def __exit_sequence_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_z(self):
+		"""Default exit sequence for region z.
 		"""
-		#Default exit sequence for region r1
+		#Default exit sequence for region z
 		state = self.__state_vector[0]
-		if state == self.State.main_region_robot_drive_main_r1automatic_mode_automatic_algorithm_follow_left_r1calibrate:
-			self.__exit_sequence_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_calibrate()
-		elif state == self.State.main_region_robot_drive_main_r1automatic_mode_automatic_algorithm_follow_left_r1finished_calibration:
-			self.__exit_sequence_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_finished_calibration()
-		elif state == self.State.main_region_robot_drive_main_r1automatic_mode_automatic_algorithm_follow_left_r1forward:
-			self.__exit_sequence_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_forward()
-		elif state == self.State.main_region_robot_drive_main_r1automatic_mode_automatic_algorithm_follow_left_r1turn_right:
-			self.__exit_sequence_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_turn_right()
-		elif state == self.State.main_region_robot_drive_main_r1automatic_mode_automatic_algorithm_follow_left_r1stop_robot:
-			self.__exit_sequence_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_stop_robot()
-		elif state == self.State.main_region_robot_drive_main_r1automatic_mode_automatic_algorithm_follow_left_r1turn_stop:
-			self.__exit_sequence_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_turn_stop()
-		elif state == self.State.main_region_robot_drive_main_r1automatic_mode_automatic_algorithm_follow_left_r1turning_to_target:
-			self.__exit_sequence_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_turning_to_target()
-		elif state == self.State.main_region_robot_drive_main_r1automatic_mode_automatic_algorithm_follow_left_r1turn_left:
-			self.__exit_sequence_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_turn_left()
-		elif state == self.State.main_region_robot_drive_main_r1automatic_mode_automatic_algorithm_follow_left_r1turn_around:
-			self.__exit_sequence_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_turn_around()
-		elif state == self.State.main_region_robot_drive_main_r1automatic_mode_automatic_algorithm_follow_left_r1start:
-			self.__exit_sequence_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_start()
+		if state == self.State.main_region_robot_drive_main_r1automatic_mode_automatic_algorithm_follow_left_zcalibrate:
+			self.__exit_sequence_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_z_calibrate()
+		elif state == self.State.main_region_robot_drive_main_r1automatic_mode_automatic_algorithm_follow_left_zfinished_calibration:
+			self.__exit_sequence_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_z_finished_calibration()
+		elif state == self.State.main_region_robot_drive_main_r1automatic_mode_automatic_algorithm_follow_left_zforward:
+			self.__exit_sequence_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_z_forward()
+		elif state == self.State.main_region_robot_drive_main_r1automatic_mode_automatic_algorithm_follow_left_zturn_right:
+			self.__exit_sequence_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_z_turn_right()
+		elif state == self.State.main_region_robot_drive_main_r1automatic_mode_automatic_algorithm_follow_left_zstop_robot:
+			self.__exit_sequence_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_z_stop_robot()
+		elif state == self.State.main_region_robot_drive_main_r1automatic_mode_automatic_algorithm_follow_left_zturn_stop:
+			self.__exit_sequence_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_z_turn_stop()
+		elif state == self.State.main_region_robot_drive_main_r1automatic_mode_automatic_algorithm_follow_left_zturning_to_target:
+			self.__exit_sequence_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_z_turning_to_target()
+		elif state == self.State.main_region_robot_drive_main_r1automatic_mode_automatic_algorithm_follow_left_zturn_left:
+			self.__exit_sequence_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_z_turn_left()
+		elif state == self.State.main_region_robot_drive_main_r1automatic_mode_automatic_algorithm_follow_left_zturn_around:
+			self.__exit_sequence_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_z_turn_around()
+		elif state == self.State.main_region_robot_drive_main_r1automatic_mode_automatic_algorithm_follow_left_zstart:
+			self.__exit_sequence_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_z_start()
 		
 	def __exit_sequence_main_region_robot_drive_main_r1_automatic_mode_panic__override(self):
 		"""Default exit sequence for region Panic! Override.
@@ -1530,18 +1529,18 @@ class Model:
 		elif state == self.State.main_region_robot_logging_grid_record_r1_final_:
 			self.__exit_sequence_main_region_robot_logging_grid_record_r1__final_()
 		
-	def __react_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1__choice_1(self):
+	def __react_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_z__choice_1(self):
 		"""The reactions of state null..
 		"""
 		#The reactions of state null.
-		if self.user_var.wall_left == 1 and self.user_var.wall_front == 1 and self.user_var.wall_right != 1:
-			self.__enter_sequence_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_turn_right_default()
-		elif self.user_var.wall_left != 1:
-			self.__enter_sequence_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_turn_left_default()
+		if self.user_var.wall_left == 1 and self.user_var.wall_front == 1 and self.user_var.wall_right == 0:
+			self.__enter_sequence_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_z_turn_right_default()
+		elif self.user_var.wall_left == 0:
+			self.__enter_sequence_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_z_turn_left_default()
 		elif self.user_var.wall_left == 1 and self.user_var.wall_right == 1 and self.user_var.wall_front == 1:
-			self.__enter_sequence_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_turn_around_default()
+			self.__enter_sequence_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_z_turn_around_default()
 		else:
-			self.__enter_sequence_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_forward_default()
+			self.__enter_sequence_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_z_forward_default()
 		
 	def __react_main_region__entry_default(self):
 		"""Default react sequence for initial entry .
@@ -1561,11 +1560,11 @@ class Model:
 		#Default react sequence for initial entry 
 		self.__enter_sequence_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_default()
 		
-	def __react_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1__entry_default(self):
+	def __react_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_z__entry_default(self):
 		"""Default react sequence for initial entry .
 		"""
 		#Default react sequence for initial entry 
-		self.__enter_sequence_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_start_default()
+		self.__enter_sequence_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_z_start_default()
 		
 	def __react_main_region_robot_drive_main_r1_automatic_mode_panic__override__entry_default(self):
 		"""Default react sequence for initial entry .
@@ -1827,23 +1826,23 @@ class Model:
 		return transitioned_before
 	
 	
-	def __main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_calibrate_react(self, transitioned_before):
-		"""Implementation of __main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_calibrate_react function.
+	def __main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_z_calibrate_react(self, transitioned_before):
+		"""Implementation of __main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_z_calibrate_react function.
 		"""
 		#The reactions of state calibrate.
 		transitioned_after = transitioned_before
 		if not self.__do_completion:
 			if transitioned_after < 0:
 				if (self.__time_events[0]) and (not self.start_pos.set_zero):
-					self.__exit_sequence_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_calibrate()
+					self.__exit_sequence_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_z_calibrate()
 					self.__time_events[0] = False
-					self.__enter_sequence_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_finished_calibration_default()
+					self.__enter_sequence_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_z_finished_calibration_default()
 					self.__main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_react(0)
 					transitioned_after = 0
 				elif self.__time_events[1]:
-					self.__exit_sequence_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_calibrate()
+					self.__exit_sequence_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_z_calibrate()
 					self.__time_events[1] = False
-					self.__enter_sequence_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_calibrate_default()
+					self.__enter_sequence_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_z_calibrate_default()
 					self.__main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_react(0)
 					transitioned_after = 0
 			#If no transition was taken
@@ -1853,17 +1852,17 @@ class Model:
 		return transitioned_after
 	
 	
-	def __main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_finished_calibration_react(self, transitioned_before):
-		"""Implementation of __main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_finished_calibration_react function.
+	def __main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_z_finished_calibration_react(self, transitioned_before):
+		"""Implementation of __main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_z_finished_calibration_react function.
 		"""
 		#The reactions of state finished calibration.
 		transitioned_after = transitioned_before
 		if not self.__do_completion:
 			if transitioned_after < 0:
 				if self.__time_events[2]:
-					self.__exit_sequence_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_finished_calibration()
+					self.__exit_sequence_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_z_finished_calibration()
 					self.__time_events[2] = False
-					self.__enter_sequence_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_forward_default()
+					self.__enter_sequence_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_z_forward_default()
 					self.__main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_react(0)
 					transitioned_after = 0
 			#If no transition was taken
@@ -1873,21 +1872,21 @@ class Model:
 		return transitioned_after
 	
 	
-	def __main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_forward_react(self, transitioned_before):
-		"""Implementation of __main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_forward_react function.
+	def __main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_z_forward_react(self, transitioned_before):
+		"""Implementation of __main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_z_forward_react function.
 		"""
 		#The reactions of state Forward.
 		transitioned_after = transitioned_before
 		if not self.__do_completion:
 			if transitioned_after < 0:
 				if self.new_grid_box:
-					self.__exit_sequence_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_forward()
-					self.__enter_sequence_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_stop_robot_default()
+					self.__exit_sequence_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_z_forward()
+					self.__enter_sequence_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_z_stop_robot_default()
 					self.__main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_react(0)
 					transitioned_after = 0
 				elif self.laser_distance.dfront_mean <= self.user_var.min_wall_turn:
-					self.__exit_sequence_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_forward()
-					self.__enter_sequence_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_stop_robot_default()
+					self.__exit_sequence_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_z_forward()
+					self.__enter_sequence_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_z_stop_robot_default()
 					self.__main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_react(0)
 					transitioned_after = 0
 			#If no transition was taken
@@ -1897,17 +1896,17 @@ class Model:
 		return transitioned_after
 	
 	
-	def __main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_turn_right_react(self, transitioned_before):
-		"""Implementation of __main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_turn_right_react function.
+	def __main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_z_turn_right_react(self, transitioned_before):
+		"""Implementation of __main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_z_turn_right_react function.
 		"""
 		#The reactions of state Turn Right.
 		transitioned_after = transitioned_before
 		if not self.__do_completion:
 			if transitioned_after < 0:
 				if self.__time_events[3]:
-					self.__exit_sequence_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_turn_right()
+					self.__exit_sequence_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_z_turn_right()
 					self.__time_events[3] = False
-					self.__enter_sequence_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_turning_to_target_default()
+					self.__enter_sequence_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_z_turning_to_target_default()
 					self.__main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_react(0)
 					transitioned_after = 0
 			#If no transition was taken
@@ -1917,17 +1916,17 @@ class Model:
 		return transitioned_after
 	
 	
-	def __main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_stop_robot_react(self, transitioned_before):
-		"""Implementation of __main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_stop_robot_react function.
+	def __main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_z_stop_robot_react(self, transitioned_before):
+		"""Implementation of __main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_z_stop_robot_react function.
 		"""
 		#The reactions of state Stop robot.
 		transitioned_after = transitioned_before
 		if not self.__do_completion:
 			if transitioned_after < 0:
 				if self.__time_events[4]:
-					self.__exit_sequence_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_stop_robot()
+					self.__exit_sequence_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_z_stop_robot()
 					self.__time_events[4] = False
-					self.__react_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1__choice_1()
+					self.__react_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_z__choice_1()
 					transitioned_after = 0
 			#If no transition was taken
 			if transitioned_after == transitioned_before:
@@ -1936,16 +1935,21 @@ class Model:
 		return transitioned_after
 	
 	
-	def __main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_turn_stop_react(self, transitioned_before):
-		"""Implementation of __main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_turn_stop_react function.
+	def __main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_z_turn_stop_react(self, transitioned_before):
+		"""Implementation of __main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_z_turn_stop_react function.
 		"""
 		#The reactions of state TurnStop.
 		transitioned_after = transitioned_before
 		if not self.__do_completion:
 			if transitioned_after < 0:
 				if self.laser_distance.dfront_mean > self.user_var.min_wall_turn:
-					self.__exit_sequence_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_turn_stop()
-					self.__enter_sequence_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_forward_default()
+					self.__exit_sequence_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_z_turn_stop()
+					self.__enter_sequence_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_z_forward_default()
+					self.__main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_react(0)
+					transitioned_after = 0
+				elif self.laser_distance.dfront_mean <= self.user_var.min_wall_turn:
+					self.__exit_sequence_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_z_turn_stop()
+					self.__enter_sequence_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_z_stop_robot_default()
 					self.__main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_react(0)
 					transitioned_after = 0
 			#If no transition was taken
@@ -1955,16 +1959,16 @@ class Model:
 		return transitioned_after
 	
 	
-	def __main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_turning_to_target_react(self, transitioned_before):
-		"""Implementation of __main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_turning_to_target_react function.
+	def __main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_z_turning_to_target_react(self, transitioned_before):
+		"""Implementation of __main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_z_turning_to_target_react function.
 		"""
 		#The reactions of state turning to target.
 		transitioned_after = transitioned_before
 		if not self.__do_completion:
 			if transitioned_after < 0:
 				if self.user_var.yaw_to_go < self.user_var.yaw_error or (self.user_var.yaw_to_go < 90 and self.user_var.last_yaw_to_go < self.user_var.yaw_to_go):
-					self.__exit_sequence_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_turning_to_target()
-					self.__enter_sequence_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_turn_stop_default()
+					self.__exit_sequence_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_z_turning_to_target()
+					self.__enter_sequence_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_z_turn_stop_default()
 					self.__main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_react(0)
 					transitioned_after = 0
 			#If no transition was taken
@@ -1974,24 +1978,24 @@ class Model:
 					self.__calibrated_yaw = self.internal_operation_callback.relative_yaw(self.imu.yaw)
 					self.user_var.last_yaw_to_go = self.user_var.yaw_to_go
 					self.user_var.yaw_to_go = self.internal_operation_callback.abs_real(self.internal_operation_callback.calc_yaw_rotation(self.__calibrated_yaw, self.user_var.target_yaw))
-					self.output.rotation = ((self.user_var.rotation_direction * self.user_var.max_rotation) * self.internal_operation_callback.ease_out_exp(self.user_var.yaw_to_go, self.user_var.total_yaw_to_go, 4))
+					self.output.rotation = (((self.user_var.rotation_direction * self.user_var.max_rotation) / 3) * self.internal_operation_callback.ease_out_exp(self.user_var.yaw_to_go, self.user_var.total_yaw_to_go, 4))
 					self.internal_operation_callback.debug_real("yawtogo", self.user_var.yaw_to_go)
 					self.internal_operation_callback.debug_real("LAST", self.user_var.last_yaw_to_go)
 				transitioned_after = self.__main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_react(transitioned_before)
 		return transitioned_after
 	
 	
-	def __main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_turn_left_react(self, transitioned_before):
-		"""Implementation of __main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_turn_left_react function.
+	def __main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_z_turn_left_react(self, transitioned_before):
+		"""Implementation of __main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_z_turn_left_react function.
 		"""
 		#The reactions of state Turn Left.
 		transitioned_after = transitioned_before
 		if not self.__do_completion:
 			if transitioned_after < 0:
 				if self.__time_events[6]:
-					self.__exit_sequence_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_turn_left()
+					self.__exit_sequence_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_z_turn_left()
 					self.__time_events[6] = False
-					self.__enter_sequence_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_turning_to_target_default()
+					self.__enter_sequence_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_z_turning_to_target_default()
 					self.__main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_react(0)
 					transitioned_after = 0
 			#If no transition was taken
@@ -2001,17 +2005,17 @@ class Model:
 		return transitioned_after
 	
 	
-	def __main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_turn_around_react(self, transitioned_before):
-		"""Implementation of __main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_turn_around_react function.
+	def __main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_z_turn_around_react(self, transitioned_before):
+		"""Implementation of __main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_z_turn_around_react function.
 		"""
 		#The reactions of state Turn around.
 		transitioned_after = transitioned_before
 		if not self.__do_completion:
 			if transitioned_after < 0:
 				if self.__time_events[7]:
-					self.__exit_sequence_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_turn_around()
+					self.__exit_sequence_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_z_turn_around()
 					self.__time_events[7] = False
-					self.__enter_sequence_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_turning_to_target_default()
+					self.__enter_sequence_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_z_turning_to_target_default()
 					self.__main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_react(0)
 					transitioned_after = 0
 			#If no transition was taken
@@ -2021,8 +2025,8 @@ class Model:
 		return transitioned_after
 	
 	
-	def __main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_start_react(self, transitioned_before):
-		"""Implementation of __main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_start_react function.
+	def __main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_z_start_react(self, transitioned_before):
+		"""Implementation of __main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_z_start_react function.
 		"""
 		#The reactions of state start.
 		transitioned_after = transitioned_before
@@ -2032,9 +2036,9 @@ class Model:
 			self.__state_conf_vector_position = 0
 			#The reactions of state null.
 			if self.user_var.has_calibrated:
-				self.__enter_sequence_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_forward_default()
+				self.__enter_sequence_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_z_forward_default()
 			else:
-				self.__enter_sequence_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_calibrate_default()
+				self.__enter_sequence_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_z_calibrate_default()
 		else:
 			#If no transition was taken
 			if transitioned_after == transitioned_before:
@@ -2085,6 +2089,7 @@ class Model:
 			self.__exit_sequence_main_region_robot_logging_grid_record_r1()
 			self.__state_vector[2] = self.State.main_region_robot
 			self.__state_conf_vector_position = 2
+			self.raise_new_grid_box()
 			#'default' enter sequence for state check status
 			self.__entry_action_main_region_robot_logging_grid_check_status()
 			self.__state_vector[2] = self.State.main_region_robot_logging_grid_check_status
@@ -2211,6 +2216,7 @@ class Model:
 					transitioned_after = 2
 				elif self.grid.visited:
 					self.__exit_sequence_main_region_robot_logging_grid_raise_in_center_new_grid()
+					self.raise_new_grid_box()
 					self.__enter_sequence_main_region_robot_logging_grid_check_status_default()
 					self.__main_region_robot_react(0)
 					transitioned_after = 2
@@ -2266,26 +2272,26 @@ class Model:
 			transitioned = self.__main_region_robot_drive_main_r1_manual_r1_rotations_r1_incr__rot__speed_right_react(transitioned)
 		elif state == self.State.main_region_robot_drive_main_r1manual_r1rotations_r1incr__rot__speed_left:
 			transitioned = self.__main_region_robot_drive_main_r1_manual_r1_rotations_r1_incr__rot__speed_left_react(transitioned)
-		elif state == self.State.main_region_robot_drive_main_r1automatic_mode_automatic_algorithm_follow_left_r1calibrate:
-			transitioned = self.__main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_calibrate_react(transitioned)
-		elif state == self.State.main_region_robot_drive_main_r1automatic_mode_automatic_algorithm_follow_left_r1finished_calibration:
-			transitioned = self.__main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_finished_calibration_react(transitioned)
-		elif state == self.State.main_region_robot_drive_main_r1automatic_mode_automatic_algorithm_follow_left_r1forward:
-			transitioned = self.__main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_forward_react(transitioned)
-		elif state == self.State.main_region_robot_drive_main_r1automatic_mode_automatic_algorithm_follow_left_r1turn_right:
-			transitioned = self.__main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_turn_right_react(transitioned)
-		elif state == self.State.main_region_robot_drive_main_r1automatic_mode_automatic_algorithm_follow_left_r1stop_robot:
-			transitioned = self.__main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_stop_robot_react(transitioned)
-		elif state == self.State.main_region_robot_drive_main_r1automatic_mode_automatic_algorithm_follow_left_r1turn_stop:
-			transitioned = self.__main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_turn_stop_react(transitioned)
-		elif state == self.State.main_region_robot_drive_main_r1automatic_mode_automatic_algorithm_follow_left_r1turning_to_target:
-			transitioned = self.__main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_turning_to_target_react(transitioned)
-		elif state == self.State.main_region_robot_drive_main_r1automatic_mode_automatic_algorithm_follow_left_r1turn_left:
-			transitioned = self.__main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_turn_left_react(transitioned)
-		elif state == self.State.main_region_robot_drive_main_r1automatic_mode_automatic_algorithm_follow_left_r1turn_around:
-			transitioned = self.__main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_turn_around_react(transitioned)
-		elif state == self.State.main_region_robot_drive_main_r1automatic_mode_automatic_algorithm_follow_left_r1start:
-			transitioned = self.__main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_r1_start_react(transitioned)
+		elif state == self.State.main_region_robot_drive_main_r1automatic_mode_automatic_algorithm_follow_left_zcalibrate:
+			transitioned = self.__main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_z_calibrate_react(transitioned)
+		elif state == self.State.main_region_robot_drive_main_r1automatic_mode_automatic_algorithm_follow_left_zfinished_calibration:
+			transitioned = self.__main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_z_finished_calibration_react(transitioned)
+		elif state == self.State.main_region_robot_drive_main_r1automatic_mode_automatic_algorithm_follow_left_zforward:
+			transitioned = self.__main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_z_forward_react(transitioned)
+		elif state == self.State.main_region_robot_drive_main_r1automatic_mode_automatic_algorithm_follow_left_zturn_right:
+			transitioned = self.__main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_z_turn_right_react(transitioned)
+		elif state == self.State.main_region_robot_drive_main_r1automatic_mode_automatic_algorithm_follow_left_zstop_robot:
+			transitioned = self.__main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_z_stop_robot_react(transitioned)
+		elif state == self.State.main_region_robot_drive_main_r1automatic_mode_automatic_algorithm_follow_left_zturn_stop:
+			transitioned = self.__main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_z_turn_stop_react(transitioned)
+		elif state == self.State.main_region_robot_drive_main_r1automatic_mode_automatic_algorithm_follow_left_zturning_to_target:
+			transitioned = self.__main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_z_turning_to_target_react(transitioned)
+		elif state == self.State.main_region_robot_drive_main_r1automatic_mode_automatic_algorithm_follow_left_zturn_left:
+			transitioned = self.__main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_z_turn_left_react(transitioned)
+		elif state == self.State.main_region_robot_drive_main_r1automatic_mode_automatic_algorithm_follow_left_zturn_around:
+			transitioned = self.__main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_z_turn_around_react(transitioned)
+		elif state == self.State.main_region_robot_drive_main_r1automatic_mode_automatic_algorithm_follow_left_zstart:
+			transitioned = self.__main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_z_start_react(transitioned)
 		if self.__state_conf_vector_position < 1:
 			state = self.__state_vector[1]
 			if state == self.State.main_region_robot_drive_main_r1automatic_mode_panic__override_start:
