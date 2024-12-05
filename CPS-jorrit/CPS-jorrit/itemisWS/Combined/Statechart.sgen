@@ -1,6 +1,6 @@
 GeneratorModel for create::python {
 
-	const PROJECT : string = "Bot1"
+	const PROJECT : string = "Combined"
 
 	const FOLDER : string = "src-gen"
 
