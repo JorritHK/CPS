@@ -56,7 +56,8 @@ class Model:
 		def __init__(self, statemachine):
 			self.base_speed = None
 			self.base_rotation = None
-			self.startprocedure = None
+			self.forward_speed = None
+			self.rotation_speed = None
 			self.has_calibrated = None
 			self.min_wall_distance = None
 			self.min_wall_turn = None
@@ -74,7 +75,6 @@ class Model:
 			self.last_yaw_to_go = None
 			self.panic_mode_enable = None
 			self.mapping_mode_enabled = None
-			self.max_rotation = None
 			self.grid_new_x = None
 			self.grid_new_y = None
 			self.wall_front = None
@@ -360,7 +360,8 @@ class Model:
 		self.__distance_to_center = 0.0
 		self.user_var.base_speed = 0.05
 		self.user_var.base_rotation = 0.2
-		self.user_var.startprocedure = True
+		self.user_var.forward_speed = 0.1
+		self.user_var.rotation_speed = 0.4
 		self.user_var.has_calibrated = False
 		self.user_var.min_wall_distance = 0.15
 		self.user_var.min_wall_turn = 0.3
@@ -378,7 +379,6 @@ class Model:
 		self.user_var.last_yaw_to_go = 0.0
 		self.user_var.panic_mode_enable = False
 		self.user_var.mapping_mode_enabled = True
-		self.user_var.max_rotation = (self.user_var.base_rotation * 5)
 		self.user_var.grid_new_x = 0
 		self.user_var.grid_new_y = 0
 		self.user_var.wall_front = 0
@@ -387,10 +387,10 @@ class Model:
 		self.user_var.wall_back = 0
 		self.base_values.max_speed = 0.22
 		self.base_values.max_rotation = 2.84
-		self.base_values.degrees_front = 10
-		self.base_values.degrees_right = 10
-		self.base_values.degrees_back = 10
-		self.base_values.degrees_left = 10
+		self.base_values.degrees_front = 40
+		self.base_values.degrees_right = 40
+		self.base_values.degrees_back = 40
+		self.base_values.degrees_left = 40
 		self.output.speed = 0.0
 		self.output.rotation = 0.0
 		self.output.obstacles = 0
@@ -806,6 +806,7 @@ class Model:
 		"""
 		#Exit action for state 'turning to target'.
 		self.timer_service.unset_timer(self, 5)
+		self.internal_operation_callback.debug_real("yawToGo when stopped", self.user_var.yaw_to_go)
 		
 	def __exit_action_main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_z_turn_left(self):
 		"""Exit action for state 'Turn Left'..
@@ -1978,9 +1979,7 @@ class Model:
 					self.__calibrated_yaw = self.internal_operation_callback.relative_yaw(self.imu.yaw)
 					self.user_var.last_yaw_to_go = self.user_var.yaw_to_go
 					self.user_var.yaw_to_go = self.internal_operation_callback.abs_real(self.internal_operation_callback.calc_yaw_rotation(self.__calibrated_yaw, self.user_var.target_yaw))
-					self.output.rotation = (((self.user_var.rotation_direction * self.user_var.max_rotation) / 3) * self.internal_operation_callback.ease_out_exp(self.user_var.yaw_to_go, self.user_var.total_yaw_to_go, 4))
-					self.internal_operation_callback.debug_real("yawtogo", self.user_var.yaw_to_go)
-					self.internal_operation_callback.debug_real("LAST", self.user_var.last_yaw_to_go)
+					self.output.rotation = ((self.user_var.rotation_direction * self.user_var.rotation_speed) * self.internal_operation_callback.ease_out_exp(self.user_var.yaw_to_go, self.user_var.total_yaw_to_go, 4))
 				transitioned_after = self.__main_region_robot_drive_main_r1_automatic_mode_automatic_algorithm_follow_left_react(transitioned_before)
 		return transitioned_after
 	
