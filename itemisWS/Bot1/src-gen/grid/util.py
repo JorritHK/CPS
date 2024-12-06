@@ -1,53 +1,24 @@
 from enum import Enum
 import math
 import logging
-
-from typing import Literal, Tuple
-
-Direction = Literal["north", "west", "south", "east"]
-
-
-class Coord:
-    x: float
-    y: float
-
-    def __init__(self, x, y) -> None:
-        self.x = x
-        self.y = y
-
-    def __add__(self, other):
-        return Coord(self.x + other.x, self.y + other.y)
-
-    def __sub__(self, other):
-        return Coord(self.x - other.x, self.y - other.y)
-
-    def __str__(self) -> str:
-        return f"({self.x}, {self.y})"
-
-
-class Calibration:
-    coord: Coord
-    zero_south_degree: float
-    laser_deg_offset: float
-
-    def __init__(self, coord, zero_south_degree, laser_deg_offset) -> None:
-        self.coord = coord
-        self.zero_south_degree = zero_south_degree
-        self.laser_deg_offset = laser_deg_offset
+from grid.node import Node
+from grid.search import bfs
+from typing import Tuple, List
+from grid.coord import Coord, Calibration, Orientation, Direction
 
 
 def coord_abs(coord: Coord):
     return Coord(abs(coord.x), abs(coord.y))
 
 
-class Orientation(Enum):
-    NORTH = 0
-    EAST = 1
-    SOUTH = 2
-    WEST = 3
-
-
 class Callback:
+    calibration: Calibration
+    target: Coord  # Target coordinate in the grid for driving without LIDAR
+    current_grid = List[List[Node]]
+    path: List[Orientation]
+
+    logger: logging.Logger
+
     def __init__(self):
         logging.basicConfig(filename="debug_robot.log", level=logging.DEBUG)
         self.logger = logging.getLogger("debug")
@@ -68,8 +39,44 @@ class Callback:
     def debug_coord(self, name: str, x: float, y: float):
         self.debug(f"DEBUG Coord {name}: ({x}, {y})")
 
+    # == Solve maze
+
+    def get_target_x(self):
+        if not self.target:
+            raise Exception("Target has not been set")
+        return self.target.x
+
+    def get_target_y(self):
+        if not self.target:
+            raise Exception("Target has not been set")
+        return self.target.y
+
+    def solve_path(self):
+        if not self.target or not self.current_grid:
+            raise Exception(
+                "Tried to go to point when grid or target is not set"
+            )
+
+        solved_path = bfs(self.current_grid, Coord(0, 0), self.target)
+
+        self.debug(f"SEARCH: path solved directions {solved_path}")
+        self.path = solved_path
+
+    def get_path_step_yaw(self, i: int):
+        if not self.path:
+            raise Exception("First calculate a path using solve_path")
+
+        if len(self.path) < i:
+            raise Exception(
+                f"Step requested that is larger than calculated path: {self.path}"
+            )
+
+        self.debug(f"Getting path step for index: {i} with path: {self.path}")
+
+        return self.orientation_to_yaw(self.path[i].value)
+
     # == Simple util functions ==#
-    def abs_real(self, x: float):
+    def abs_real(self, x: float) -> float:
         return abs(x)
 
     def ease_out_exp(
@@ -81,6 +88,10 @@ class Callback:
         diff_factor = (total_distance - distance) / total_distance
 
         return 1 - diff_factor**exponent
+
+    def distance(self, x1: float, y1: float, x2: float, y2: float) -> float:
+        distance = Coord(x1, y1) - Coord(x2, y2)
+        return math.sqrt(distance.x**2 + distance.y**2)
 
     # == Initial calibration frame of reference ==#
 
