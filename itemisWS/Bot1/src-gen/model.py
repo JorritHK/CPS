@@ -35,6 +35,7 @@ class Model:
 			main_region_robot_drive_automatic___follow_left_zrotating_r1turn_around,
 			main_region_robot_drive_automatic___follow_left_zrotating_r1set_total_yaw,
 			main_region_robot_drive_automatic___follow_left_zrotating_r1turn_stop,
+			main_region_robot_drive_automatic___follow_left_zstopped_due_to_wall,
 			main_region_robot_drive_stopped,
 			main_region_robot_logging_and_grid_driving_start,
 			main_region_robot_logging_and_grid_driving_driving_based_on_grid,
@@ -53,7 +54,7 @@ class Model:
 			main_region_drive_to_target_r1check_current_grid_position,
 			main_region_drive_to_target_r1_final_,
 			null_state
-		) = range(39)
+		) = range(40)
 	
 	
 	class UserVar:
@@ -65,6 +66,7 @@ class Model:
 			self.base_rotation = None
 			self.forward_speed = None
 			self.rotation_speed = None
+			self.calibrated_yaw = None
 			self.has_calibrated = None
 			self.min_wall_distance = None
 			self.min_wall_turn = None
@@ -80,7 +82,6 @@ class Model:
 			self.center_distance_error = None
 			self.last_distance = None
 			self.last_yaw_to_go = None
-			self.panic_mode_enable = None
 			self.mapping_mode_enabled = None
 			self.grid_new_x = None
 			self.grid_new_y = None
@@ -358,11 +359,6 @@ class Model:
 		
 		self.__internal_event_queue = queue.Queue()
 		self.in_event_queue = queue.Queue()
-		self.__calibrated_yaw = None
-		self.__normalized_yaw = None
-		self.GRID_DIRECTION_Y = -(1)
-		self.GRID_DIRECTION_X = 1
-		self.__distance_to_center = None
 		self.new_grid_box = None
 		self.wall_stopped = None
 		self.internal_operation_callback = None
@@ -380,13 +376,11 @@ class Model:
 		
 		# initializations:
 		#Default init sequence for statechart model
-		self.__calibrated_yaw = 0.0
-		self.__normalized_yaw = 0
-		self.__distance_to_center = 0.0
 		self.user_var.base_speed = 0.05
 		self.user_var.base_rotation = 0.2
-		self.user_var.forward_speed = 0.1
+		self.user_var.forward_speed = (0.1 * 2)
 		self.user_var.rotation_speed = 0.4
+		self.user_var.calibrated_yaw = 0.0
 		self.user_var.has_calibrated = False
 		self.user_var.min_wall_distance = 0.15
 		self.user_var.min_wall_turn = 0.3
@@ -402,7 +396,6 @@ class Model:
 		self.user_var.center_distance_error = 0.02
 		self.user_var.last_distance = 0.0
 		self.user_var.last_yaw_to_go = 0.0
-		self.user_var.panic_mode_enable = False
 		self.user_var.mapping_mode_enabled = True
 		self.user_var.grid_new_x = 0
 		self.user_var.grid_new_y = 0
@@ -536,7 +529,7 @@ class Model:
 			return self.__state_vector[0] == self.__State.main_region_robot_drive_manual_r1rotations_r1incr__rot__speed_left
 		if s == self.__State.main_region_robot_drive_automatic___follow_left:
 			return (self.__state_vector[0] >= self.__State.main_region_robot_drive_automatic___follow_left)\
-				and (self.__state_vector[0] <= self.__State.main_region_robot_drive_automatic___follow_left_zrotating_r1turn_stop)
+				and (self.__state_vector[0] <= self.__State.main_region_robot_drive_automatic___follow_left_zstopped_due_to_wall)
 		if s == self.__State.main_region_robot_drive_automatic___follow_left_zcalibrate:
 			return self.__state_vector[0] == self.__State.main_region_robot_drive_automatic___follow_left_zcalibrate
 		if s == self.__State.main_region_robot_drive_automatic___follow_left_zfinished_calibration:
@@ -562,6 +555,8 @@ class Model:
 			return self.__state_vector[0] == self.__State.main_region_robot_drive_automatic___follow_left_zrotating_r1set_total_yaw
 		if s == self.__State.main_region_robot_drive_automatic___follow_left_zrotating_r1turn_stop:
 			return self.__state_vector[0] == self.__State.main_region_robot_drive_automatic___follow_left_zrotating_r1turn_stop
+		if s == self.__State.main_region_robot_drive_automatic___follow_left_zstopped_due_to_wall:
+			return self.__state_vector[0] == self.__State.main_region_robot_drive_automatic___follow_left_zstopped_due_to_wall
 		if s == self.__State.main_region_robot_drive_stopped:
 			return self.__state_vector[0] == self.__State.main_region_robot_drive_stopped
 		if s == self.__State.main_region_robot_logging_and_grid_driving_start:
@@ -725,9 +720,9 @@ class Model:
 		"""
 		#Entry action for state 'turning to target'.
 		self.timer_service.set_timer(self, 4, 500, True)
-		self.__calibrated_yaw = self.internal_operation_callback.relative_yaw(self.imu.yaw)
+		self.user_var.calibrated_yaw = self.internal_operation_callback.relative_yaw(self.imu.yaw)
 		self.user_var.last_yaw_to_go = self.user_var.yaw_to_go
-		self.user_var.yaw_to_go = self.internal_operation_callback.abs_real(self.internal_operation_callback.calc_yaw_rotation(self.__calibrated_yaw, self.user_var.target_yaw))
+		self.user_var.yaw_to_go = self.internal_operation_callback.abs_real(self.internal_operation_callback.calc_yaw_rotation(self.user_var.calibrated_yaw, self.user_var.target_yaw))
 		self.output.rotation = ((self.user_var.rotation_direction * self.user_var.rotation_speed) * self.internal_operation_callback.ease_out_exp(self.user_var.yaw_to_go, self.user_var.total_yaw_to_go, 2))
 		
 	def __entry_action_main_region_robot_drive_automatic___follow_left_z_rotating_r1_turn_left(self):
@@ -788,6 +783,14 @@ class Model:
 		self.output.speed = 0.0
 		self.output.rotation = 0.0
 		self.internal_operation_callback.debug("Stop turning")
+		
+	def __entry_action_main_region_robot_drive_automatic___follow_left_z_stopped_due_to_wall(self):
+		"""Entry action for state 'stopped due to wall'..
+		"""
+		#Entry action for state 'stopped due to wall'.
+		self.output.speed = 0.0
+		self.output.rotation = 0.0
+		self.raise_wall_stopped()
 		
 	def __entry_action_main_region_robot_drive_stopped(self):
 		"""Entry action for state 'Stopped'..
@@ -881,9 +884,9 @@ class Model:
 		"""
 		#Entry action for state 'turning to target'.
 		self.timer_service.set_timer(self, 17, 500, True)
-		self.__calibrated_yaw = self.internal_operation_callback.relative_yaw(self.imu.yaw)
+		self.user_var.calibrated_yaw = self.internal_operation_callback.relative_yaw(self.imu.yaw)
 		self.user_var.last_yaw_to_go = self.user_var.yaw_to_go
-		self.user_var.yaw_to_go = self.internal_operation_callback.abs_real(self.internal_operation_callback.calc_yaw_rotation(self.__calibrated_yaw, self.user_var.target_yaw))
+		self.user_var.yaw_to_go = self.internal_operation_callback.abs_real(self.internal_operation_callback.calc_yaw_rotation(self.user_var.calibrated_yaw, self.user_var.target_yaw))
 		self.output.rotation = ((self.user_var.rotation_direction * self.user_var.rotation_speed) * self.internal_operation_callback.ease_out_exp(self.user_var.yaw_to_go, self.user_var.total_yaw_to_go, 2))
 		self.internal_operation_callback.debug_real("Yaw To Go", self.user_var.yaw_to_go)
 		
@@ -1195,6 +1198,15 @@ class Model:
 		#'default' enter sequence for state TurnStop
 		self.__entry_action_main_region_robot_drive_automatic___follow_left_z_rotating_r1_turn_stop()
 		self.__state_vector[0] = self.State.main_region_robot_drive_automatic___follow_left_zrotating_r1turn_stop
+		self.__state_conf_vector_position = 0
+		self.__state_conf_vector_changed = True
+		
+	def __enter_sequence_main_region_robot_drive_automatic___follow_left_z_stopped_due_to_wall_default(self):
+		"""'default' enter sequence for state stopped due to wall.
+		"""
+		#'default' enter sequence for state stopped due to wall
+		self.__entry_action_main_region_robot_drive_automatic___follow_left_z_stopped_due_to_wall()
+		self.__state_vector[0] = self.State.main_region_robot_drive_automatic___follow_left_zstopped_due_to_wall
 		self.__state_conf_vector_position = 0
 		self.__state_conf_vector_changed = True
 		
@@ -1552,6 +1564,13 @@ class Model:
 		self.__state_vector[0] = self.State.main_region_robot_drive_automatic___follow_left_zrotating
 		self.__state_conf_vector_position = 0
 		
+	def __exit_sequence_main_region_robot_drive_automatic___follow_left_z_stopped_due_to_wall(self):
+		"""Default exit sequence for state stopped due to wall.
+		"""
+		#Default exit sequence for state stopped due to wall
+		self.__state_vector[0] = self.State.main_region_robot_drive_automatic___follow_left
+		self.__state_conf_vector_position = 0
+		
 	def __exit_sequence_main_region_robot_drive_stopped(self):
 		"""Default exit sequence for state Stopped.
 		"""
@@ -1728,6 +1747,8 @@ class Model:
 			self.__exit_sequence_main_region_robot_drive_automatic___follow_left_z_rotating_r1_set_total_yaw()
 		elif state == self.State.main_region_robot_drive_automatic___follow_left_zrotating_r1turn_stop:
 			self.__exit_sequence_main_region_robot_drive_automatic___follow_left_z_rotating_r1_turn_stop()
+		elif state == self.State.main_region_robot_drive_automatic___follow_left_zstopped_due_to_wall:
+			self.__exit_sequence_main_region_robot_drive_automatic___follow_left_z_stopped_due_to_wall()
 		elif state == self.State.main_region_robot_drive_stopped:
 			self.__exit_sequence_main_region_robot_drive_stopped()
 		elif state == self.State.main_region_drive_to_target:
@@ -1809,6 +1830,8 @@ class Model:
 			self.__exit_sequence_main_region_robot_drive_automatic___follow_left_z_rotating_r1_set_total_yaw()
 		elif state == self.State.main_region_robot_drive_automatic___follow_left_zrotating_r1turn_stop:
 			self.__exit_sequence_main_region_robot_drive_automatic___follow_left_z_rotating_r1_turn_stop()
+		elif state == self.State.main_region_robot_drive_automatic___follow_left_zstopped_due_to_wall:
+			self.__exit_sequence_main_region_robot_drive_automatic___follow_left_z_stopped_due_to_wall()
 		elif state == self.State.main_region_robot_drive_stopped:
 			self.__exit_sequence_main_region_robot_drive_stopped()
 		
@@ -1879,6 +1902,8 @@ class Model:
 			self.__exit_sequence_main_region_robot_drive_automatic___follow_left_z_rotating_r1_set_total_yaw()
 		elif state == self.State.main_region_robot_drive_automatic___follow_left_zrotating_r1turn_stop:
 			self.__exit_sequence_main_region_robot_drive_automatic___follow_left_z_rotating_r1_turn_stop()
+		elif state == self.State.main_region_robot_drive_automatic___follow_left_zstopped_due_to_wall:
+			self.__exit_sequence_main_region_robot_drive_automatic___follow_left_z_stopped_due_to_wall()
 		
 	def __exit_sequence_main_region_robot_drive_automatic___follow_left_z_rotating_r1(self):
 		"""Default exit sequence for region r1.
@@ -2288,8 +2313,7 @@ class Model:
 			if transitioned_after < 0:
 				if self.laser_distance.dfront_mean <= self.user_var.min_wall_turn:
 					self.__exit_sequence_main_region_robot_drive_automatic___follow_left_z_forward()
-					self.raise_wall_stopped()
-					self.__enter_sequence_main_region_robot_drive_automatic___follow_left_z_rotating_default()
+					self.__enter_sequence_main_region_robot_drive_automatic___follow_left_z_stopped_due_to_wall_default()
 					self.__main_region_robot_drive_automatic___follow_left_react(0)
 					transitioned_after = 0
 			#If no transition was taken
@@ -2479,6 +2503,19 @@ class Model:
 			if transitioned_after == transitioned_before:
 				#then execute local reactions.
 				transitioned_after = self.__main_region_robot_drive_automatic___follow_left_z_rotating_react(transitioned_before)
+		return transitioned_after
+	
+	
+	def __main_region_robot_drive_automatic___follow_left_z_stopped_due_to_wall_react(self, transitioned_before):
+		"""Implementation of __main_region_robot_drive_automatic___follow_left_z_stopped_due_to_wall_react function.
+		"""
+		#The reactions of state stopped due to wall.
+		transitioned_after = transitioned_before
+		if not self.__do_completion:
+			#If no transition was taken
+			if transitioned_after == transitioned_before:
+				#then execute local reactions.
+				transitioned_after = self.__main_region_robot_drive_automatic___follow_left_react(transitioned_before)
 		return transitioned_after
 	
 	
@@ -2774,7 +2811,7 @@ class Model:
 					self.__enter_sequence_main_region_drive_to_target_r1_turning_to_target_default()
 					self.__main_region_drive_to_target_react(0)
 					transitioned_after = 0
-				elif self.user_var.yaw_to_go < self.user_var.yaw_error or (self.user_var.yaw_to_go < 90 and self.user_var.last_yaw_to_go < self.user_var.yaw_to_go):
+				elif self.user_var.yaw_to_go < self.user_var.yaw_error or (self.user_var.yaw_to_go < 30 and self.user_var.last_yaw_to_go < self.user_var.yaw_to_go):
 					self.__exit_sequence_main_region_drive_to_target_r1_turning_to_target()
 					self.__enter_sequence_main_region_drive_to_target_r1_turn_stop_default()
 					self.__main_region_drive_to_target_react(0)
@@ -2813,7 +2850,7 @@ class Model:
 		transitioned_after = transitioned_before
 		if not self.__do_completion:
 			if transitioned_after < 0:
-				if self.user_var.distance_to_go < self.user_var.center_distance_error or self.user_var.distance_to_go > self.user_var.last_distance:
+				if self.user_var.distance_to_go < self.user_var.center_distance_error or (self.user_var.distance_to_go < 0.2 and self.user_var.distance_to_go > self.user_var.last_distance):
 					self.__exit_sequence_main_region_drive_to_target_r1_go_to_center_of_new_grid()
 					self.__enter_sequence_main_region_drive_to_target_r1_check_current_grid_position_default()
 					self.__main_region_drive_to_target_react(0)
@@ -2938,6 +2975,8 @@ class Model:
 			transitioned = self.__main_region_robot_drive_automatic___follow_left_z_rotating_r1_set_total_yaw_react(transitioned)
 		elif state == self.State.main_region_robot_drive_automatic___follow_left_zrotating_r1turn_stop:
 			transitioned = self.__main_region_robot_drive_automatic___follow_left_z_rotating_r1_turn_stop_react(transitioned)
+		elif state == self.State.main_region_robot_drive_automatic___follow_left_zstopped_due_to_wall:
+			transitioned = self.__main_region_robot_drive_automatic___follow_left_z_stopped_due_to_wall_react(transitioned)
 		elif state == self.State.main_region_robot_drive_stopped:
 			transitioned = self.__main_region_robot_drive_stopped_react(transitioned)
 		elif state == self.State.main_region_drive_to_target_r1solved_path:
