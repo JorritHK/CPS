@@ -1,5 +1,3 @@
-
-
 class Node:
     """Class that handles storage of singular nodes.
 
@@ -11,6 +9,7 @@ class Node:
         exit: posibility of storing where the exit is
         row, col: location in the larger grid
     """
+
     def __init__(self, row, col):
         self.walls = [-1, -1, -1, -1]
         self.visited = False
@@ -21,3 +20,9 @@ class Node:
 
         self.row = row
         self.col = col
+
+    def __repr__(self):
+        return f"({self.col},{self.row})({self.walls})"
+
+    def __str__(self) -> str:
+        return f"({self.col},{self.row})({self.walls})"

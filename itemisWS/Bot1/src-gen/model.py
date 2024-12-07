@@ -45,7 +45,7 @@ class Model:
 			main_region_robot_logging_and_grid_driving_driving_based_on_grid_r1record_r1start_record,
 			main_region_robot_logging_and_grid_driving_driving_based_on_grid_r1record_r1_final_,
 			main_region_drive_to_target,
-			main_region_drive_to_target_r1solve_path,
+			main_region_drive_to_target_r1solved_path,
 			main_region_drive_to_target_r1drive_one_step,
 			main_region_drive_to_target_r1turning_to_target,
 			main_region_drive_to_target_r1turn_stop,
@@ -376,7 +376,7 @@ class Model:
 		
 		# for timed statechart:
 		self.timer_service = None
-		self.__time_events = [None] * 18
+		self.__time_events = [None] * 20
 		
 		# initializations:
 		#Default init sequence for statechart model
@@ -585,8 +585,8 @@ class Model:
 		if s == self.__State.main_region_drive_to_target:
 			return (self.__state_vector[0] >= self.__State.main_region_drive_to_target)\
 				and (self.__state_vector[0] <= self.__State.main_region_drive_to_target_r1_final_)
-		if s == self.__State.main_region_drive_to_target_r1solve_path:
-			return self.__state_vector[0] == self.__State.main_region_drive_to_target_r1solve_path
+		if s == self.__State.main_region_drive_to_target_r1solved_path:
+			return self.__state_vector[0] == self.__State.main_region_drive_to_target_r1solved_path
 		if s == self.__State.main_region_drive_to_target_r1drive_one_step:
 			return self.__state_vector[0] == self.__State.main_region_drive_to_target_r1drive_one_step
 		if s == self.__State.main_region_drive_to_target_r1turning_to_target:
@@ -604,7 +604,7 @@ class Model:
 	def time_elapsed(self, event_id):
 		"""Add time events to in event queue
 		"""
-		if event_id in range(18):
+		if event_id in range(20):
 			self.in_event_queue.put(lambda: self.raise_time_event(event_id))
 			self.run_cycle()
 	
@@ -667,14 +667,13 @@ class Model:
 		"""Entry action for state 'Incr. rot. speed right'..
 		"""
 		#Entry action for state 'Incr. rot. speed right'.
-		self.output.rotation = (self.output.rotation - self.user_var.base_rotation)
-		self.internal_operation_callback.debug("rotating right")
+		self.output.rotation = (self.output.rotation - (self.user_var.base_rotation / 3))
 		
 	def __entry_action_main_region_robot_drive_manual_r1_rotations_r1_incr__rot__speed_left(self):
 		"""Entry action for state 'Incr. rot. speed left'..
 		"""
 		#Entry action for state 'Incr. rot. speed left'.
-		self.output.rotation = (self.output.rotation + self.user_var.base_rotation)
+		self.output.rotation = (self.output.rotation + (self.user_var.base_rotation / 3))
 		
 	def __entry_action_main_region_robot_drive_automatic___follow_left_z_calibrate(self):
 		"""Entry action for state 'calibrate'..
@@ -729,7 +728,7 @@ class Model:
 		self.__calibrated_yaw = self.internal_operation_callback.relative_yaw(self.imu.yaw)
 		self.user_var.last_yaw_to_go = self.user_var.yaw_to_go
 		self.user_var.yaw_to_go = self.internal_operation_callback.abs_real(self.internal_operation_callback.calc_yaw_rotation(self.__calibrated_yaw, self.user_var.target_yaw))
-		self.output.rotation = ((self.user_var.rotation_direction * self.user_var.rotation_speed) * self.internal_operation_callback.ease_out_exp(self.user_var.yaw_to_go, self.user_var.total_yaw_to_go, 4))
+		self.output.rotation = ((self.user_var.rotation_direction * self.user_var.rotation_speed) * self.internal_operation_callback.ease_out_exp(self.user_var.yaw_to_go, self.user_var.total_yaw_to_go, 2))
 		
 	def __entry_action_main_region_robot_drive_automatic___follow_left_z_rotating_r1_turn_left(self):
 		"""Entry action for state 'Turn Left'..
@@ -852,66 +851,68 @@ class Model:
 		"""
 		self.__completed = True
 		
-	def __entry_action_main_region_drive_to_target_r1_solve_path(self):
-		"""Entry action for state 'solve path'..
+	def __entry_action_main_region_drive_to_target_r1_solved_path(self):
+		"""Entry action for state 'solved path'..
 		"""
-		#Entry action for state 'solve path'.
+		#Entry action for state 'solved path'.
 		self.timer_service.set_timer(self, 13, (1 * 1000), False)
-		self.internal_operation_callback.solve_path()
-		self.user_var.path_index = 0
-		self.user_var.target_x = self.internal_operation_callback.get_target_x()
-		self.user_var.target_y = self.internal_operation_callback.get_target_y()
-		self.internal_operation_callback.debug("Path solved, going to:")
-		self.internal_operation_callback.debug_real("target x", self.user_var.target_x)
-		self.internal_operation_callback.debug_real("target x", self.user_var.target_y)
+		self.timer_service.set_timer(self, 14, 100, False)
 		
 	def __entry_action_main_region_drive_to_target_r1_drive_one_step(self):
 		"""Entry action for state 'drive one step'..
 		"""
 		#Entry action for state 'drive one step'.
-		self.timer_service.set_timer(self, 14, 200, False)
+		self.timer_service.set_timer(self, 15, 200, False)
+		self.timer_service.set_timer(self, 16, 100, False)
 		self.output.rotation = 0.0
 		self.output.speed = 0.0
 		self.user_var.target_yaw = self.internal_operation_callback.get_path_step_yaw(self.user_var.path_index)
 		self.user_var.rotation_direction = 1 if self.internal_operation_callback.calc_yaw_rotation(self.user_var.target_yaw, self.internal_operation_callback.relative_yaw(self.imu.yaw)) > 1 else -(1)
-		self.user_var.total_yaw_to_go = self.internal_operation_callback.abs_real(self.internal_operation_callback.calc_yaw_rotation(self.user_var.target_yaw, self.internal_operation_callback.relative_yaw(self.imu.yaw)))
+		self.user_var.total_yaw_to_go = self.internal_operation_callback.abs_real(self.internal_operation_callback.calc_yaw_rotation(self.internal_operation_callback.relative_yaw(self.imu.yaw), self.user_var.target_yaw))
 		self.user_var.path_index = self.user_var.path_index + 1
 		self.internal_operation_callback.debug("DRIVE ONE STEP")
-		self.user_var.yaw_to_go = 91
+		self.internal_operation_callback.debug_real("Rotating (total)", self.user_var.total_yaw_to_go)
+		self.user_var.yaw_to_go = self.user_var.total_yaw_to_go
 		self.user_var.last_yaw_to_go = self.user_var.yaw_to_go
+		self.user_var.total_yaw_to_go = self.user_var.total_yaw_to_go if self.user_var.total_yaw_to_go > 90 else 90
 		
 	def __entry_action_main_region_drive_to_target_r1_turning_to_target(self):
 		"""Entry action for state 'turning to target'..
 		"""
 		#Entry action for state 'turning to target'.
-		self.timer_service.set_timer(self, 15, 500, True)
+		self.timer_service.set_timer(self, 17, 500, True)
 		self.__calibrated_yaw = self.internal_operation_callback.relative_yaw(self.imu.yaw)
 		self.user_var.last_yaw_to_go = self.user_var.yaw_to_go
 		self.user_var.yaw_to_go = self.internal_operation_callback.abs_real(self.internal_operation_callback.calc_yaw_rotation(self.__calibrated_yaw, self.user_var.target_yaw))
-		self.output.rotation = ((self.user_var.rotation_direction * self.user_var.rotation_speed) * self.internal_operation_callback.ease_out_exp(self.user_var.yaw_to_go, self.user_var.total_yaw_to_go, 7))
+		self.output.rotation = ((self.user_var.rotation_direction * self.user_var.rotation_speed) * self.internal_operation_callback.ease_out_exp(self.user_var.yaw_to_go, self.user_var.total_yaw_to_go, 2))
 		self.internal_operation_callback.debug_real("Yaw To Go", self.user_var.yaw_to_go)
 		
 	def __entry_action_main_region_drive_to_target_r1_turn_stop(self):
 		"""Entry action for state 'TurnStop'..
 		"""
 		#Entry action for state 'TurnStop'.
-		self.timer_service.set_timer(self, 16, 200, False)
+		self.timer_service.set_timer(self, 18, 200, False)
 		self.output.speed = 0.0
 		self.output.rotation = 0.0
-		self.internal_operation_callback.debug("Stop turning")
+		self.user_var.total_distance_to_go = self.grid.grid_size
+		self.user_var.last_distance = self.user_var.total_distance_to_go
+		self.user_var.distance_to_go = self.user_var.last_distance
+		if False:
+			self.internal_operation_callback.debug("Stop turning")
+			self.internal_operation_callback.debug_real("yaw", self.imu.yaw)
+			self.internal_operation_callback.debug_real("yaw (relative)", self.internal_operation_callback.relative_yaw(self.imu.yaw))
 		
 	def __entry_action_main_region_drive_to_target_r1_go_to_center_of_new_grid(self):
 		"""Entry action for state 'go to center of new grid'..
 		"""
 		#Entry action for state 'go to center of new grid'.
-		self.timer_service.set_timer(self, 17, 200, True)
+		self.timer_service.set_timer(self, 19, 200, True)
 		self.internal_operation_callback.debug("Going to next grid center")
 		self.user_var.current_x = self.odom.x
 		self.user_var.current_y = self.odom.y
 		self.user_var.total_distance_to_go = self.grid.grid_size
 		self.user_var.distance_to_go = self.user_var.total_distance_to_go
 		self.user_var.last_distance = self.user_var.distance_to_go
-		self.internal_operation_callback.debug_real("totalDistanceToGo: ", self.user_var.total_distance_to_go)
 		
 	def __entry_action_main_region_drive_to_target_r1_check_current_grid_position(self):
 		"""Entry action for state 'check current grid position'..
@@ -1007,35 +1008,37 @@ class Model:
 		self.timer_service.unset_timer(self, 11)
 		self.timer_service.unset_timer(self, 12)
 		
-	def __exit_action_main_region_drive_to_target_r1_solve_path(self):
-		"""Exit action for state 'solve path'..
+	def __exit_action_main_region_drive_to_target_r1_solved_path(self):
+		"""Exit action for state 'solved path'..
 		"""
-		#Exit action for state 'solve path'.
+		#Exit action for state 'solved path'.
 		self.timer_service.unset_timer(self, 13)
+		self.timer_service.unset_timer(self, 14)
 		
 	def __exit_action_main_region_drive_to_target_r1_drive_one_step(self):
 		"""Exit action for state 'drive one step'..
 		"""
 		#Exit action for state 'drive one step'.
-		self.timer_service.unset_timer(self, 14)
+		self.timer_service.unset_timer(self, 15)
+		self.timer_service.unset_timer(self, 16)
 		
 	def __exit_action_main_region_drive_to_target_r1_turning_to_target(self):
 		"""Exit action for state 'turning to target'..
 		"""
 		#Exit action for state 'turning to target'.
-		self.timer_service.unset_timer(self, 15)
+		self.timer_service.unset_timer(self, 17)
 		
 	def __exit_action_main_region_drive_to_target_r1_turn_stop(self):
 		"""Exit action for state 'TurnStop'..
 		"""
 		#Exit action for state 'TurnStop'.
-		self.timer_service.unset_timer(self, 16)
+		self.timer_service.unset_timer(self, 18)
 		
 	def __exit_action_main_region_drive_to_target_r1_go_to_center_of_new_grid(self):
 		"""Exit action for state 'go to center of new grid'..
 		"""
 		#Exit action for state 'go to center of new grid'.
-		self.timer_service.unset_timer(self, 17)
+		self.timer_service.unset_timer(self, 19)
 		self.internal_operation_callback.debug("\nTRACE: center new grid")
 		self.internal_operation_callback.debug_real("odom.x", self.odom.x)
 		self.internal_operation_callback.debug_real("odom.y", self.odom.y)
@@ -1275,12 +1278,12 @@ class Model:
 		#'default' enter sequence for state drive to target
 		self.__enter_sequence_main_region_drive_to_target_r1_default()
 		
-	def __enter_sequence_main_region_drive_to_target_r1_solve_path_default(self):
-		"""'default' enter sequence for state solve path.
+	def __enter_sequence_main_region_drive_to_target_r1_solved_path_default(self):
+		"""'default' enter sequence for state solved path.
 		"""
-		#'default' enter sequence for state solve path
-		self.__entry_action_main_region_drive_to_target_r1_solve_path()
-		self.__state_vector[0] = self.State.main_region_drive_to_target_r1solve_path
+		#'default' enter sequence for state solved path
+		self.__entry_action_main_region_drive_to_target_r1_solved_path()
+		self.__state_vector[0] = self.State.main_region_drive_to_target_r1solved_path
 		self.__state_conf_vector_position = 0
 		self.__state_conf_vector_changed = True
 		
@@ -1626,13 +1629,13 @@ class Model:
 		self.__state_vector[0] = self.State.null_state
 		self.__state_conf_vector_position = 0
 		
-	def __exit_sequence_main_region_drive_to_target_r1_solve_path(self):
-		"""Default exit sequence for state solve path.
+	def __exit_sequence_main_region_drive_to_target_r1_solved_path(self):
+		"""Default exit sequence for state solved path.
 		"""
-		#Default exit sequence for state solve path
+		#Default exit sequence for state solved path
 		self.__state_vector[0] = self.State.main_region_drive_to_target
 		self.__state_conf_vector_position = 0
-		self.__exit_action_main_region_drive_to_target_r1_solve_path()
+		self.__exit_action_main_region_drive_to_target_r1_solved_path()
 		
 	def __exit_sequence_main_region_drive_to_target_r1_drive_one_step(self):
 		"""Default exit sequence for state drive one step.
@@ -1729,8 +1732,8 @@ class Model:
 			self.__exit_sequence_main_region_robot_drive_stopped()
 		elif state == self.State.main_region_drive_to_target:
 			self.__exit_sequence_main_region_drive_to_target()
-		elif state == self.State.main_region_drive_to_target_r1solve_path:
-			self.__exit_sequence_main_region_drive_to_target_r1_solve_path()
+		elif state == self.State.main_region_drive_to_target_r1solved_path:
+			self.__exit_sequence_main_region_drive_to_target_r1_solved_path()
 		elif state == self.State.main_region_drive_to_target_r1drive_one_step:
 			self.__exit_sequence_main_region_drive_to_target_r1_drive_one_step()
 		elif state == self.State.main_region_drive_to_target_r1turning_to_target:
@@ -1952,8 +1955,8 @@ class Model:
 		"""
 		#Default exit sequence for region r1
 		state = self.__state_vector[0]
-		if state == self.State.main_region_drive_to_target_r1solve_path:
-			self.__exit_sequence_main_region_drive_to_target_r1_solve_path()
+		if state == self.State.main_region_drive_to_target_r1solved_path:
+			self.__exit_sequence_main_region_drive_to_target_r1_solved_path()
 		elif state == self.State.main_region_drive_to_target_r1drive_one_step:
 			self.__exit_sequence_main_region_drive_to_target_r1_drive_one_step()
 		elif state == self.State.main_region_drive_to_target_r1turning_to_target:
@@ -1979,6 +1982,17 @@ class Model:
 			self.__enter_sequence_main_region_robot_drive_automatic___follow_left_z_rotating_r1_turn_around_default()
 		else:
 			self.__react_main_region_robot_drive_automatic___follow_left_z_rotating_r1__exit_default()
+		
+	def __react_main_region_drive_to_target_r1__choice_0(self):
+		"""The reactions of state null..
+		"""
+		#The reactions of state null.
+		if self.internal_operation_callback.solve_path(self.grid.column, self.grid.row):
+			self.__enter_sequence_main_region_drive_to_target_r1_solved_path_default()
+		else:
+			self.__exit_sequence_main_region_drive_to_target()
+			self.__enter_sequence_main_region_robot_default()
+			self.__react(0)
 		
 	def __react_main_region__entry_default(self):
 		"""Default react sequence for initial entry .
@@ -2026,7 +2040,7 @@ class Model:
 		"""Default react sequence for initial entry .
 		"""
 		#Default react sequence for initial entry 
-		self.__enter_sequence_main_region_drive_to_target_r1_solve_path_default()
+		self.__react_main_region_drive_to_target_r1__choice_0()
 		
 	def __react_main_region_robot_drive_automatic___follow_left_z_rotating_r1__exit_default(self):
 		"""The reactions of exit default..
@@ -2555,7 +2569,7 @@ class Model:
 				if self.__time_events[9]:
 					self.user_var.last_distance = self.user_var.distance_to_go
 					self.user_var.distance_to_go = self.internal_operation_callback.abs_real(self.internal_operation_callback.distance_to_grid_center(self.odom.x, self.odom.y))
-					self.output.speed = (self.user_var.base_speed * self.internal_operation_callback.ease_out_exp(self.user_var.distance_to_go, self.user_var.total_distance_to_go, 3))
+					self.output.speed = (self.user_var.base_speed * self.internal_operation_callback.ease_out_exp(self.user_var.distance_to_go, self.user_var.total_distance_to_go, 2))
 				transitioned_after = self.__main_region_robot_logging_and_grid_driving_driving_based_on_grid_react(transitioned_before)
 		return transitioned_after
 	
@@ -2681,20 +2695,28 @@ class Model:
 			self.__enter_sequence_main_region_robot_logging_and_grid_driving_default()
 			self.__react(0)
 		else:
-			#Always execute local reactions.
-			transitioned_after = self.__react(transitioned_before)
+			if transitioned_after < 0:
+				if self.computer.m_press:
+					self.__exit_sequence_main_region_drive_to_target()
+					self.__enter_sequence_main_region_robot_default()
+					self.__react(0)
+					transitioned_after = 0
+			#If no transition was taken
+			if transitioned_after == transitioned_before:
+				#then execute local reactions.
+				transitioned_after = self.__react(transitioned_before)
 		return transitioned_after
 	
 	
-	def __main_region_drive_to_target_r1_solve_path_react(self, transitioned_before):
-		"""Implementation of __main_region_drive_to_target_r1_solve_path_react function.
+	def __main_region_drive_to_target_r1_solved_path_react(self, transitioned_before):
+		"""Implementation of __main_region_drive_to_target_r1_solved_path_react function.
 		"""
-		#The reactions of state solve path.
+		#The reactions of state solved path.
 		transitioned_after = transitioned_before
 		if not self.__do_completion:
 			if transitioned_after < 0:
 				if self.__time_events[13]:
-					self.__exit_sequence_main_region_drive_to_target_r1_solve_path()
+					self.__exit_sequence_main_region_drive_to_target_r1_solved_path()
 					self.__time_events[13] = False
 					self.__enter_sequence_main_region_drive_to_target_r1_drive_one_step_default()
 					self.__main_region_drive_to_target_react(0)
@@ -2702,6 +2724,13 @@ class Model:
 			#If no transition was taken
 			if transitioned_after == transitioned_before:
 				#then execute local reactions.
+				if self.__time_events[14]:
+					self.user_var.path_index = 0
+					self.user_var.target_x = self.internal_operation_callback.get_target_x()
+					self.user_var.target_y = self.internal_operation_callback.get_target_y()
+					self.internal_operation_callback.debug("Path solved, going to:")
+					self.internal_operation_callback.debug_real("target x", self.user_var.target_x)
+					self.internal_operation_callback.debug_real("target x", self.user_var.target_y)
 				transitioned_after = self.__main_region_drive_to_target_react(transitioned_before)
 		return transitioned_after
 	
@@ -2713,10 +2742,16 @@ class Model:
 		transitioned_after = transitioned_before
 		if not self.__do_completion:
 			if transitioned_after < 0:
-				if self.__time_events[14]:
+				if self.__time_events[15]:
 					self.__exit_sequence_main_region_drive_to_target_r1_drive_one_step()
-					self.__time_events[14] = False
+					self.__time_events[15] = False
 					self.__enter_sequence_main_region_drive_to_target_r1_turning_to_target_default()
+					self.__main_region_drive_to_target_react(0)
+					transitioned_after = 0
+				elif (self.__time_events[16]) and (self.user_var.total_yaw_to_go == 0):
+					self.__exit_sequence_main_region_drive_to_target_r1_drive_one_step()
+					self.__time_events[16] = False
+					self.__enter_sequence_main_region_drive_to_target_r1_go_to_center_of_new_grid_default()
 					self.__main_region_drive_to_target_react(0)
 					transitioned_after = 0
 			#If no transition was taken
@@ -2733,9 +2768,9 @@ class Model:
 		transitioned_after = transitioned_before
 		if not self.__do_completion:
 			if transitioned_after < 0:
-				if self.__time_events[15]:
+				if self.__time_events[17]:
 					self.__exit_sequence_main_region_drive_to_target_r1_turning_to_target()
-					self.__time_events[15] = False
+					self.__time_events[17] = False
 					self.__enter_sequence_main_region_drive_to_target_r1_turning_to_target_default()
 					self.__main_region_drive_to_target_react(0)
 					transitioned_after = 0
@@ -2758,10 +2793,9 @@ class Model:
 		transitioned_after = transitioned_before
 		if not self.__do_completion:
 			if transitioned_after < 0:
-				if self.__time_events[16]:
+				if self.__time_events[18]:
 					self.__exit_sequence_main_region_drive_to_target_r1_turn_stop()
-					self.internal_operation_callback.debug("STOPPED TURNING")
-					self.__time_events[16] = False
+					self.__time_events[18] = False
 					self.__enter_sequence_main_region_drive_to_target_r1_go_to_center_of_new_grid_default()
 					self.__main_region_drive_to_target_react(0)
 					transitioned_after = 0
@@ -2787,10 +2821,13 @@ class Model:
 			#If no transition was taken
 			if transitioned_after == transitioned_before:
 				#then execute local reactions.
-				if self.__time_events[17]:
+				if self.__time_events[19]:
 					self.user_var.last_distance = self.user_var.distance_to_go
 					self.user_var.distance_to_go = (self.grid.grid_size - self.internal_operation_callback.distance(self.odom.x, self.odom.y, self.user_var.current_x, self.user_var.current_y))
-					self.output.speed = (self.user_var.base_speed * self.internal_operation_callback.ease_out_exp(self.user_var.distance_to_go, self.user_var.total_distance_to_go, 7))
+					self.internal_operation_callback.debug_real("distance to go (last)", self.user_var.last_distance)
+					self.internal_operation_callback.debug_real("distance to go", self.user_var.distance_to_go)
+					self.output.speed = (self.user_var.base_speed * self.internal_operation_callback.ease_out_exp(self.user_var.distance_to_go, self.user_var.total_distance_to_go, 2))
+					self.internal_operation_callback.debug_real("speed", self.output.speed)
 				transitioned_after = self.__main_region_drive_to_target_react(transitioned_before)
 		return transitioned_after
 	
@@ -2854,6 +2891,8 @@ class Model:
 		self.__time_events[15] = False
 		self.__time_events[16] = False
 		self.__time_events[17] = False
+		self.__time_events[18] = False
+		self.__time_events[19] = False
 	
 	
 	def __clear_internal_events(self):
@@ -2901,8 +2940,8 @@ class Model:
 			transitioned = self.__main_region_robot_drive_automatic___follow_left_z_rotating_r1_turn_stop_react(transitioned)
 		elif state == self.State.main_region_robot_drive_stopped:
 			transitioned = self.__main_region_robot_drive_stopped_react(transitioned)
-		elif state == self.State.main_region_drive_to_target_r1solve_path:
-			transitioned = self.__main_region_drive_to_target_r1_solve_path_react(transitioned)
+		elif state == self.State.main_region_drive_to_target_r1solved_path:
+			transitioned = self.__main_region_drive_to_target_r1_solved_path_react(transitioned)
 		elif state == self.State.main_region_drive_to_target_r1drive_one_step:
 			transitioned = self.__main_region_drive_to_target_r1_drive_one_step_react(transitioned)
 		elif state == self.State.main_region_drive_to_target_r1turning_to_target:

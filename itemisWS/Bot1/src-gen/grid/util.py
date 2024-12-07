@@ -1,4 +1,3 @@
-from enum import Enum
 import math
 import logging
 from grid.node import Node
@@ -14,7 +13,7 @@ def coord_abs(coord: Coord):
 class Callback:
     calibration: Calibration
     target: Coord  # Target coordinate in the grid for driving without LIDAR
-    current_grid = List[List[Node]]
+    current_grid: List[List[Node]]
     path: List[Orientation]
 
     logger: logging.Logger
@@ -30,8 +29,8 @@ class Callback:
     def debug(self, text: str):
         self.logger.info(text)
 
-    def debug_real(self, name: str, value):
-        self.debug(f"DEBUG: Var {name} currently has value: {value}")
+    def debug_real(self, name: str, value: float):
+        self.debug(f"DEBUG: Var {name} currently has value: {value:.2f}")
 
     def debug_bool(self, name: str, value):
         self.debug_real(name, value)
@@ -51,29 +50,39 @@ class Callback:
             raise Exception("Target has not been set")
         return self.target.y
 
-    def solve_path(self):
+    def solve_path(self, start_x: int = 0, start_y: int = 0) -> bool:
         if not self.target or not self.current_grid:
-            raise Exception(
+            self.logger.error(
                 "Tried to go to point when grid or target is not set"
             )
+            return False
+        start = Coord(start_x, start_y)
+        self.debug(
+            f"Solving with maze: {self.current_grid} "
+            f"Getting to position: {start}"
+        )
 
-        solved_path = bfs(self.current_grid, Coord(0, 0), self.target)
+        solved_path = bfs(self.current_grid, start, self.target)
 
-        self.debug(f"SEARCH: path solved directions {solved_path}")
+        self.debug(f"SEARCH: path solved - directions {solved_path}")
         self.path = solved_path
+        if self.path:
+            return True
+        return False
 
     def get_path_step_yaw(self, i: int):
         if not self.path:
             raise Exception("First calculate a path using solve_path")
 
-        if len(self.path) < i:
+        if len(self.path) <= i:
             raise Exception(
                 f"Step requested that is larger than calculated path: {self.path}"
             )
 
         self.debug(f"Getting path step for index: {i} with path: {self.path}")
-
-        return self.orientation_to_yaw(self.path[i].value)
+        orientation = self.path[i]
+        self.debug(f"Got orientation: {orientation.name}")
+        return self.orientation_to_yaw(orientation.value)
 
     # == Simple util functions ==#
     def abs_real(self, x: float) -> float:

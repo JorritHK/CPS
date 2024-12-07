@@ -39,13 +39,14 @@ def bfs(grid: List[List[Node]], start: Coord, goal: Coord):
                 and 0 <= neighbor.x < cols
                 and neighbor not in visited
             ):
-                print(
-                    "Neighbor wall: ",
-                    node_has_wall(grid[neighbor.y][neighbor.x], (i + 2) % 4),
-                )
+                if x == 2 and y == 1:
+                    print(grid[y][x])
+                    print(
+                        f"2, 1: {i} {direction_names[i]}={node_has_wall(grid[y][x], i)}"
+                    )
                 # Check if the move is possible (no wall in the way)
                 if not node_has_wall(
-                    grid[x][y], i
+                    grid[y][x], i
                 ):  # Check current node for wall in direction `i`
                     # Check if there's no wall on the neighboring node in the opposite direction
                     if not node_has_wall(
@@ -53,14 +54,16 @@ def bfs(grid: List[List[Node]], start: Coord, goal: Coord):
                     ):  # (i+2)%4 to check the opposite direction
                         # print(f"Add to queue: {neighbor}")
                         # print(f"Direction: {direction_names[i]}")
-                        visited.add(Coord(neighbor.x, neighbor.y))
+                        print(
+                            f"Can make step from {Coord(x, y)} -> {neighbor}"
+                        )
+                        visited.add(neighbor)
                         queue.append(
                             (
                                 neighbor,
                                 path + [Orientation[direction_names[i]]],
                             )
                         )
-        print("Current queue after iteration: ", queue)
 
 
 def create_node(walls):
@@ -81,9 +84,38 @@ if __name__ == "__main__":
     print("Start: ", start, "\tGoal: ", goal)
     grid = [[create_node([1, 0, 1, 1]), create_node([1, 1, 0, 0])]]
 
+    grid = [
+        [
+            create_node([1, 1, 0, -1]),
+            create_node([1, 0, 1, 1]),
+            create_node([1, 0, 1, 0]),
+            create_node([1, 1, 0, 0]),
+        ],
+        [
+            create_node([0, 0, 0, 1]),
+            create_node([1, 0, 1, 0]),
+            create_node([1, 0, 1, 0]),
+            create_node([0, 1, 0, 0]),
+        ],
+        [
+            create_node([-1, -1, -1, -1]),
+            create_node([-1, -1, -1, -1]),
+            create_node([-1, -1, -1, -1]),
+            create_node([-1, -1, -1, -1]),
+        ],
+        [
+            create_node([-1, -1, -1, -1]),
+            create_node([-1, -1, -1, -1]),
+            create_node([-1, -1, -1, -1]),
+            create_node([-1, -1, -1, -1]),
+        ],
+    ]
+
     # Find the shortest path
     path = bfs(grid, start, goal)
     if path:
         print("Shortest path:", path)
     else:
         print("No path found")
+
+# %%
