@@ -47,6 +47,7 @@ class Model:
 			main_region_robot_drive_automatic___follow_left_zgoing_straight_r1calibration_safe_right_r1turn_anti_clock,
 			main_region_robot_drive_automatic___follow_left_zgoing_straight_r1blind_drive,
 			main_region_robot_drive_automatic___follow_left_zgoing_straight_r1blind_drive_r1drive_straight,
+			main_region_robot_drive_automatic___follow_left_zgoing_straight_r1_final_,
 			main_region_robot_drive_stopped,
 			main_region_robot_logging_and_grid_driving_start,
 			main_region_robot_logging_and_grid_driving_driving_based_on_grid,
@@ -56,6 +57,7 @@ class Model:
 			main_region_robot_logging_and_grid_driving_driving_based_on_grid_r1record,
 			main_region_robot_logging_and_grid_driving_driving_based_on_grid_r1record_r1start_record,
 			main_region_robot_logging_and_grid_driving_driving_based_on_grid_r1record_r1_final_,
+			main_region_robot_logging_and_grid_driving_driving_based_on_grid_r1record_r1communicate,
 			main_region_drive_to_target,
 			main_region_drive_to_target_r1solved_path,
 			main_region_drive_to_target_r1drive_one_step,
@@ -65,7 +67,7 @@ class Model:
 			main_region_drive_to_target_r1check_current_grid_position,
 			main_region_drive_to_target_r1_final_,
 			null_state
-		) = range(51)
+		) = range(53)
 	
 	
 	class UserVar:
@@ -77,6 +79,7 @@ class Model:
 			self.base_rotation = None
 			self.forward_speed = None
 			self.rotation_speed = None
+			self.adjust_factor = None
 			self.odom_follower_x = None
 			self.odom_follower_y = None
 			self.calibrated_yaw = None
@@ -374,6 +377,7 @@ class Model:
 		self.in_event_queue = queue.Queue()
 		self.new_grid_box = None
 		self.wall_stopped = None
+		self.recording = None
 		self.internal_operation_callback = None
 		
 		# enumeration of all states:
@@ -385,7 +389,7 @@ class Model:
 		
 		# for timed statechart:
 		self.timer_service = None
-		self.__time_events = [None] * 25
+		self.__time_events = [None] * 27
 		
 		# initializations:
 		#Default init sequence for statechart model
@@ -393,6 +397,7 @@ class Model:
 		self.user_var.base_rotation = 0.2
 		self.user_var.forward_speed = (0.1 * 2)
 		self.user_var.rotation_speed = 0.4
+		self.user_var.adjust_factor = 0.3
 		self.user_var.odom_follower_x = 0.0
 		self.user_var.odom_follower_y = 0.0
 		self.user_var.calibrated_yaw = 0.0
@@ -425,10 +430,10 @@ class Model:
 		self.user_var.current_y = 0.0
 		self.base_values.max_speed = 0.22
 		self.base_values.max_rotation = 2.84
-		self.base_values.degrees_front = 40
-		self.base_values.degrees_right = 40
-		self.base_values.degrees_back = 40
-		self.base_values.degrees_left = 40
+		self.base_values.degrees_front = 15
+		self.base_values.degrees_right = 15
+		self.base_values.degrees_back = 15
+		self.base_values.degrees_left = 15
 		self.output.speed = 0.0
 		self.output.rotation = 0.0
 		self.output.obstacles = 0
@@ -516,7 +521,7 @@ class Model:
 	def is_final(self):
 		"""Checks if the statemachine is final.
 		"""
-		return (self.__state_vector[0] == self.__State.main_region_drive_to_target_r1_final_) and (self.__state_vector[1] == self.__State.main_region_robot_logging_and_grid_driving_driving_based_on_grid_r1record_r1_final_)
+		return (self.__state_vector[0] == self.__State.main_region_robot_drive_automatic___follow_left_zgoing_straight_r1_final_ or self.__state_vector[0] == self.__State.main_region_drive_to_target_r1_final_) and (self.__state_vector[1] == self.__State.main_region_robot_logging_and_grid_driving_driving_based_on_grid_r1record_r1_final_)
 								
 	def is_state_active(self, state):
 		"""Checks if the state is currently active.
@@ -524,7 +529,7 @@ class Model:
 		s = state
 		if s == self.__State.main_region_robot:
 			return (self.__state_vector[0] >= self.__State.main_region_robot)\
-				and (self.__state_vector[0] <= self.__State.main_region_robot_logging_and_grid_driving_driving_based_on_grid_r1record_r1_final_)
+				and (self.__state_vector[0] <= self.__State.main_region_robot_logging_and_grid_driving_driving_based_on_grid_r1record_r1communicate)
 		if s == self.__State.main_region_robot_drive_manual:
 			return (self.__state_vector[0] >= self.__State.main_region_robot_drive_manual)\
 				and (self.__state_vector[0] <= self.__State.main_region_robot_drive_manual_r1rotations_r1incr__rot__speed_left)
@@ -544,7 +549,7 @@ class Model:
 			return self.__state_vector[0] == self.__State.main_region_robot_drive_manual_r1rotations_r1incr__rot__speed_left
 		if s == self.__State.main_region_robot_drive_automatic___follow_left:
 			return (self.__state_vector[0] >= self.__State.main_region_robot_drive_automatic___follow_left)\
-				and (self.__state_vector[0] <= self.__State.main_region_robot_drive_automatic___follow_left_zgoing_straight_r1blind_drive_r1drive_straight)
+				and (self.__state_vector[0] <= self.__State.main_region_robot_drive_automatic___follow_left_zgoing_straight_r1_final_)
 		if s == self.__State.main_region_robot_drive_automatic___follow_left_zcalibrate:
 			return self.__state_vector[0] == self.__State.main_region_robot_drive_automatic___follow_left_zcalibrate
 		if s == self.__State.main_region_robot_drive_automatic___follow_left_zfinished_calibration:
@@ -572,7 +577,7 @@ class Model:
 			return self.__state_vector[0] == self.__State.main_region_robot_drive_automatic___follow_left_zstopped_due_to_wall
 		if s == self.__State.main_region_robot_drive_automatic___follow_left_zgoing_straight:
 			return (self.__state_vector[0] >= self.__State.main_region_robot_drive_automatic___follow_left_zgoing_straight)\
-				and (self.__state_vector[0] <= self.__State.main_region_robot_drive_automatic___follow_left_zgoing_straight_r1blind_drive_r1drive_straight)
+				and (self.__state_vector[0] <= self.__State.main_region_robot_drive_automatic___follow_left_zgoing_straight_r1_final_)
 		if s == self.__State.main_region_robot_drive_automatic___follow_left_zgoing_straight_r1initial:
 			return self.__state_vector[0] == self.__State.main_region_robot_drive_automatic___follow_left_zgoing_straight_r1initial
 		if s == self.__State.main_region_robot_drive_automatic___follow_left_zgoing_straight_r1calibration_safe_left:
@@ -598,13 +603,15 @@ class Model:
 				and (self.__state_vector[0] <= self.__State.main_region_robot_drive_automatic___follow_left_zgoing_straight_r1blind_drive_r1drive_straight)
 		if s == self.__State.main_region_robot_drive_automatic___follow_left_zgoing_straight_r1blind_drive_r1drive_straight:
 			return self.__state_vector[0] == self.__State.main_region_robot_drive_automatic___follow_left_zgoing_straight_r1blind_drive_r1drive_straight
+		if s == self.__State.main_region_robot_drive_automatic___follow_left_zgoing_straight_r1_final_:
+			return self.__state_vector[0] == self.__State.main_region_robot_drive_automatic___follow_left_zgoing_straight_r1_final_
 		if s == self.__State.main_region_robot_drive_stopped:
 			return self.__state_vector[0] == self.__State.main_region_robot_drive_stopped
 		if s == self.__State.main_region_robot_logging_and_grid_driving_start:
 			return self.__state_vector[1] == self.__State.main_region_robot_logging_and_grid_driving_start
 		if s == self.__State.main_region_robot_logging_and_grid_driving_driving_based_on_grid:
 			return (self.__state_vector[1] >= self.__State.main_region_robot_logging_and_grid_driving_driving_based_on_grid)\
-				and (self.__state_vector[1] <= self.__State.main_region_robot_logging_and_grid_driving_driving_based_on_grid_r1record_r1_final_)
+				and (self.__state_vector[1] <= self.__State.main_region_robot_logging_and_grid_driving_driving_based_on_grid_r1record_r1communicate)
 		if s == self.__State.main_region_robot_logging_and_grid_driving_driving_based_on_grid_r1go_to_center_of_new_grid:
 			return self.__state_vector[1] == self.__State.main_region_robot_logging_and_grid_driving_driving_based_on_grid_r1go_to_center_of_new_grid
 		if s == self.__State.main_region_robot_logging_and_grid_driving_driving_based_on_grid_r1raise_in_center_new_grid:
@@ -613,11 +620,13 @@ class Model:
 			return self.__state_vector[1] == self.__State.main_region_robot_logging_and_grid_driving_driving_based_on_grid_r1check_status
 		if s == self.__State.main_region_robot_logging_and_grid_driving_driving_based_on_grid_r1record:
 			return (self.__state_vector[1] >= self.__State.main_region_robot_logging_and_grid_driving_driving_based_on_grid_r1record)\
-				and (self.__state_vector[1] <= self.__State.main_region_robot_logging_and_grid_driving_driving_based_on_grid_r1record_r1_final_)
+				and (self.__state_vector[1] <= self.__State.main_region_robot_logging_and_grid_driving_driving_based_on_grid_r1record_r1communicate)
 		if s == self.__State.main_region_robot_logging_and_grid_driving_driving_based_on_grid_r1record_r1start_record:
 			return self.__state_vector[1] == self.__State.main_region_robot_logging_and_grid_driving_driving_based_on_grid_r1record_r1start_record
 		if s == self.__State.main_region_robot_logging_and_grid_driving_driving_based_on_grid_r1record_r1_final_:
 			return self.__state_vector[1] == self.__State.main_region_robot_logging_and_grid_driving_driving_based_on_grid_r1record_r1_final_
+		if s == self.__State.main_region_robot_logging_and_grid_driving_driving_based_on_grid_r1record_r1communicate:
+			return self.__state_vector[1] == self.__State.main_region_robot_logging_and_grid_driving_driving_based_on_grid_r1record_r1communicate
 		if s == self.__State.main_region_drive_to_target:
 			return (self.__state_vector[0] >= self.__State.main_region_drive_to_target)\
 				and (self.__state_vector[0] <= self.__State.main_region_drive_to_target_r1_final_)
@@ -640,7 +649,7 @@ class Model:
 	def time_elapsed(self, event_id):
 		"""Add time events to in event queue
 		"""
-		if event_id in range(25):
+		if event_id in range(27):
 			self.in_event_queue.put(lambda: self.raise_time_event(event_id))
 			self.run_cycle()
 	
@@ -679,6 +688,16 @@ class Model:
 		"""Raise callback for event wall_stopped.
 		"""
 		self.wall_stopped = True
+	
+	def raise_recording(self):
+		"""Raise method for event recording.
+		"""
+		self.__internal_event_queue.put(self.__raise_recording_call)
+	
+	def __raise_recording_call(self):
+		"""Raise callback for event recording.
+		"""
+		self.recording = True
 	
 	def __effect_main_region_robot_drive_automatic___follow_left_z_rotating_tr0(self):
 		""".
@@ -830,59 +849,61 @@ class Model:
 		"""
 		#Entry action for state 'Initial'.
 		self.output.rotation = 0.0
-		self.output.speed = 0.0
+		self.output.speed = self.user_var.base_speed
 		
 	def __entry_action_main_region_robot_drive_automatic___follow_left_z_going_straight_r1_calibration_safe_left_r1_drive_straight(self):
 		"""Entry action for state 'Drive straight'..
 		"""
 		#Entry action for state 'Drive straight'.
-		self.output.speed = 0.05
-		self.output.rotation = 0.0
+		self.internal_operation_callback.debug_real("rotation", self.output.rotation)
 		self.user_var.odom_follower_x = self.odom.x
 		self.user_var.odom_follower_y = self.odom.y
-		self.internal_operation_callback.debug("calibrating left - driving straight...")
+		self.internal_operation_callback.debug_real("maxDeg", self.laser_distance.max_deg_l)
 		
 	def __entry_action_main_region_robot_drive_automatic___follow_left_z_going_straight_r1_calibration_safe_left_r1_turn_clock(self):
 		"""Entry action for state 'Turn clock'..
 		"""
 		#Entry action for state 'Turn clock'.
-		self.timer_service.set_timer(self, 9, 50, False)
-		self.output.rotation = (-(self.user_var.base_rotation) * 0.1)
-		self.internal_operation_callback.debug_real("calibrating left - turning clock...", self.output.rotation)
+		self.timer_service.set_timer(self, 9, 200, False)
+		self.output.rotation = (-(self.user_var.base_rotation) * self.user_var.adjust_factor)
+		if False:
+			self.internal_operation_callback.debug_real("calibrating left - turning clock...", self.output.rotation)
 		
 	def __entry_action_main_region_robot_drive_automatic___follow_left_z_going_straight_r1_calibration_safe_left_r1_turn_anti_clock(self):
 		"""Entry action for state 'Turn anti-clock'..
 		"""
 		#Entry action for state 'Turn anti-clock'.
-		self.timer_service.set_timer(self, 10, 50, False)
-		self.output.rotation = (self.user_var.base_rotation * 0.1)
-		self.internal_operation_callback.debug_real("calibrating left - turning anti-clock", self.output.rotation)
+		self.timer_service.set_timer(self, 10, 200, False)
+		self.output.rotation = (self.user_var.base_rotation * self.user_var.adjust_factor)
+		if False:
+			self.internal_operation_callback.debug_real("calibrating left - turning anti-clock", self.output.rotation)
 		
 	def __entry_action_main_region_robot_drive_automatic___follow_left_z_going_straight_r1_calibration_safe_right_r1_drive_straight(self):
 		"""Entry action for state 'Drive straight'..
 		"""
 		#Entry action for state 'Drive straight'.
-		self.output.speed = 0.05
-		self.output.rotation = 0.0
+		self.internal_operation_callback.debug_real("rotation", self.output.rotation)
 		self.user_var.odom_follower_x = self.odom.x
 		self.user_var.odom_follower_y = self.odom.y
-		self.internal_operation_callback.debug("calibrating right - driving straight...")
+		self.internal_operation_callback.debug_real("maxDeg", self.laser_distance.max_deg_r)
 		
 	def __entry_action_main_region_robot_drive_automatic___follow_left_z_going_straight_r1_calibration_safe_right_r1_turn_clock(self):
 		"""Entry action for state 'Turn clock'..
 		"""
 		#Entry action for state 'Turn clock'.
-		self.timer_service.set_timer(self, 11, 50, False)
-		self.output.rotation = (-(self.user_var.base_rotation) * 0.1)
-		self.internal_operation_callback.debug_real("calibrating right - turning clock...", self.output.rotation)
+		self.timer_service.set_timer(self, 11, 200, False)
+		self.output.rotation = (-(self.user_var.base_rotation) * self.user_var.adjust_factor)
+		if False:
+			self.internal_operation_callback.debug_real("calibrating right - turning clock...", self.output.rotation)
 		
 	def __entry_action_main_region_robot_drive_automatic___follow_left_z_going_straight_r1_calibration_safe_right_r1_turn_anti_clock(self):
 		"""Entry action for state 'Turn anti-clock'..
 		"""
 		#Entry action for state 'Turn anti-clock'.
-		self.timer_service.set_timer(self, 12, 50, False)
-		self.output.rotation = (self.user_var.base_rotation * 0.1)
-		self.internal_operation_callback.debug_real("calibrating right - turning clock...", self.output.rotation)
+		self.timer_service.set_timer(self, 12, 200, False)
+		self.output.rotation = (self.user_var.base_rotation * self.user_var.adjust_factor)
+		if False:
+			self.internal_operation_callback.debug_real("calibrating right - turning clock...", self.output.rotation)
 		
 	def __entry_action_main_region_robot_drive_automatic___follow_left_z_going_straight_r1_blind_drive_r1_drive_straight(self):
 		"""Entry action for state 'Drive Straight'..
@@ -916,6 +937,7 @@ class Model:
 		"""Entry action for state 'raise in center new grid'..
 		"""
 		#Entry action for state 'raise in center new grid'.
+		self.timer_service.set_timer(self, 14, 100, False)
 		self.grid.column = self.user_var.grid_new_x
 		self.grid.row = self.user_var.grid_new_y
 		self.grid.receive = True
@@ -925,14 +947,15 @@ class Model:
 		"""Entry action for state 'check status'..
 		"""
 		#Entry action for state 'check status'.
-		self.timer_service.set_timer(self, 14, 500, True)
+		self.timer_service.set_timer(self, 15, 500, True)
 		
 	def __entry_action_main_region_robot_logging_and_grid_driving_driving_based_on_grid_r1_record_r1_start_record(self):
 		"""Entry action for state 'start record'..
 		"""
 		#Entry action for state 'start record'.
-		self.timer_service.set_timer(self, 15, (1 * 1000), False)
-		self.timer_service.set_timer(self, 16, (3 * 1000), True)
+		self.timer_service.set_timer(self, 16, (1 * 1000), True)
+		self.timer_service.set_timer(self, 17, (3 * 1000), True)
+		self.raise_recording()
 		self.grid.wall_front = self.internal_operation_callback.direction_has_wall(self.laser_distance.d0)
 		self.grid.wall_left = self.internal_operation_callback.direction_has_wall(self.laser_distance.d90)
 		self.grid.wall_back = self.internal_operation_callback.direction_has_wall(self.laser_distance.d180)
@@ -953,19 +976,26 @@ class Model:
 		"""
 		self.__completed = True
 		
+	def __entry_action_main_region_robot_logging_and_grid_driving_driving_based_on_grid_r1_record_r1_communicate(self):
+		"""Entry action for state 'communicate'..
+		"""
+		#Entry action for state 'communicate'.
+		self.timer_service.set_timer(self, 18, 200, False)
+		self.raise_recording()
+		
 	def __entry_action_main_region_drive_to_target_r1_solved_path(self):
 		"""Entry action for state 'solved path'..
 		"""
 		#Entry action for state 'solved path'.
-		self.timer_service.set_timer(self, 17, (1 * 1000), False)
-		self.timer_service.set_timer(self, 18, 100, False)
+		self.timer_service.set_timer(self, 19, (1 * 1000), False)
+		self.timer_service.set_timer(self, 20, 100, False)
 		
 	def __entry_action_main_region_drive_to_target_r1_drive_one_step(self):
 		"""Entry action for state 'drive one step'..
 		"""
 		#Entry action for state 'drive one step'.
-		self.timer_service.set_timer(self, 19, 200, False)
-		self.timer_service.set_timer(self, 20, 100, False)
+		self.timer_service.set_timer(self, 21, 200, False)
+		self.timer_service.set_timer(self, 22, 100, False)
 		self.output.rotation = 0.0
 		self.output.speed = 0.0
 		self.user_var.target_yaw = self.internal_operation_callback.get_path_step_yaw(self.user_var.path_index)
@@ -981,7 +1011,7 @@ class Model:
 		"""Entry action for state 'turning to target'..
 		"""
 		#Entry action for state 'turning to target'.
-		self.timer_service.set_timer(self, 21, 500, True)
+		self.timer_service.set_timer(self, 23, 500, True)
 		self.user_var.calibrated_yaw = self.internal_operation_callback.relative_yaw(self.imu.yaw)
 		self.user_var.last_yaw_to_go = self.user_var.yaw_to_go
 		self.user_var.yaw_to_go = self.internal_operation_callback.abs_real(self.internal_operation_callback.calc_yaw_rotation(self.user_var.calibrated_yaw, self.user_var.target_yaw))
@@ -993,7 +1023,7 @@ class Model:
 		"""Entry action for state 'TurnStop'..
 		"""
 		#Entry action for state 'TurnStop'.
-		self.timer_service.set_timer(self, 22, 200, False)
+		self.timer_service.set_timer(self, 24, 200, False)
 		self.output.speed = 0.0
 		self.output.rotation = 0.0
 		self.user_var.total_distance_to_go = self.grid.grid_size
@@ -1008,8 +1038,8 @@ class Model:
 		"""Entry action for state 'go to center of new grid'..
 		"""
 		#Entry action for state 'go to center of new grid'.
-		self.timer_service.set_timer(self, 23, 200, True)
-		self.timer_service.set_timer(self, 24, 200, True)
+		self.timer_service.set_timer(self, 25, 200, True)
+		self.timer_service.set_timer(self, 26, 200, True)
 		self.internal_operation_callback.debug("Going to next grid center")
 		self.user_var.current_x = self.odom.x
 		self.user_var.current_y = self.odom.y
@@ -1122,51 +1152,63 @@ class Model:
 		self.internal_operation_callback.debug_real("odom.y", self.odom.y)
 		self.internal_operation_callback.debug_real("Distance To Go (Center gridbox)", self.user_var.distance_to_go)
 		
+	def __exit_action_main_region_robot_logging_and_grid_driving_driving_based_on_grid_r1_raise_in_center_new_grid(self):
+		"""Exit action for state 'raise in center new grid'..
+		"""
+		#Exit action for state 'raise in center new grid'.
+		self.timer_service.unset_timer(self, 14)
+		
 	def __exit_action_main_region_robot_logging_and_grid_driving_driving_based_on_grid_r1_check_status(self):
 		"""Exit action for state 'check status'..
 		"""
 		#Exit action for state 'check status'.
-		self.timer_service.unset_timer(self, 14)
+		self.timer_service.unset_timer(self, 15)
 		
 	def __exit_action_main_region_robot_logging_and_grid_driving_driving_based_on_grid_r1_record_r1_start_record(self):
 		"""Exit action for state 'start record'..
 		"""
 		#Exit action for state 'start record'.
-		self.timer_service.unset_timer(self, 15)
 		self.timer_service.unset_timer(self, 16)
+		self.timer_service.unset_timer(self, 17)
+		
+	def __exit_action_main_region_robot_logging_and_grid_driving_driving_based_on_grid_r1_record_r1_communicate(self):
+		"""Exit action for state 'communicate'..
+		"""
+		#Exit action for state 'communicate'.
+		self.timer_service.unset_timer(self, 18)
 		
 	def __exit_action_main_region_drive_to_target_r1_solved_path(self):
 		"""Exit action for state 'solved path'..
 		"""
 		#Exit action for state 'solved path'.
-		self.timer_service.unset_timer(self, 17)
-		self.timer_service.unset_timer(self, 18)
+		self.timer_service.unset_timer(self, 19)
+		self.timer_service.unset_timer(self, 20)
 		
 	def __exit_action_main_region_drive_to_target_r1_drive_one_step(self):
 		"""Exit action for state 'drive one step'..
 		"""
 		#Exit action for state 'drive one step'.
-		self.timer_service.unset_timer(self, 19)
-		self.timer_service.unset_timer(self, 20)
+		self.timer_service.unset_timer(self, 21)
+		self.timer_service.unset_timer(self, 22)
 		
 	def __exit_action_main_region_drive_to_target_r1_turning_to_target(self):
 		"""Exit action for state 'turning to target'..
 		"""
 		#Exit action for state 'turning to target'.
-		self.timer_service.unset_timer(self, 21)
+		self.timer_service.unset_timer(self, 23)
 		
 	def __exit_action_main_region_drive_to_target_r1_turn_stop(self):
 		"""Exit action for state 'TurnStop'..
 		"""
 		#Exit action for state 'TurnStop'.
-		self.timer_service.unset_timer(self, 22)
+		self.timer_service.unset_timer(self, 24)
 		
 	def __exit_action_main_region_drive_to_target_r1_go_to_center_of_new_grid(self):
 		"""Exit action for state 'go to center of new grid'..
 		"""
 		#Exit action for state 'go to center of new grid'.
-		self.timer_service.unset_timer(self, 23)
-		self.timer_service.unset_timer(self, 24)
+		self.timer_service.unset_timer(self, 25)
+		self.timer_service.unset_timer(self, 26)
 		self.internal_operation_callback.debug("\nTRACE: after center on new grid")
 		self.internal_operation_callback.debug_real("odom.x", self.odom.x)
 		self.internal_operation_callback.debug_real("odom.y", self.odom.y)
@@ -1422,6 +1464,14 @@ class Model:
 		self.__state_conf_vector_position = 0
 		self.__state_conf_vector_changed = True
 		
+	def __enter_sequence_main_region_robot_drive_automatic___follow_left_z_going_straight_r1__final__default(self):
+		"""Default enter sequence for final state.
+		"""
+		#Default enter sequence for final state
+		self.__state_vector[0] = self.State.main_region_robot_drive_automatic___follow_left_zgoing_straight_r1_final_
+		self.__state_conf_vector_position = 0
+		self.__state_conf_vector_changed = True
+		
 	def __enter_sequence_main_region_robot_drive_stopped_default(self):
 		"""'default' enter sequence for state Stopped.
 		"""
@@ -1493,6 +1543,15 @@ class Model:
 		#Default enter sequence for final state
 		self.__entry_action_main_region_robot_logging_and_grid_driving_driving_based_on_grid_r1_record_r1__final_()
 		self.__state_vector[1] = self.State.main_region_robot_logging_and_grid_driving_driving_based_on_grid_r1record_r1_final_
+		self.__state_conf_vector_position = 1
+		self.__state_conf_vector_changed = True
+		
+	def __enter_sequence_main_region_robot_logging_and_grid_driving_driving_based_on_grid_r1_record_r1_communicate_default(self):
+		"""'default' enter sequence for state communicate.
+		"""
+		#'default' enter sequence for state communicate
+		self.__entry_action_main_region_robot_logging_and_grid_driving_driving_based_on_grid_r1_record_r1_communicate()
+		self.__state_vector[1] = self.State.main_region_robot_logging_and_grid_driving_driving_based_on_grid_r1record_r1communicate
 		self.__state_conf_vector_position = 1
 		self.__state_conf_vector_changed = True
 		
@@ -1892,6 +1951,13 @@ class Model:
 		self.__state_vector[0] = self.State.main_region_robot_drive_automatic___follow_left_zgoing_straight_r1blind_drive
 		self.__state_conf_vector_position = 0
 		
+	def __exit_sequence_main_region_robot_drive_automatic___follow_left_z_going_straight_r1__final_(self):
+		"""Default exit sequence for final state..
+		"""
+		#Default exit sequence for final state.
+		self.__state_vector[0] = self.State.main_region_robot_drive_automatic___follow_left_zgoing_straight
+		self.__state_conf_vector_position = 0
+		
 	def __exit_sequence_main_region_robot_drive_stopped(self):
 		"""Default exit sequence for state Stopped.
 		"""
@@ -1929,6 +1995,7 @@ class Model:
 		#Default exit sequence for state raise in center new grid
 		self.__state_vector[1] = self.State.main_region_robot_logging_and_grid_driving_driving_based_on_grid
 		self.__state_conf_vector_position = 1
+		self.__exit_action_main_region_robot_logging_and_grid_driving_driving_based_on_grid_r1_raise_in_center_new_grid()
 		
 	def __exit_sequence_main_region_robot_logging_and_grid_driving_driving_based_on_grid_r1_check_status(self):
 		"""Default exit sequence for state check status.
@@ -1960,6 +2027,14 @@ class Model:
 		#Default exit sequence for final state.
 		self.__state_vector[1] = self.State.main_region_robot_logging_and_grid_driving_driving_based_on_grid_r1record
 		self.__state_conf_vector_position = 1
+		
+	def __exit_sequence_main_region_robot_logging_and_grid_driving_driving_based_on_grid_r1_record_r1_communicate(self):
+		"""Default exit sequence for state communicate.
+		"""
+		#Default exit sequence for state communicate
+		self.__state_vector[1] = self.State.main_region_robot_logging_and_grid_driving_driving_based_on_grid_r1record
+		self.__state_conf_vector_position = 1
+		self.__exit_action_main_region_robot_logging_and_grid_driving_driving_based_on_grid_r1_record_r1_communicate()
 		
 	def __exit_sequence_main_region_drive_to_target(self):
 		"""Default exit sequence for state drive to target.
@@ -2092,6 +2167,8 @@ class Model:
 			self.__exit_sequence_main_region_robot_drive_automatic___follow_left_z_going_straight_r1_blind_drive()
 		elif state == self.State.main_region_robot_drive_automatic___follow_left_zgoing_straight_r1blind_drive_r1drive_straight:
 			self.__exit_sequence_main_region_robot_drive_automatic___follow_left_z_going_straight_r1_blind_drive_r1_drive_straight()
+		elif state == self.State.main_region_robot_drive_automatic___follow_left_zgoing_straight_r1_final_:
+			self.__exit_sequence_main_region_robot_drive_automatic___follow_left_z_going_straight_r1__final_()
 		elif state == self.State.main_region_robot_drive_stopped:
 			self.__exit_sequence_main_region_robot_drive_stopped()
 		elif state == self.State.main_region_drive_to_target:
@@ -2127,6 +2204,8 @@ class Model:
 			self.__exit_sequence_main_region_robot_logging_and_grid_driving_driving_based_on_grid_r1_record_r1_start_record()
 		elif state == self.State.main_region_robot_logging_and_grid_driving_driving_based_on_grid_r1record_r1_final_:
 			self.__exit_sequence_main_region_robot_logging_and_grid_driving_driving_based_on_grid_r1_record_r1__final_()
+		elif state == self.State.main_region_robot_logging_and_grid_driving_driving_based_on_grid_r1record_r1communicate:
+			self.__exit_sequence_main_region_robot_logging_and_grid_driving_driving_based_on_grid_r1_record_r1_communicate()
 		
 	def __exit_sequence_main_region_robot_drive(self):
 		"""Default exit sequence for region drive.
@@ -2197,6 +2276,8 @@ class Model:
 			self.__exit_sequence_main_region_robot_drive_automatic___follow_left_z_going_straight_r1_blind_drive()
 		elif state == self.State.main_region_robot_drive_automatic___follow_left_zgoing_straight_r1blind_drive_r1drive_straight:
 			self.__exit_sequence_main_region_robot_drive_automatic___follow_left_z_going_straight_r1_blind_drive_r1_drive_straight()
+		elif state == self.State.main_region_robot_drive_automatic___follow_left_zgoing_straight_r1_final_:
+			self.__exit_sequence_main_region_robot_drive_automatic___follow_left_z_going_straight_r1__final_()
 		elif state == self.State.main_region_robot_drive_stopped:
 			self.__exit_sequence_main_region_robot_drive_stopped()
 		
@@ -2291,6 +2372,8 @@ class Model:
 			self.__exit_sequence_main_region_robot_drive_automatic___follow_left_z_going_straight_r1_blind_drive()
 		elif state == self.State.main_region_robot_drive_automatic___follow_left_zgoing_straight_r1blind_drive_r1drive_straight:
 			self.__exit_sequence_main_region_robot_drive_automatic___follow_left_z_going_straight_r1_blind_drive_r1_drive_straight()
+		elif state == self.State.main_region_robot_drive_automatic___follow_left_zgoing_straight_r1_final_:
+			self.__exit_sequence_main_region_robot_drive_automatic___follow_left_z_going_straight_r1__final_()
 		
 	def __exit_sequence_main_region_robot_drive_automatic___follow_left_z_rotating_r1(self):
 		"""Default exit sequence for region r1.
@@ -2339,6 +2422,8 @@ class Model:
 			self.__exit_sequence_main_region_robot_drive_automatic___follow_left_z_going_straight_r1_blind_drive()
 		elif state == self.State.main_region_robot_drive_automatic___follow_left_zgoing_straight_r1blind_drive_r1drive_straight:
 			self.__exit_sequence_main_region_robot_drive_automatic___follow_left_z_going_straight_r1_blind_drive_r1_drive_straight()
+		elif state == self.State.main_region_robot_drive_automatic___follow_left_zgoing_straight_r1_final_:
+			self.__exit_sequence_main_region_robot_drive_automatic___follow_left_z_going_straight_r1__final_()
 		
 	def __exit_sequence_main_region_robot_drive_automatic___follow_left_z_going_straight_r1_calibration_safe_left_r1(self):
 		"""Default exit sequence for region r1.
@@ -2393,6 +2478,8 @@ class Model:
 			self.__exit_sequence_main_region_robot_logging_and_grid_driving_driving_based_on_grid_r1_record_r1_start_record()
 		elif state == self.State.main_region_robot_logging_and_grid_driving_driving_based_on_grid_r1record_r1_final_:
 			self.__exit_sequence_main_region_robot_logging_and_grid_driving_driving_based_on_grid_r1_record_r1__final_()
+		elif state == self.State.main_region_robot_logging_and_grid_driving_driving_based_on_grid_r1record_r1communicate:
+			self.__exit_sequence_main_region_robot_logging_and_grid_driving_driving_based_on_grid_r1_record_r1_communicate()
 		
 	def __exit_sequence_main_region_robot_logging_and_grid_driving_driving_based_on_grid_r1(self):
 		"""Default exit sequence for region r1.
@@ -2411,6 +2498,8 @@ class Model:
 			self.__exit_sequence_main_region_robot_logging_and_grid_driving_driving_based_on_grid_r1_record_r1_start_record()
 		elif state == self.State.main_region_robot_logging_and_grid_driving_driving_based_on_grid_r1record_r1_final_:
 			self.__exit_sequence_main_region_robot_logging_and_grid_driving_driving_based_on_grid_r1_record_r1__final_()
+		elif state == self.State.main_region_robot_logging_and_grid_driving_driving_based_on_grid_r1record_r1communicate:
+			self.__exit_sequence_main_region_robot_logging_and_grid_driving_driving_based_on_grid_r1_record_r1_communicate()
 		
 	def __exit_sequence_main_region_robot_logging_and_grid_driving_driving_based_on_grid_r1_record_r1(self):
 		"""Default exit sequence for region r1.
@@ -2421,6 +2510,8 @@ class Model:
 			self.__exit_sequence_main_region_robot_logging_and_grid_driving_driving_based_on_grid_r1_record_r1_start_record()
 		elif state == self.State.main_region_robot_logging_and_grid_driving_driving_based_on_grid_r1record_r1_final_:
 			self.__exit_sequence_main_region_robot_logging_and_grid_driving_driving_based_on_grid_r1_record_r1__final_()
+		elif state == self.State.main_region_robot_logging_and_grid_driving_driving_based_on_grid_r1record_r1communicate:
+			self.__exit_sequence_main_region_robot_logging_and_grid_driving_driving_based_on_grid_r1_record_r1_communicate()
 		
 	def __exit_sequence_main_region_drive_to_target_r1(self):
 		"""Default exit sequence for region r1.
@@ -2524,7 +2615,7 @@ class Model:
 		"""Default react sequence for initial entry .
 		"""
 		#Default react sequence for initial entry 
-		self.__enter_sequence_main_region_robot_logging_and_grid_driving_driving_based_on_grid_r1_record_r1_start_record_default()
+		self.__enter_sequence_main_region_robot_logging_and_grid_driving_driving_based_on_grid_r1_record_r1_communicate_default()
 		
 	def __react_main_region_robot_logging_and_grid_driving_driving_based_on_grid_r1__entry_default(self):
 		"""Default react sequence for initial entry .
@@ -2983,6 +3074,12 @@ class Model:
 					self.__enter_sequence_main_region_robot_drive_automatic___follow_left_z_stopped_due_to_wall_default()
 					self.__main_region_robot_drive_automatic___follow_left_react(0)
 					transitioned_after = 0
+				elif self.recording:
+					self.__exit_sequence_main_region_robot_drive_automatic___follow_left_z_going_straight()
+					self.internal_operation_callback.debug("recording, stopped adjusting")
+					self.__enter_sequence_main_region_robot_drive_automatic___follow_left_z_going_straight_r1__final__default()
+					self.__main_region_robot_drive_automatic___follow_left_react(0)
+					transitioned_after = 0
 			#If no transition was taken
 			if transitioned_after == transitioned_before:
 				#then execute local reactions.
@@ -2999,11 +3096,13 @@ class Model:
 			if transitioned_after < 0:
 				if self.laser_distance.dleft_max < self.grid.grid_size:
 					self.__exit_sequence_main_region_robot_drive_automatic___follow_left_z_going_straight_r1_initial()
+					self.internal_operation_callback.debug("calibrating left - driving straight...")
 					self.__enter_sequence_main_region_robot_drive_automatic___follow_left_z_going_straight_r1_calibration_safe_left_default()
 					self.__main_region_robot_drive_automatic___follow_left_z_going_straight_react(0)
 					transitioned_after = 0
 				elif self.laser_distance.dright_max < self.grid.grid_size and self.laser_distance.dleft_max > self.grid.grid_size:
 					self.__exit_sequence_main_region_robot_drive_automatic___follow_left_z_going_straight_r1_initial()
+					self.internal_operation_callback.debug("calibrating right - driving straight...")
 					self.__enter_sequence_main_region_robot_drive_automatic___follow_left_z_going_straight_r1_calibration_safe_right_default()
 					self.__main_region_robot_drive_automatic___follow_left_z_going_straight_react(0)
 					transitioned_after = 0
@@ -3128,12 +3227,12 @@ class Model:
 		transitioned_after = transitioned_before
 		if not self.__do_completion:
 			if transitioned_after < 0:
-				if self.laser_distance.max_deg_l > -(90):
+				if self.laser_distance.max_deg_r > -(90):
 					self.__exit_sequence_main_region_robot_drive_automatic___follow_left_z_going_straight_r1_calibration_safe_right_r1_drive_straight()
 					self.__enter_sequence_main_region_robot_drive_automatic___follow_left_z_going_straight_r1_calibration_safe_right_r1_turn_clock_default()
 					self.__main_region_robot_drive_automatic___follow_left_z_going_straight_r1_calibration_safe_right_react(0)
 					transitioned_after = 0
-				elif self.laser_distance.max_deg_l < -(90):
+				elif self.laser_distance.max_deg_r < -(90):
 					self.__exit_sequence_main_region_robot_drive_automatic___follow_left_z_going_straight_r1_calibration_safe_right_r1_drive_straight()
 					self.__enter_sequence_main_region_robot_drive_automatic___follow_left_z_going_straight_r1_calibration_safe_right_r1_turn_anti_clock_default()
 					self.__main_region_robot_drive_automatic___follow_left_z_going_straight_r1_calibration_safe_right_react(0)
@@ -3215,6 +3314,13 @@ class Model:
 				#then execute local reactions.
 				transitioned_after = self.__main_region_robot_drive_automatic___follow_left_z_going_straight_r1_blind_drive_react(transitioned_before)
 		return transitioned_after
+	
+	
+	def __main_region_robot_drive_automatic___follow_left_z_going_straight_r1__final__react(self, transitioned_before):
+		"""Implementation of __main_region_robot_drive_automatic___follow_left_z_going_straight_r1__final__react function.
+		"""
+		#The reactions of state null.
+		return self.__main_region_robot_drive_automatic___follow_left_z_going_straight_react(transitioned_before)
 	
 	
 	def __main_region_robot_drive_stopped_react(self, transitioned_before):
@@ -3316,8 +3422,9 @@ class Model:
 		transitioned_after = transitioned_before
 		if not self.__do_completion:
 			if transitioned_after < 1:
-				if not self.grid.visited:
+				if (self.__time_events[14]) and (not self.grid.visited):
 					self.__exit_sequence_main_region_robot_logging_and_grid_driving_driving_based_on_grid_r1_raise_in_center_new_grid()
+					self.__time_events[14] = False
 					self.__enter_sequence_main_region_robot_logging_and_grid_driving_driving_based_on_grid_r1_record_default()
 					self.__main_region_robot_logging_and_grid_driving_driving_based_on_grid_react(1)
 					transitioned_after = 1
@@ -3349,7 +3456,7 @@ class Model:
 			#If no transition was taken
 			if transitioned_after == transitioned_before:
 				#then execute local reactions.
-				if self.__time_events[14]:
+				if self.__time_events[15]:
 					self.user_var.grid_new_x = self.internal_operation_callback.grid_position_column(self.odom.x)
 					self.user_var.grid_new_y = self.internal_operation_callback.grid_position_row(self.odom.y)
 				transitioned_after = self.__main_region_robot_logging_and_grid_driving_driving_based_on_grid_react(transitioned_before)
@@ -3389,15 +3496,15 @@ class Model:
 		transitioned_after = transitioned_before
 		if not self.__do_completion:
 			if transitioned_after < 1:
-				if (self.__time_events[15]) and (not self.grid.update):
+				if (self.__time_events[16]) and (not self.grid.update):
 					self.__exit_sequence_main_region_robot_logging_and_grid_driving_driving_based_on_grid_r1_record_r1_start_record()
 					self.internal_operation_callback.debug("Update false again")
-					self.__time_events[15] = False
+					self.__time_events[16] = False
 					self.__enter_sequence_main_region_robot_logging_and_grid_driving_driving_based_on_grid_r1_record_r1__final__default()
 					transitioned_after = 1
-				elif self.__time_events[16]:
+				elif (self.__time_events[17]) and (self.grid.update):
 					self.__exit_sequence_main_region_robot_logging_and_grid_driving_driving_based_on_grid_r1_record_r1_start_record()
-					self.__time_events[16] = False
+					self.__time_events[17] = False
 					self.__enter_sequence_main_region_robot_logging_and_grid_driving_driving_based_on_grid_r1_record_r1_start_record_default()
 					self.__main_region_robot_logging_and_grid_driving_driving_based_on_grid_r1_record_react(1)
 					transitioned_after = 1
@@ -3413,6 +3520,26 @@ class Model:
 		"""
 		#The reactions of state null.
 		return self.__main_region_robot_logging_and_grid_driving_driving_based_on_grid_r1_record_react(transitioned_before)
+	
+	
+	def __main_region_robot_logging_and_grid_driving_driving_based_on_grid_r1_record_r1_communicate_react(self, transitioned_before):
+		"""Implementation of __main_region_robot_logging_and_grid_driving_driving_based_on_grid_r1_record_r1_communicate_react function.
+		"""
+		#The reactions of state communicate.
+		transitioned_after = transitioned_before
+		if not self.__do_completion:
+			if transitioned_after < 1:
+				if self.__time_events[18]:
+					self.__exit_sequence_main_region_robot_logging_and_grid_driving_driving_based_on_grid_r1_record_r1_communicate()
+					self.__time_events[18] = False
+					self.__enter_sequence_main_region_robot_logging_and_grid_driving_driving_based_on_grid_r1_record_r1_start_record_default()
+					self.__main_region_robot_logging_and_grid_driving_driving_based_on_grid_r1_record_react(1)
+					transitioned_after = 1
+			#If no transition was taken
+			if transitioned_after == transitioned_before:
+				#then execute local reactions.
+				transitioned_after = self.__main_region_robot_logging_and_grid_driving_driving_based_on_grid_r1_record_react(transitioned_before)
+		return transitioned_after
 	
 	
 	def __main_region_drive_to_target_react(self, transitioned_before):
@@ -3450,16 +3577,16 @@ class Model:
 		transitioned_after = transitioned_before
 		if not self.__do_completion:
 			if transitioned_after < 0:
-				if self.__time_events[17]:
+				if self.__time_events[19]:
 					self.__exit_sequence_main_region_drive_to_target_r1_solved_path()
-					self.__time_events[17] = False
+					self.__time_events[19] = False
 					self.__enter_sequence_main_region_drive_to_target_r1_drive_one_step_default()
 					self.__main_region_drive_to_target_react(0)
 					transitioned_after = 0
 			#If no transition was taken
 			if transitioned_after == transitioned_before:
 				#then execute local reactions.
-				if self.__time_events[18]:
+				if self.__time_events[20]:
 					self.user_var.path_index = 0
 					self.user_var.target_x = self.internal_operation_callback.get_target_x()
 					self.user_var.target_y = self.internal_operation_callback.get_target_y()
@@ -3477,15 +3604,15 @@ class Model:
 		transitioned_after = transitioned_before
 		if not self.__do_completion:
 			if transitioned_after < 0:
-				if self.__time_events[19]:
+				if self.__time_events[21]:
 					self.__exit_sequence_main_region_drive_to_target_r1_drive_one_step()
-					self.__time_events[19] = False
+					self.__time_events[21] = False
 					self.__enter_sequence_main_region_drive_to_target_r1_turning_to_target_default()
 					self.__main_region_drive_to_target_react(0)
 					transitioned_after = 0
-				elif (self.__time_events[20]) and (self.user_var.total_yaw_to_go == 0):
+				elif (self.__time_events[22]) and (self.user_var.total_yaw_to_go == 0):
 					self.__exit_sequence_main_region_drive_to_target_r1_drive_one_step()
-					self.__time_events[20] = False
+					self.__time_events[22] = False
 					self.__enter_sequence_main_region_drive_to_target_r1_go_to_center_of_new_grid_default()
 					self.__main_region_drive_to_target_react(0)
 					transitioned_after = 0
@@ -3503,9 +3630,9 @@ class Model:
 		transitioned_after = transitioned_before
 		if not self.__do_completion:
 			if transitioned_after < 0:
-				if self.__time_events[21]:
+				if self.__time_events[23]:
 					self.__exit_sequence_main_region_drive_to_target_r1_turning_to_target()
-					self.__time_events[21] = False
+					self.__time_events[23] = False
 					self.__enter_sequence_main_region_drive_to_target_r1_turning_to_target_default()
 					self.__main_region_drive_to_target_react(0)
 					transitioned_after = 0
@@ -3528,9 +3655,9 @@ class Model:
 		transitioned_after = transitioned_before
 		if not self.__do_completion:
 			if transitioned_after < 0:
-				if self.__time_events[22]:
+				if self.__time_events[24]:
 					self.__exit_sequence_main_region_drive_to_target_r1_turn_stop()
-					self.__time_events[22] = False
+					self.__time_events[24] = False
 					self.__enter_sequence_main_region_drive_to_target_r1_go_to_center_of_new_grid_default()
 					self.__main_region_drive_to_target_react(0)
 					transitioned_after = 0
@@ -3556,11 +3683,11 @@ class Model:
 			#If no transition was taken
 			if transitioned_after == transitioned_before:
 				#then execute local reactions.
-				if self.__time_events[23]:
+				if self.__time_events[25]:
 					self.user_var.last_distance = self.user_var.distance_to_go
 					self.user_var.distance_to_go = (self.grid.grid_size - self.internal_operation_callback.distance(self.odom.x, self.odom.y, self.user_var.current_x, self.user_var.current_y))
 					self.output.speed = (self.user_var.base_speed * self.internal_operation_callback.ease_out_exp(self.user_var.distance_to_go, self.user_var.total_distance_to_go, 2))
-				if (self.__time_events[24]) and (False):
+				if (self.__time_events[26]) and (False):
 					self.internal_operation_callback.debug_real("distance to go (last)", self.user_var.last_distance)
 					self.internal_operation_callback.debug_real("distance to go", self.user_var.distance_to_go)
 					self.internal_operation_callback.debug_real("speed", self.output.speed)
@@ -3634,6 +3761,8 @@ class Model:
 		self.__time_events[22] = False
 		self.__time_events[23] = False
 		self.__time_events[24] = False
+		self.__time_events[25] = False
+		self.__time_events[26] = False
 	
 	
 	def __clear_internal_events(self):
@@ -3641,6 +3770,7 @@ class Model:
 		"""
 		self.new_grid_box = False
 		self.wall_stopped = False
+		self.recording = False
 	
 	
 	def __micro_step(self):
@@ -3695,6 +3825,8 @@ class Model:
 			transitioned = self.__main_region_robot_drive_automatic___follow_left_z_going_straight_r1_calibration_safe_right_r1_turn_anti_clock_react(transitioned)
 		elif state == self.State.main_region_robot_drive_automatic___follow_left_zgoing_straight_r1blind_drive_r1drive_straight:
 			transitioned = self.__main_region_robot_drive_automatic___follow_left_z_going_straight_r1_blind_drive_r1_drive_straight_react(transitioned)
+		elif state == self.State.main_region_robot_drive_automatic___follow_left_zgoing_straight_r1_final_:
+			transitioned = self.__main_region_robot_drive_automatic___follow_left_z_going_straight_r1__final__react(transitioned)
 		elif state == self.State.main_region_robot_drive_stopped:
 			transitioned = self.__main_region_robot_drive_stopped_react(transitioned)
 		elif state == self.State.main_region_drive_to_target_r1solved_path:
@@ -3725,6 +3857,8 @@ class Model:
 				self.__main_region_robot_logging_and_grid_driving_driving_based_on_grid_r1_record_r1_start_record_react(transitioned)
 			elif state == self.State.main_region_robot_logging_and_grid_driving_driving_based_on_grid_r1record_r1_final_:
 				self.__main_region_robot_logging_and_grid_driving_driving_based_on_grid_r1_record_r1__final__react(transitioned)
+			elif state == self.State.main_region_robot_logging_and_grid_driving_driving_based_on_grid_r1record_r1communicate:
+				self.__main_region_robot_logging_and_grid_driving_driving_based_on_grid_r1_record_r1_communicate_react(transitioned)
 	
 	
 	def run_cycle(self):
