@@ -46,9 +46,9 @@ class Model:
 			main_region_robot_drive_automatic___follow_left_zgoing_straight_r1snake_mode_r1calibration_safe_right_r1drive_straight,
 			main_region_robot_drive_automatic___follow_left_zgoing_straight_r1snake_mode_r1calibration_safe_right_r1turn_clock,
 			main_region_robot_drive_automatic___follow_left_zgoing_straight_r1snake_mode_r1calibration_safe_right_r1turn_anti_clock,
+			main_region_robot_drive_automatic___follow_left_zgoing_straight_r1snake_mode_r1calibration_safe_right_r1_final_,
 			main_region_robot_drive_automatic___follow_left_zgoing_straight_r1snake_mode_r1blind_drive,
 			main_region_robot_drive_automatic___follow_left_zgoing_straight_r1snake_mode_r1blind_drive_r1drive_straight,
-			main_region_robot_drive_automatic___follow_left_zgoing_straight_r1snake_mode_r1_final_,
 			main_region_robot_drive_automatic___follow_left_zgoing_straight_r1normal_drive,
 			main_region_robot_drive_automatic___follow_left_zgoing_straight_r1init,
 			main_region_robot_drive_stopped,
@@ -80,14 +80,11 @@ class Model:
 		def __init__(self, statemachine):
 			self.base_speed = None
 			self.base_rotation = None
-			self.forward_speed = None
 			self.rotation_speed = None
 			self.adjust_factor = None
 			self.calibrated_yaw = None
 			self.has_calibrated = None
-			self.min_wall_distance = None
 			self.min_wall_turn = None
-			self.current_yaw = None
 			self.after_turn_yaw = None
 			self.target_yaw = None
 			self.yaw_to_go = None
@@ -99,6 +96,8 @@ class Model:
 			self.center_distance_error = None
 			self.last_distance = None
 			self.last_yaw_to_go = None
+			self.calibration_delay = None
+			self.calib_count = None
 			self.mapping_mode_enabled = None
 			self.snake_mode_enabled = None
 			self.grid_new_x = None
@@ -397,14 +396,11 @@ class Model:
 		#Default init sequence for statechart model
 		self.user_var.base_speed = 0.05
 		self.user_var.base_rotation = 0.1
-		self.user_var.forward_speed = 0.2
 		self.user_var.rotation_speed = 0.4
 		self.user_var.adjust_factor = 0.1
 		self.user_var.calibrated_yaw = 0.0
 		self.user_var.has_calibrated = False
-		self.user_var.min_wall_distance = 0.15
-		self.user_var.min_wall_turn = 0.3
-		self.user_var.current_yaw = 0.0
+		self.user_var.min_wall_turn = 0.25
 		self.user_var.after_turn_yaw = 0.0
 		self.user_var.target_yaw = 0.0
 		self.user_var.yaw_to_go = 0.0
@@ -416,6 +412,8 @@ class Model:
 		self.user_var.center_distance_error = 0.02
 		self.user_var.last_distance = 0.0
 		self.user_var.last_yaw_to_go = 0.0
+		self.user_var.calibration_delay = 150
+		self.user_var.calib_count = 0
 		self.user_var.mapping_mode_enabled = True
 		self.user_var.snake_mode_enabled = False
 		self.user_var.grid_new_x = 0
@@ -432,9 +430,9 @@ class Model:
 		self.base_values.max_speed = 0.22
 		self.base_values.max_rotation = 2.84
 		self.base_values.degrees_front = 10
-		self.base_values.degrees_right = 40
+		self.base_values.degrees_right = 16
 		self.base_values.degrees_back = 10
-		self.base_values.degrees_left = 40
+		self.base_values.degrees_left = 16
 		self.output.speed = 0.0
 		self.output.rotation = 0.0
 		self.output.obstacles = 0
@@ -522,7 +520,7 @@ class Model:
 	def is_final(self):
 		"""Checks if the statemachine is final.
 		"""
-		return (self.__state_vector[0] == self.__State.main_region_robot_drive_automatic___follow_left_zgoing_straight_r1snake_mode_r1_final_ or self.__state_vector[0] == self.__State.main_region_drive_to_target_r1_final_) and (self.__state_vector[1] == self.__State.main_region_robot_logging_and_grid_driving_driving_based_on_grid_r1record_r1_final_)
+		return (self.__state_vector[0] == self.__State.main_region_robot_drive_automatic___follow_left_zgoing_straight_r1snake_mode_r1calibration_safe_right_r1_final_ or self.__state_vector[0] == self.__State.main_region_drive_to_target_r1_final_) and (self.__state_vector[1] == self.__State.main_region_robot_logging_and_grid_driving_driving_based_on_grid_r1record_r1_final_)
 								
 	def is_state_active(self, state):
 		"""Checks if the state is currently active.
@@ -581,7 +579,7 @@ class Model:
 				and (self.__state_vector[0] <= self.__State.main_region_robot_drive_automatic___follow_left_zgoing_straight_r1init)
 		if s == self.__State.main_region_robot_drive_automatic___follow_left_zgoing_straight_r1snake_mode:
 			return (self.__state_vector[0] >= self.__State.main_region_robot_drive_automatic___follow_left_zgoing_straight_r1snake_mode)\
-				and (self.__state_vector[0] <= self.__State.main_region_robot_drive_automatic___follow_left_zgoing_straight_r1snake_mode_r1_final_)
+				and (self.__state_vector[0] <= self.__State.main_region_robot_drive_automatic___follow_left_zgoing_straight_r1snake_mode_r1blind_drive_r1drive_straight)
 		if s == self.__State.main_region_robot_drive_automatic___follow_left_zgoing_straight_r1snake_mode_r1initial:
 			return self.__state_vector[0] == self.__State.main_region_robot_drive_automatic___follow_left_zgoing_straight_r1snake_mode_r1initial
 		if s == self.__State.main_region_robot_drive_automatic___follow_left_zgoing_straight_r1snake_mode_r1calibration_safe_left:
@@ -595,20 +593,20 @@ class Model:
 			return self.__state_vector[0] == self.__State.main_region_robot_drive_automatic___follow_left_zgoing_straight_r1snake_mode_r1calibration_safe_left_r1turn_anti_clock
 		if s == self.__State.main_region_robot_drive_automatic___follow_left_zgoing_straight_r1snake_mode_r1calibration_safe_right:
 			return (self.__state_vector[0] >= self.__State.main_region_robot_drive_automatic___follow_left_zgoing_straight_r1snake_mode_r1calibration_safe_right)\
-				and (self.__state_vector[0] <= self.__State.main_region_robot_drive_automatic___follow_left_zgoing_straight_r1snake_mode_r1calibration_safe_right_r1turn_anti_clock)
+				and (self.__state_vector[0] <= self.__State.main_region_robot_drive_automatic___follow_left_zgoing_straight_r1snake_mode_r1calibration_safe_right_r1_final_)
 		if s == self.__State.main_region_robot_drive_automatic___follow_left_zgoing_straight_r1snake_mode_r1calibration_safe_right_r1drive_straight:
 			return self.__state_vector[0] == self.__State.main_region_robot_drive_automatic___follow_left_zgoing_straight_r1snake_mode_r1calibration_safe_right_r1drive_straight
 		if s == self.__State.main_region_robot_drive_automatic___follow_left_zgoing_straight_r1snake_mode_r1calibration_safe_right_r1turn_clock:
 			return self.__state_vector[0] == self.__State.main_region_robot_drive_automatic___follow_left_zgoing_straight_r1snake_mode_r1calibration_safe_right_r1turn_clock
 		if s == self.__State.main_region_robot_drive_automatic___follow_left_zgoing_straight_r1snake_mode_r1calibration_safe_right_r1turn_anti_clock:
 			return self.__state_vector[0] == self.__State.main_region_robot_drive_automatic___follow_left_zgoing_straight_r1snake_mode_r1calibration_safe_right_r1turn_anti_clock
+		if s == self.__State.main_region_robot_drive_automatic___follow_left_zgoing_straight_r1snake_mode_r1calibration_safe_right_r1_final_:
+			return self.__state_vector[0] == self.__State.main_region_robot_drive_automatic___follow_left_zgoing_straight_r1snake_mode_r1calibration_safe_right_r1_final_
 		if s == self.__State.main_region_robot_drive_automatic___follow_left_zgoing_straight_r1snake_mode_r1blind_drive:
 			return (self.__state_vector[0] >= self.__State.main_region_robot_drive_automatic___follow_left_zgoing_straight_r1snake_mode_r1blind_drive)\
 				and (self.__state_vector[0] <= self.__State.main_region_robot_drive_automatic___follow_left_zgoing_straight_r1snake_mode_r1blind_drive_r1drive_straight)
 		if s == self.__State.main_region_robot_drive_automatic___follow_left_zgoing_straight_r1snake_mode_r1blind_drive_r1drive_straight:
 			return self.__state_vector[0] == self.__State.main_region_robot_drive_automatic___follow_left_zgoing_straight_r1snake_mode_r1blind_drive_r1drive_straight
-		if s == self.__State.main_region_robot_drive_automatic___follow_left_zgoing_straight_r1snake_mode_r1_final_:
-			return self.__state_vector[0] == self.__State.main_region_robot_drive_automatic___follow_left_zgoing_straight_r1snake_mode_r1_final_
 		if s == self.__State.main_region_robot_drive_automatic___follow_left_zgoing_straight_r1normal_drive:
 			return self.__state_vector[0] == self.__State.main_region_robot_drive_automatic___follow_left_zgoing_straight_r1normal_drive
 		if s == self.__State.main_region_robot_drive_automatic___follow_left_zgoing_straight_r1init:
@@ -779,7 +777,7 @@ class Model:
 		"""Entry action for state 'turning to target'..
 		"""
 		#Entry action for state 'turning to target'.
-		self.timer_service.set_timer(self, 4, 50, True)
+		self.timer_service.set_timer(self, 4, 100, True)
 		
 	def __entry_action_main_region_robot_drive_automatic___follow_left_z_rotating_r1_turn_left(self):
 		"""Entry action for state 'Turn Left'..
@@ -805,12 +803,6 @@ class Model:
 		self.user_var.wall_left = self.internal_operation_callback.direction_has_wall(self.laser_distance.d90)
 		self.user_var.wall_back = self.internal_operation_callback.direction_has_wall(self.laser_distance.d180)
 		self.user_var.wall_right = self.internal_operation_callback.direction_has_wall(self.laser_distance.dm90)
-		if False:
-			self.internal_operation_callback.debug("Stopped - current walls")
-			self.internal_operation_callback.debug_real("wallFront", self.user_var.wall_front)
-			self.internal_operation_callback.debug_real("wallRight", self.user_var.wall_right)
-			self.internal_operation_callback.debug_real("wallBack", self.user_var.wall_back)
-			self.internal_operation_callback.debug_real("wallLeft", self.user_var.wall_left)
 		
 	def __entry_action_main_region_robot_drive_automatic___follow_left_z_rotating_r1_turn_around(self):
 		"""Entry action for state 'Turn around'..
@@ -852,57 +844,50 @@ class Model:
 		"""Entry action for state 'Initial'..
 		"""
 		#Entry action for state 'Initial'.
+		self.user_var.snake_mode_enabled = True
 		self.output.rotation = 0.0
 		self.output.speed = self.user_var.base_speed
-		self.user_var.snake_mode_enabled = True
+		self.user_var.calib_count = 0
 		
 	def __entry_action_main_region_robot_drive_automatic___follow_left_z_going_straight_r1_snake_mode_r1_calibration_safe_left_r1_drive_straight(self):
 		"""Entry action for state 'Drive straight'..
 		"""
 		#Entry action for state 'Drive straight'.
-		self.output.rotation = 0.0
+		self.user_var.calib_count = (self.user_var.calib_count + 1)
 		
 	def __entry_action_main_region_robot_drive_automatic___follow_left_z_going_straight_r1_snake_mode_r1_calibration_safe_left_r1_turn_clock(self):
 		"""Entry action for state 'Turn clock'..
 		"""
 		#Entry action for state 'Turn clock'.
-		self.timer_service.set_timer(self, 9, 50, False)
+		self.timer_service.set_timer(self, 9, self.user_var.calibration_delay, False)
 		self.output.rotation = (-(self.user_var.base_rotation) * self.user_var.adjust_factor)
-		if False:
-			self.internal_operation_callback.debug_real("calibrating left - turning clock...", self.output.rotation)
 		
 	def __entry_action_main_region_robot_drive_automatic___follow_left_z_going_straight_r1_snake_mode_r1_calibration_safe_left_r1_turn_anti_clock(self):
 		"""Entry action for state 'Turn anti-clock'..
 		"""
 		#Entry action for state 'Turn anti-clock'.
-		self.timer_service.set_timer(self, 10, 50, False)
+		self.timer_service.set_timer(self, 10, self.user_var.calibration_delay, False)
 		self.output.rotation = (self.user_var.base_rotation * self.user_var.adjust_factor)
-		if False:
-			self.internal_operation_callback.debug_real("calibrating left - turning anti-clock", self.output.rotation)
 		
 	def __entry_action_main_region_robot_drive_automatic___follow_left_z_going_straight_r1_snake_mode_r1_calibration_safe_right_r1_drive_straight(self):
 		"""Entry action for state 'Drive straight'..
 		"""
 		#Entry action for state 'Drive straight'.
-		self.output.rotation = 0.0
+		self.user_var.calib_count = (self.user_var.calib_count + 1)
 		
 	def __entry_action_main_region_robot_drive_automatic___follow_left_z_going_straight_r1_snake_mode_r1_calibration_safe_right_r1_turn_clock(self):
 		"""Entry action for state 'Turn clock'..
 		"""
 		#Entry action for state 'Turn clock'.
-		self.timer_service.set_timer(self, 11, 50, False)
+		self.timer_service.set_timer(self, 11, self.user_var.calibration_delay, False)
 		self.output.rotation = (-(self.user_var.base_rotation) * self.user_var.adjust_factor)
-		if False:
-			self.internal_operation_callback.debug_real("calibrating right - turning clock...", self.output.rotation)
 		
 	def __entry_action_main_region_robot_drive_automatic___follow_left_z_going_straight_r1_snake_mode_r1_calibration_safe_right_r1_turn_anti_clock(self):
 		"""Entry action for state 'Turn anti-clock'..
 		"""
 		#Entry action for state 'Turn anti-clock'.
-		self.timer_service.set_timer(self, 12, 50, False)
+		self.timer_service.set_timer(self, 12, self.user_var.calibration_delay, False)
 		self.output.rotation = (self.user_var.base_rotation * self.user_var.adjust_factor)
-		if False:
-			self.internal_operation_callback.debug_real("calibrating right - turning clock...", self.output.rotation)
 		
 	def __entry_action_main_region_robot_drive_automatic___follow_left_z_going_straight_r1_snake_mode_r1_blind_drive_r1_drive_straight(self):
 		"""Entry action for state 'Drive Straight'..
@@ -925,8 +910,7 @@ class Model:
 		#Entry action for state 'init'.
 		self.output.rotation = 0.0
 		self.output.speed = 0.0
-		self.internal_operation_callback.debug("DRIVING FORWARD")
-		self.internal_operation_callback.debug_bool("snake mode", self.user_var.snake_mode_enabled)
+		self.internal_operation_callback.debug_bool("driving with snake mode", self.user_var.snake_mode_enabled)
 		
 	def __entry_action_main_region_robot_drive_stopped(self):
 		"""Entry action for state 'Stopped'..
@@ -1471,6 +1455,14 @@ class Model:
 		self.__state_conf_vector_position = 0
 		self.__state_conf_vector_changed = True
 		
+	def __enter_sequence_main_region_robot_drive_automatic___follow_left_z_going_straight_r1_snake_mode_r1_calibration_safe_right_r1__final__default(self):
+		"""Default enter sequence for final state.
+		"""
+		#Default enter sequence for final state
+		self.__state_vector[0] = self.State.main_region_robot_drive_automatic___follow_left_zgoing_straight_r1snake_mode_r1calibration_safe_right_r1_final_
+		self.__state_conf_vector_position = 0
+		self.__state_conf_vector_changed = True
+		
 	def __enter_sequence_main_region_robot_drive_automatic___follow_left_z_going_straight_r1_snake_mode_r1_blind_drive_default(self):
 		"""'default' enter sequence for state Blind-drive.
 		"""
@@ -1483,14 +1475,6 @@ class Model:
 		#'default' enter sequence for state Drive Straight
 		self.__entry_action_main_region_robot_drive_automatic___follow_left_z_going_straight_r1_snake_mode_r1_blind_drive_r1_drive_straight()
 		self.__state_vector[0] = self.State.main_region_robot_drive_automatic___follow_left_zgoing_straight_r1snake_mode_r1blind_drive_r1drive_straight
-		self.__state_conf_vector_position = 0
-		self.__state_conf_vector_changed = True
-		
-	def __enter_sequence_main_region_robot_drive_automatic___follow_left_z_going_straight_r1_snake_mode_r1__final__default(self):
-		"""Default enter sequence for final state.
-		"""
-		#Default enter sequence for final state
-		self.__state_vector[0] = self.State.main_region_robot_drive_automatic___follow_left_zgoing_straight_r1snake_mode_r1_final_
 		self.__state_conf_vector_position = 0
 		self.__state_conf_vector_changed = True
 		
@@ -1990,6 +1974,13 @@ class Model:
 		self.__state_conf_vector_position = 0
 		self.__exit_action_main_region_robot_drive_automatic___follow_left_z_going_straight_r1_snake_mode_r1_calibration_safe_right_r1_turn_anti_clock()
 		
+	def __exit_sequence_main_region_robot_drive_automatic___follow_left_z_going_straight_r1_snake_mode_r1_calibration_safe_right_r1__final_(self):
+		"""Default exit sequence for final state..
+		"""
+		#Default exit sequence for final state.
+		self.__state_vector[0] = self.State.main_region_robot_drive_automatic___follow_left_zgoing_straight_r1snake_mode_r1calibration_safe_right
+		self.__state_conf_vector_position = 0
+		
 	def __exit_sequence_main_region_robot_drive_automatic___follow_left_z_going_straight_r1_snake_mode_r1_blind_drive(self):
 		"""Default exit sequence for state Blind-drive.
 		"""
@@ -2003,13 +1994,6 @@ class Model:
 		"""
 		#Default exit sequence for state Drive Straight
 		self.__state_vector[0] = self.State.main_region_robot_drive_automatic___follow_left_zgoing_straight_r1snake_mode_r1blind_drive
-		self.__state_conf_vector_position = 0
-		
-	def __exit_sequence_main_region_robot_drive_automatic___follow_left_z_going_straight_r1_snake_mode_r1__final_(self):
-		"""Default exit sequence for final state..
-		"""
-		#Default exit sequence for final state.
-		self.__state_vector[0] = self.State.main_region_robot_drive_automatic___follow_left_zgoing_straight_r1snake_mode
 		self.__state_conf_vector_position = 0
 		
 	def __exit_sequence_main_region_robot_drive_automatic___follow_left_z_going_straight_r1_normal_drive(self):
@@ -2233,12 +2217,12 @@ class Model:
 			self.__exit_sequence_main_region_robot_drive_automatic___follow_left_z_going_straight_r1_snake_mode_r1_calibration_safe_right_r1_turn_clock()
 		elif state == self.State.main_region_robot_drive_automatic___follow_left_zgoing_straight_r1snake_mode_r1calibration_safe_right_r1turn_anti_clock:
 			self.__exit_sequence_main_region_robot_drive_automatic___follow_left_z_going_straight_r1_snake_mode_r1_calibration_safe_right_r1_turn_anti_clock()
+		elif state == self.State.main_region_robot_drive_automatic___follow_left_zgoing_straight_r1snake_mode_r1calibration_safe_right_r1_final_:
+			self.__exit_sequence_main_region_robot_drive_automatic___follow_left_z_going_straight_r1_snake_mode_r1_calibration_safe_right_r1__final_()
 		elif state == self.State.main_region_robot_drive_automatic___follow_left_zgoing_straight_r1snake_mode_r1blind_drive:
 			self.__exit_sequence_main_region_robot_drive_automatic___follow_left_z_going_straight_r1_snake_mode_r1_blind_drive()
 		elif state == self.State.main_region_robot_drive_automatic___follow_left_zgoing_straight_r1snake_mode_r1blind_drive_r1drive_straight:
 			self.__exit_sequence_main_region_robot_drive_automatic___follow_left_z_going_straight_r1_snake_mode_r1_blind_drive_r1_drive_straight()
-		elif state == self.State.main_region_robot_drive_automatic___follow_left_zgoing_straight_r1snake_mode_r1_final_:
-			self.__exit_sequence_main_region_robot_drive_automatic___follow_left_z_going_straight_r1_snake_mode_r1__final_()
 		elif state == self.State.main_region_robot_drive_automatic___follow_left_zgoing_straight_r1normal_drive:
 			self.__exit_sequence_main_region_robot_drive_automatic___follow_left_z_going_straight_r1_normal_drive()
 		elif state == self.State.main_region_robot_drive_automatic___follow_left_zgoing_straight_r1init:
@@ -2348,12 +2332,12 @@ class Model:
 			self.__exit_sequence_main_region_robot_drive_automatic___follow_left_z_going_straight_r1_snake_mode_r1_calibration_safe_right_r1_turn_clock()
 		elif state == self.State.main_region_robot_drive_automatic___follow_left_zgoing_straight_r1snake_mode_r1calibration_safe_right_r1turn_anti_clock:
 			self.__exit_sequence_main_region_robot_drive_automatic___follow_left_z_going_straight_r1_snake_mode_r1_calibration_safe_right_r1_turn_anti_clock()
+		elif state == self.State.main_region_robot_drive_automatic___follow_left_zgoing_straight_r1snake_mode_r1calibration_safe_right_r1_final_:
+			self.__exit_sequence_main_region_robot_drive_automatic___follow_left_z_going_straight_r1_snake_mode_r1_calibration_safe_right_r1__final_()
 		elif state == self.State.main_region_robot_drive_automatic___follow_left_zgoing_straight_r1snake_mode_r1blind_drive:
 			self.__exit_sequence_main_region_robot_drive_automatic___follow_left_z_going_straight_r1_snake_mode_r1_blind_drive()
 		elif state == self.State.main_region_robot_drive_automatic___follow_left_zgoing_straight_r1snake_mode_r1blind_drive_r1drive_straight:
 			self.__exit_sequence_main_region_robot_drive_automatic___follow_left_z_going_straight_r1_snake_mode_r1_blind_drive_r1_drive_straight()
-		elif state == self.State.main_region_robot_drive_automatic___follow_left_zgoing_straight_r1snake_mode_r1_final_:
-			self.__exit_sequence_main_region_robot_drive_automatic___follow_left_z_going_straight_r1_snake_mode_r1__final_()
 		elif state == self.State.main_region_robot_drive_automatic___follow_left_zgoing_straight_r1normal_drive:
 			self.__exit_sequence_main_region_robot_drive_automatic___follow_left_z_going_straight_r1_normal_drive()
 		elif state == self.State.main_region_robot_drive_automatic___follow_left_zgoing_straight_r1init:
@@ -2450,12 +2434,12 @@ class Model:
 			self.__exit_sequence_main_region_robot_drive_automatic___follow_left_z_going_straight_r1_snake_mode_r1_calibration_safe_right_r1_turn_clock()
 		elif state == self.State.main_region_robot_drive_automatic___follow_left_zgoing_straight_r1snake_mode_r1calibration_safe_right_r1turn_anti_clock:
 			self.__exit_sequence_main_region_robot_drive_automatic___follow_left_z_going_straight_r1_snake_mode_r1_calibration_safe_right_r1_turn_anti_clock()
+		elif state == self.State.main_region_robot_drive_automatic___follow_left_zgoing_straight_r1snake_mode_r1calibration_safe_right_r1_final_:
+			self.__exit_sequence_main_region_robot_drive_automatic___follow_left_z_going_straight_r1_snake_mode_r1_calibration_safe_right_r1__final_()
 		elif state == self.State.main_region_robot_drive_automatic___follow_left_zgoing_straight_r1snake_mode_r1blind_drive:
 			self.__exit_sequence_main_region_robot_drive_automatic___follow_left_z_going_straight_r1_snake_mode_r1_blind_drive()
 		elif state == self.State.main_region_robot_drive_automatic___follow_left_zgoing_straight_r1snake_mode_r1blind_drive_r1drive_straight:
 			self.__exit_sequence_main_region_robot_drive_automatic___follow_left_z_going_straight_r1_snake_mode_r1_blind_drive_r1_drive_straight()
-		elif state == self.State.main_region_robot_drive_automatic___follow_left_zgoing_straight_r1snake_mode_r1_final_:
-			self.__exit_sequence_main_region_robot_drive_automatic___follow_left_z_going_straight_r1_snake_mode_r1__final_()
 		elif state == self.State.main_region_robot_drive_automatic___follow_left_zgoing_straight_r1normal_drive:
 			self.__exit_sequence_main_region_robot_drive_automatic___follow_left_z_going_straight_r1_normal_drive()
 		elif state == self.State.main_region_robot_drive_automatic___follow_left_zgoing_straight_r1init:
@@ -2506,12 +2490,12 @@ class Model:
 			self.__exit_sequence_main_region_robot_drive_automatic___follow_left_z_going_straight_r1_snake_mode_r1_calibration_safe_right_r1_turn_clock()
 		elif state == self.State.main_region_robot_drive_automatic___follow_left_zgoing_straight_r1snake_mode_r1calibration_safe_right_r1turn_anti_clock:
 			self.__exit_sequence_main_region_robot_drive_automatic___follow_left_z_going_straight_r1_snake_mode_r1_calibration_safe_right_r1_turn_anti_clock()
+		elif state == self.State.main_region_robot_drive_automatic___follow_left_zgoing_straight_r1snake_mode_r1calibration_safe_right_r1_final_:
+			self.__exit_sequence_main_region_robot_drive_automatic___follow_left_z_going_straight_r1_snake_mode_r1_calibration_safe_right_r1__final_()
 		elif state == self.State.main_region_robot_drive_automatic___follow_left_zgoing_straight_r1snake_mode_r1blind_drive:
 			self.__exit_sequence_main_region_robot_drive_automatic___follow_left_z_going_straight_r1_snake_mode_r1_blind_drive()
 		elif state == self.State.main_region_robot_drive_automatic___follow_left_zgoing_straight_r1snake_mode_r1blind_drive_r1drive_straight:
 			self.__exit_sequence_main_region_robot_drive_automatic___follow_left_z_going_straight_r1_snake_mode_r1_blind_drive_r1_drive_straight()
-		elif state == self.State.main_region_robot_drive_automatic___follow_left_zgoing_straight_r1snake_mode_r1_final_:
-			self.__exit_sequence_main_region_robot_drive_automatic___follow_left_z_going_straight_r1_snake_mode_r1__final_()
 		elif state == self.State.main_region_robot_drive_automatic___follow_left_zgoing_straight_r1normal_drive:
 			self.__exit_sequence_main_region_robot_drive_automatic___follow_left_z_going_straight_r1_normal_drive()
 		elif state == self.State.main_region_robot_drive_automatic___follow_left_zgoing_straight_r1init:
@@ -2540,12 +2524,12 @@ class Model:
 			self.__exit_sequence_main_region_robot_drive_automatic___follow_left_z_going_straight_r1_snake_mode_r1_calibration_safe_right_r1_turn_clock()
 		elif state == self.State.main_region_robot_drive_automatic___follow_left_zgoing_straight_r1snake_mode_r1calibration_safe_right_r1turn_anti_clock:
 			self.__exit_sequence_main_region_robot_drive_automatic___follow_left_z_going_straight_r1_snake_mode_r1_calibration_safe_right_r1_turn_anti_clock()
+		elif state == self.State.main_region_robot_drive_automatic___follow_left_zgoing_straight_r1snake_mode_r1calibration_safe_right_r1_final_:
+			self.__exit_sequence_main_region_robot_drive_automatic___follow_left_z_going_straight_r1_snake_mode_r1_calibration_safe_right_r1__final_()
 		elif state == self.State.main_region_robot_drive_automatic___follow_left_zgoing_straight_r1snake_mode_r1blind_drive:
 			self.__exit_sequence_main_region_robot_drive_automatic___follow_left_z_going_straight_r1_snake_mode_r1_blind_drive()
 		elif state == self.State.main_region_robot_drive_automatic___follow_left_zgoing_straight_r1snake_mode_r1blind_drive_r1drive_straight:
 			self.__exit_sequence_main_region_robot_drive_automatic___follow_left_z_going_straight_r1_snake_mode_r1_blind_drive_r1_drive_straight()
-		elif state == self.State.main_region_robot_drive_automatic___follow_left_zgoing_straight_r1snake_mode_r1_final_:
-			self.__exit_sequence_main_region_robot_drive_automatic___follow_left_z_going_straight_r1_snake_mode_r1__final_()
 		
 	def __exit_sequence_main_region_robot_drive_automatic___follow_left_z_going_straight_r1_snake_mode_r1_calibration_safe_left_r1(self):
 		"""Default exit sequence for region r1.
@@ -2570,6 +2554,8 @@ class Model:
 			self.__exit_sequence_main_region_robot_drive_automatic___follow_left_z_going_straight_r1_snake_mode_r1_calibration_safe_right_r1_turn_clock()
 		elif state == self.State.main_region_robot_drive_automatic___follow_left_zgoing_straight_r1snake_mode_r1calibration_safe_right_r1turn_anti_clock:
 			self.__exit_sequence_main_region_robot_drive_automatic___follow_left_z_going_straight_r1_snake_mode_r1_calibration_safe_right_r1_turn_anti_clock()
+		elif state == self.State.main_region_robot_drive_automatic___follow_left_zgoing_straight_r1snake_mode_r1calibration_safe_right_r1_final_:
+			self.__exit_sequence_main_region_robot_drive_automatic___follow_left_z_going_straight_r1_snake_mode_r1_calibration_safe_right_r1__final_()
 		
 	def __exit_sequence_main_region_robot_drive_automatic___follow_left_z_going_straight_r1_snake_mode_r1_blind_drive_r1(self):
 		"""Default exit sequence for region r1.
@@ -3221,11 +3207,6 @@ class Model:
 					self.__enter_sequence_main_region_robot_drive_automatic___follow_left_z_going_straight_r1_normal_drive_default()
 					self.__main_region_robot_drive_automatic___follow_left_z_going_straight_react(0)
 					transitioned_after = 0
-				elif self.recording:
-					self.__exit_sequence_main_region_robot_drive_automatic___follow_left_z_going_straight_r1_snake_mode()
-					self.__enter_sequence_main_region_robot_drive_automatic___follow_left_z_going_straight_r1_snake_mode_r1__final__default()
-					self.__main_region_robot_drive_automatic___follow_left_z_going_straight_react(0)
-					transitioned_after = 0
 			#If no transition was taken
 			if transitioned_after == transitioned_before:
 				#then execute local reactions.
@@ -3271,7 +3252,7 @@ class Model:
 		transitioned_after = transitioned_before
 		if not self.__do_completion:
 			if transitioned_after < 0:
-				if self.laser_distance.dleft_max > self.grid.grid_size:
+				if self.laser_distance.dleft_max > self.grid.grid_size or self.user_var.calib_count >= 1100:
 					self.__exit_sequence_main_region_robot_drive_automatic___follow_left_z_going_straight_r1_snake_mode_r1_calibration_safe_left()
 					self.__enter_sequence_main_region_robot_drive_automatic___follow_left_z_going_straight_r1_snake_mode_r1_initial_default()
 					self.__main_region_robot_drive_automatic___follow_left_z_going_straight_r1_snake_mode_react(0)
@@ -3354,9 +3335,14 @@ class Model:
 		transitioned_after = transitioned_before
 		if not self.__do_completion:
 			if transitioned_after < 0:
-				if self.laser_distance.dright_max > self.grid.grid_size or self.laser_distance.dleft_max < self.grid.grid_size:
+				if self.laser_distance.dright_max > self.grid.grid_size or self.laser_distance.dleft_max < self.grid.grid_size or self.user_var.calib_count >= 1100:
 					self.__exit_sequence_main_region_robot_drive_automatic___follow_left_z_going_straight_r1_snake_mode_r1_calibration_safe_right()
 					self.__enter_sequence_main_region_robot_drive_automatic___follow_left_z_going_straight_r1_snake_mode_r1_initial_default()
+					self.__main_region_robot_drive_automatic___follow_left_z_going_straight_r1_snake_mode_react(0)
+					transitioned_after = 0
+				elif self.recording:
+					self.__exit_sequence_main_region_robot_drive_automatic___follow_left_z_going_straight_r1_snake_mode_r1_calibration_safe_right()
+					self.__enter_sequence_main_region_robot_drive_automatic___follow_left_z_going_straight_r1_snake_mode_r1_calibration_safe_right_r1__final__default()
 					self.__main_region_robot_drive_automatic___follow_left_z_going_straight_r1_snake_mode_react(0)
 					transitioned_after = 0
 			#If no transition was taken
@@ -3430,6 +3416,13 @@ class Model:
 		return transitioned_after
 	
 	
+	def __main_region_robot_drive_automatic___follow_left_z_going_straight_r1_snake_mode_r1_calibration_safe_right_r1__final__react(self, transitioned_before):
+		"""Implementation of __main_region_robot_drive_automatic___follow_left_z_going_straight_r1_snake_mode_r1_calibration_safe_right_r1__final__react function.
+		"""
+		#The reactions of state null.
+		return self.__main_region_robot_drive_automatic___follow_left_z_going_straight_r1_snake_mode_r1_calibration_safe_right_react(transitioned_before)
+	
+	
 	def __main_region_robot_drive_automatic___follow_left_z_going_straight_r1_snake_mode_r1_blind_drive_react(self, transitioned_before):
 		"""Implementation of __main_region_robot_drive_automatic___follow_left_z_going_straight_r1_snake_mode_r1_blind_drive_react function.
 		"""
@@ -3460,13 +3453,6 @@ class Model:
 				#then execute local reactions.
 				transitioned_after = self.__main_region_robot_drive_automatic___follow_left_z_going_straight_r1_snake_mode_r1_blind_drive_react(transitioned_before)
 		return transitioned_after
-	
-	
-	def __main_region_robot_drive_automatic___follow_left_z_going_straight_r1_snake_mode_r1__final__react(self, transitioned_before):
-		"""Implementation of __main_region_robot_drive_automatic___follow_left_z_going_straight_r1_snake_mode_r1__final__react function.
-		"""
-		#The reactions of state null.
-		return self.__main_region_robot_drive_automatic___follow_left_z_going_straight_r1_snake_mode_react(transitioned_before)
 	
 	
 	def __main_region_robot_drive_automatic___follow_left_z_going_straight_r1_normal_drive_react(self, transitioned_before):
@@ -4016,10 +4002,10 @@ class Model:
 			transitioned = self.__main_region_robot_drive_automatic___follow_left_z_going_straight_r1_snake_mode_r1_calibration_safe_right_r1_turn_clock_react(transitioned)
 		elif state == self.State.main_region_robot_drive_automatic___follow_left_zgoing_straight_r1snake_mode_r1calibration_safe_right_r1turn_anti_clock:
 			transitioned = self.__main_region_robot_drive_automatic___follow_left_z_going_straight_r1_snake_mode_r1_calibration_safe_right_r1_turn_anti_clock_react(transitioned)
+		elif state == self.State.main_region_robot_drive_automatic___follow_left_zgoing_straight_r1snake_mode_r1calibration_safe_right_r1_final_:
+			transitioned = self.__main_region_robot_drive_automatic___follow_left_z_going_straight_r1_snake_mode_r1_calibration_safe_right_r1__final__react(transitioned)
 		elif state == self.State.main_region_robot_drive_automatic___follow_left_zgoing_straight_r1snake_mode_r1blind_drive_r1drive_straight:
 			transitioned = self.__main_region_robot_drive_automatic___follow_left_z_going_straight_r1_snake_mode_r1_blind_drive_r1_drive_straight_react(transitioned)
-		elif state == self.State.main_region_robot_drive_automatic___follow_left_zgoing_straight_r1snake_mode_r1_final_:
-			transitioned = self.__main_region_robot_drive_automatic___follow_left_z_going_straight_r1_snake_mode_r1__final__react(transitioned)
 		elif state == self.State.main_region_robot_drive_automatic___follow_left_zgoing_straight_r1normal_drive:
 			transitioned = self.__main_region_robot_drive_automatic___follow_left_z_going_straight_r1_normal_drive_react(transitioned)
 		elif state == self.State.main_region_robot_drive_automatic___follow_left_zgoing_straight_r1init:
