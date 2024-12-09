@@ -22,6 +22,7 @@ from model import Model
 
 from TurtleBotNode import TurtleBot
 from grid.Grid import Maze
+import logging
 
 from timer.sct_timer import Timer
 
@@ -737,6 +738,12 @@ class SCTConnect:
     """
 
     def update_grid(self):
+
+        logger = logging.getLogger("main")
+        logger.info(
+            "UPDATE GRID RECEIVED: "
+            f"{self.sm.grid.column}, {self.sm.grid.row}"
+        )
         self.sm.grid.update = False
         self.current_node = self.maze.grid[self.sm.grid.row][
             self.sm.grid.column
@@ -753,6 +760,7 @@ class SCTConnect:
         self.current_node.walls[(self.sm.grid.orientation - 2) % 4] = (
             self.sm.grid.wall_back
         )
+        logger.info(f"UPDATE GRID: walls - {self.current_node.walls}")
         self.current_node.visited = True
         self.sm.grid.visited = True
 
