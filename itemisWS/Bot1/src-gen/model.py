@@ -80,6 +80,8 @@ class Model:
 			self.forward_speed = None
 			self.rotation_speed = None
 			self.adjust_factor = None
+			self.calibration_delay = None
+			self.calib_count = None
 			self.odom_follower_x = None
 			self.odom_follower_y = None
 			self.calibrated_yaw = None
@@ -397,7 +399,9 @@ class Model:
 		self.user_var.base_rotation = 0.2
 		self.user_var.forward_speed = (0.1 * 2)
 		self.user_var.rotation_speed = 0.4
-		self.user_var.adjust_factor = 0.3
+		self.user_var.adjust_factor = 0.1
+		self.user_var.calibration_delay = 150
+		self.user_var.calib_count = 0
 		self.user_var.odom_follower_x = 0.0
 		self.user_var.odom_follower_y = 0.0
 		self.user_var.calibrated_yaw = 0.0
@@ -430,10 +434,10 @@ class Model:
 		self.user_var.current_y = 0.0
 		self.base_values.max_speed = 0.22
 		self.base_values.max_rotation = 2.84
-		self.base_values.degrees_front = 15
-		self.base_values.degrees_right = 15
-		self.base_values.degrees_back = 15
-		self.base_values.degrees_left = 15
+		self.base_values.degrees_front = 16
+		self.base_values.degrees_right = 16
+		self.base_values.degrees_back = 16
+		self.base_values.degrees_left = 16
 		self.output.speed = 0.0
 		self.output.rotation = 0.0
 		self.output.obstacles = 0
@@ -850,6 +854,7 @@ class Model:
 		#Entry action for state 'Initial'.
 		self.output.rotation = 0.0
 		self.output.speed = self.user_var.base_speed
+		self.user_var.calib_count = 0
 		
 	def __entry_action_main_region_robot_drive_automatic___follow_left_z_going_straight_r1_calibration_safe_left_r1_drive_straight(self):
 		"""Entry action for state 'Drive straight'..
@@ -858,25 +863,25 @@ class Model:
 		self.internal_operation_callback.debug_real("rotation", self.output.rotation)
 		self.user_var.odom_follower_x = self.odom.x
 		self.user_var.odom_follower_y = self.odom.y
-		self.internal_operation_callback.debug_real("maxDeg", self.laser_distance.max_deg_l)
+		self.internal_operation_callback.debug_real("maxDegL", self.laser_distance.max_deg_l)
+		self.user_var.calib_count = (self.user_var.calib_count + 1)
+		self.internal_operation_callback.debug_real("count", self.user_var.calib_count)
 		
 	def __entry_action_main_region_robot_drive_automatic___follow_left_z_going_straight_r1_calibration_safe_left_r1_turn_clock(self):
 		"""Entry action for state 'Turn clock'..
 		"""
 		#Entry action for state 'Turn clock'.
-		self.timer_service.set_timer(self, 9, 200, False)
+		self.timer_service.set_timer(self, 9, self.user_var.calibration_delay, False)
 		self.output.rotation = (-(self.user_var.base_rotation) * self.user_var.adjust_factor)
-		if False:
-			self.internal_operation_callback.debug_real("calibrating left - turning clock...", self.output.rotation)
+		self.internal_operation_callback.debug_real("calibrating left - turning clock...", self.output.rotation)
 		
 	def __entry_action_main_region_robot_drive_automatic___follow_left_z_going_straight_r1_calibration_safe_left_r1_turn_anti_clock(self):
 		"""Entry action for state 'Turn anti-clock'..
 		"""
 		#Entry action for state 'Turn anti-clock'.
-		self.timer_service.set_timer(self, 10, 200, False)
+		self.timer_service.set_timer(self, 10, self.user_var.calibration_delay, False)
 		self.output.rotation = (self.user_var.base_rotation * self.user_var.adjust_factor)
-		if False:
-			self.internal_operation_callback.debug_real("calibrating left - turning anti-clock", self.output.rotation)
+		self.internal_operation_callback.debug_real("calibrating left - turning anti-clock", self.output.rotation)
 		
 	def __entry_action_main_region_robot_drive_automatic___follow_left_z_going_straight_r1_calibration_safe_right_r1_drive_straight(self):
 		"""Entry action for state 'Drive straight'..
@@ -885,25 +890,24 @@ class Model:
 		self.internal_operation_callback.debug_real("rotation", self.output.rotation)
 		self.user_var.odom_follower_x = self.odom.x
 		self.user_var.odom_follower_y = self.odom.y
-		self.internal_operation_callback.debug_real("maxDeg", self.laser_distance.max_deg_r)
+		self.internal_operation_callback.debug_real("maxDegR", self.laser_distance.max_deg_r)
+		self.user_var.calib_count = (self.user_var.calib_count + 1)
 		
 	def __entry_action_main_region_robot_drive_automatic___follow_left_z_going_straight_r1_calibration_safe_right_r1_turn_clock(self):
 		"""Entry action for state 'Turn clock'..
 		"""
 		#Entry action for state 'Turn clock'.
-		self.timer_service.set_timer(self, 11, 200, False)
+		self.timer_service.set_timer(self, 11, self.user_var.calibration_delay, False)
 		self.output.rotation = (-(self.user_var.base_rotation) * self.user_var.adjust_factor)
-		if False:
-			self.internal_operation_callback.debug_real("calibrating right - turning clock...", self.output.rotation)
+		self.internal_operation_callback.debug_real("calibrating right - turning clock...", self.output.rotation)
 		
 	def __entry_action_main_region_robot_drive_automatic___follow_left_z_going_straight_r1_calibration_safe_right_r1_turn_anti_clock(self):
 		"""Entry action for state 'Turn anti-clock'..
 		"""
 		#Entry action for state 'Turn anti-clock'.
-		self.timer_service.set_timer(self, 12, 200, False)
+		self.timer_service.set_timer(self, 12, self.user_var.calibration_delay, False)
 		self.output.rotation = (self.user_var.base_rotation * self.user_var.adjust_factor)
-		if False:
-			self.internal_operation_callback.debug_real("calibrating right - turning clock...", self.output.rotation)
+		self.internal_operation_callback.debug_real("calibrating right - turning clock...", self.output.rotation)
 		
 	def __entry_action_main_region_robot_drive_automatic___follow_left_z_going_straight_r1_blind_drive_r1_drive_straight(self):
 		"""Entry action for state 'Drive Straight'..
@@ -3125,7 +3129,7 @@ class Model:
 		transitioned_after = transitioned_before
 		if not self.__do_completion:
 			if transitioned_after < 0:
-				if self.laser_distance.dleft_max > self.grid.grid_size:
+				if self.laser_distance.dleft_max > self.grid.grid_size or self.user_var.calib_count >= 1100:
 					self.__exit_sequence_main_region_robot_drive_automatic___follow_left_z_going_straight_r1_calibration_safe_left()
 					self.__enter_sequence_main_region_robot_drive_automatic___follow_left_z_going_straight_r1_initial_default()
 					self.__main_region_robot_drive_automatic___follow_left_z_going_straight_react(0)
@@ -3208,7 +3212,7 @@ class Model:
 		transitioned_after = transitioned_before
 		if not self.__do_completion:
 			if transitioned_after < 0:
-				if self.laser_distance.dright_max > self.grid.grid_size or self.laser_distance.dleft_max < self.grid.grid_size:
+				if self.laser_distance.dright_max > self.grid.grid_size or self.laser_distance.dleft_max < self.grid.grid_size or self.user_var.calib_count >= 1100:
 					self.__exit_sequence_main_region_robot_drive_automatic___follow_left_z_going_straight_r1_calibration_safe_right()
 					self.__enter_sequence_main_region_robot_drive_automatic___follow_left_z_going_straight_r1_initial_default()
 					self.__main_region_robot_drive_automatic___follow_left_z_going_straight_react(0)
